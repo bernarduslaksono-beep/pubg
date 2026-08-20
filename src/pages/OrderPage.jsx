@@ -55,13 +55,15 @@ export default function OrderPage() {
   const handleField = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }))
   const handleGameIdField = (e) => {
     const digitsOnly = e.target.value.replace(/\D/g, '')
-    setForm((f) => ({ ...f, gameId: '5' + digitsOnly }))
+    setForm((f) => ({ ...f, gameId: digitsOnly }))
   }
+  const gameIdStartsWrong = form.gameId.length > 0 && !form.gameId.startsWith('5')
 
   const subtotal = useMemo(() => (selectedPkg ? selectedPkg.price * qty : 0), [selectedPkg, qty])
 
   const step1Valid =
-    selectedPkg && form.name.trim() && form.wa.trim() && form.gameId.length > 1 && form.ign.trim()
+    selectedPkg && form.name.trim() && form.wa.trim() &&
+    form.gameId.length > 1 && form.gameId.startsWith('5') && form.ign.trim()
 
   const step2Valid = selectedPayment && proofFile
 
@@ -272,18 +274,19 @@ export default function OrderPage() {
 
             <div className="field">
               <label htmlFor="f-gameid">{t('user_id_label')}</label>
-              <div className="prefixed-input">
-                <span className="input-prefix">5</span>
-                <input
-                  id="f-gameid"
-                  ref={userIdRef}
-                  value={form.gameId.slice(1)}
-                  onChange={handleGameIdField}
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  placeholder={t('user_id_placeholder_suffix')}
-                />
-              </div>
+              <input
+                id="f-gameid"
+                ref={userIdRef}
+                value={form.gameId}
+                onChange={handleGameIdField}
+                inputMode="numeric"
+                pattern="[0-9]*"
+                placeholder={t('user_id_placeholder')}
+                style={gameIdStartsWrong ? { borderColor: 'var(--danger)' } : undefined}
+              />
+              {gameIdStartsWrong && (
+                <div className="field-error">{t('user_id_must_start_5')}</div>
+              )}
             </div>
             <div className="field">
               <label htmlFor="f-ign">{t('nickname_label')}</label>

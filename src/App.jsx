@@ -2,9 +2,14 @@ import { Routes, Route, Link, useLocation } from 'react-router-dom'
 import OrderPage from './pages/OrderPage.jsx'
 import TrackPage from './pages/TrackPage.jsx'
 import AdminPage from './pages/AdminPage.jsx'
+import InstallPrompt from './components/InstallPrompt.jsx'
 import logo from './assets/logo.png'
 
-function TopBar() {
+// Rota admin "sekretu" — la aparese iha menu públiku.
+// Troka slug ne'e ba naran seluk se hakarak (dala ida de'it, hafoin fahe link ba ita boot rasik).
+const ADMIN_PATH = '/painel-admin-x29k7'
+
+function TopBar({ isAdminRoute }) {
   const location = useLocation()
   const isActive = (path) => location.pathname === path
 
@@ -13,27 +18,32 @@ function TopBar() {
       <div className="brand">
         <img className="brand-logo" src={logo} alt="UC-PUBG Timor Leste" />
       </div>
-      <nav>
-        <Link to="/"><button className={isActive('/') ? 'active' : ''}>Pesan UC</button></Link>
-        <Link to="/track"><button className={isActive('/track') ? 'active' : ''}>Cek Status</button></Link>
-        <Link to="/admin"><button className={isActive('/admin') ? 'active' : ''}>Admin</button></Link>
-      </nav>
+      {!isAdminRoute && (
+        <nav>
+          <Link to="/"><button className={isActive('/') ? 'active' : ''}>Pesan UC</button></Link>
+          <Link to="/track"><button className={isActive('/track') ? 'active' : ''}>Cek Status</button></Link>
+        </nav>
+      )}
     </div>
   )
 }
 
 export default function App() {
+  const location = useLocation()
+  const isAdminRoute = location.pathname === ADMIN_PATH
+
   return (
     <>
-      <TopBar />
+      <TopBar isAdminRoute={isAdminRoute} />
       <main>
         <Routes>
           <Route path="/" element={<OrderPage />} />
           <Route path="/track" element={<TrackPage />} />
-          <Route path="/admin" element={<AdminPage />} />
+          <Route path={ADMIN_PATH} element={<AdminPage />} />
         </Routes>
       </main>
-      <footer>Top Up UC PUBG · Dili, Timor-Leste</footer>
+      {!isAdminRoute && <footer>Top Up UC PUBG · Dili, Timor-Leste</footer>}
+      {!isAdminRoute && <InstallPrompt />}
     </>
   )
 }

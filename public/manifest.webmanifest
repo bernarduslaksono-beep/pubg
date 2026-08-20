@@ -1,0 +1,14 @@
+{
+  "name": "UC-PUBG Timor Leste",
+  "short_name": "UC-PUBG TL",
+  "description": "Top up UC PUBG Mobile ba Timor-Leste",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F7F8FB",
+  "theme_color": "#E7343F",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

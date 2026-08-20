@@ -20,8 +20,17 @@ create table if not exists public.orders (
   proof_url text not null,
   status text not null default 'menunggu_verifikasi'
     check (status in ('menunggu_verifikasi','terverifikasi','terkirim','dibatalkan')),
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  pkg_unit_uc integer,
+  qty integer not null default 1,
+  admin_comment text default ''
 );
+
+-- Se tabela ona iha husi antes (versaun tuan), hatama kolona foun ne'e
+-- (aman atu Run beibeik — la iha erru se kolona ona iha)
+alter table public.orders add column if not exists pkg_unit_uc integer;
+alter table public.orders add column if not exists qty integer not null default 1;
+alter table public.orders add column if not exists admin_comment text default '';
 
 -- 2) Hamosu Row Level Security (RLS) — importante atu proteje data cliente
 alter table public.orders enable row level security;
@@ -48,26 +57,38 @@ create policy "admin_can_update_orders"
   using (true)
   with check (true);
 
+-- De'it admin bele apaga pedidu (hamos dadus fiktivu)
+drop policy if exists "admin_can_delete_orders" on public.orders;
+create policy "admin_can_delete_orders"
+  on public.orders for delete
+  to authenticated
+  using (true);
+
 -- 3) Funsaun públiku ba "Cek Status" — klienti bele buka uza Order ID de'it,
 --    WhatsApp de'it, ka rua-rua (importante: pelumenus 1 filtru tenki fo)
 drop function if exists public.track_order(text, text);
+
+drop function if exists public.track_orders(text, text);
 
 create or replace function public.track_orders(p_order_id text default null, p_whatsapp text default null)
 returns table (
   id text,
   status text,
   pkg_uc integer,
+  pkg_unit_uc integer,
+  qty integer,
   pkg_price numeric,
   game_id text,
   ign text,
   payment_method text,
+  admin_comment text,
   created_at timestamptz
 )
 language sql
 security definer
 set search_path = public
 as $$
-  select o.id, o.status, o.pkg_uc, o.pkg_price, o.game_id, o.ign, o.payment_method, o.created_at
+  select o.id, o.status, o.pkg_uc, o.pkg_unit_uc, o.qty, o.pkg_price, o.game_id, o.ign, o.payment_method, o.admin_comment, o.created_at
   from public.orders o
   where (p_order_id is not null or p_whatsapp is not null)
     and (p_order_id is null or o.id = p_order_id)
@@ -97,3 +118,63 @@ create policy "public_can_read_proofs"
   on storage.objects for select
   to public
   using (bucket_id = 'proofs');
+
+-- De'it admin bele apaga imajen bukti (bainhira apaga pedidu fiktivu)
+drop policy if exists "admin_can_delete_proofs" on storage.objects;
+create policy "admin_can_delete_proofs"
+  on storage.objects for delete
+  to authenticated
+  using (bucket_id = 'proofs');
+
+-- =====================================================================
+-- 5) Push notifications — subscription husi device admin
+-- =====================================================================
+create table if not exists public.push_subscriptions (
+  endpoint text primary key,
+  p256dh text not null,
+  auth text not null,
+  created_at timestamptz not null default now()
+);
+
+alter table public.push_subscriptions enable row level security;
+
+-- De'it admin ne'ebe login bele kria/haree/apaga subscription (device sira)
+drop policy if exists "admin_can_manage_push_subs" on public.push_subscriptions;
+create policy "admin_can_manage_push_subs"
+  on public.push_subscriptions for all
+  to authenticated
+  using (true)
+  with check (true);
+
+-- =====================================================================
+-- 6) Trigger atu invoka Edge Function "notify-push" kada vez pedidu foun tama
+-- Nota: uza pg_net diretamente (la'os liu husi Dashboard > Database > Webhooks UI),
+-- tanba iha alguns projeto Supabase, UI ne'e iha erru "schema supabase_functions
+-- does not exist" (bug husi platform, la'os erru husi setup). Métodu iha ne'e
+-- kontorna problema ne'e.
+--
+-- IMPORTANTE: troka <PROJECT-REF> tuir project-ref ita boot nian
+-- (haree iha Project Settings > General).
+-- =====================================================================
+create extension if not exists pg_net with schema extensions;
+
+create or replace function public.trigger_notify_push()
+returns trigger
+language plpgsql
+as $$
+begin
+  perform net.http_post(
+    url := 'https://zreejzlomoroygsuogea.supabase.co/functions/v1/notify-push',
+    headers := '{"Content-Type": "application/json"}'::jsonb,
+    body := jsonb_build_object('type', 'INSERT', 'table', 'orders', 'record', row_to_json(NEW))
+  );
+  return NEW;
+end;
+$$;
+
+drop trigger if exists orders_notify_push on public.orders;
+create trigger orders_notify_push
+  after insert on public.orders
+  for each row
+  execute function public.trigger_notify_push();
+

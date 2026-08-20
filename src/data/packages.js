@@ -39,10 +39,10 @@ export const PAYMENT_METHODS = [
 ];
 
 export const STATUS_LABELS = {
-  menunggu_verifikasi: "Menunggu Verifikasi",
-  terverifikasi: "Terverifikasi",
-  terkirim: "UC Terkirim",
-  dibatalkan: "Dibatalkan",
+  menunggu_verifikasi: "Hein Verifikasaun",
+  terverifikasi: "Verifikadu",
+  terkirim: "UC Haruka Ona",
+  dibatalkan: "Kanseladu",
 };
 
 export const WHATSAPP_NUMBER = "76463746";

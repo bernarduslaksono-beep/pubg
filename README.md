@@ -123,3 +123,72 @@ Kodigu iha `src/pages/` (OrderPage, TrackPage, AdminPage), dadus pakote & metode
 pagamentu iha `src/data/packages.js`, koneksaun Supabase iha `src/supabase.js`, no
 schema database iha `supabase/schema.sql`. Troka presu pakote, numeru konta, ka
 adisiona funsionalidade foun liu husi edita file sira ne'e, hafoin `git push` fali.
+
+## Notifikasaun Push ba Admin (bainhira pedidu foun tama)
+
+Sistema uza **Web Push notification** — de'it admin sei simu alerta iha device ne'ebe
+ona "install" website ne'e, maski browser/app taka. La presiza layanan pihak-terceiru
+(WhatsApp Gateway) ka kustu buluanu.
+
+### Sesta 1 — Setup VAPID keys (dala ida de'it)
+
+VAPID key ona jerado ba ita boot:
+
+```
+VAPID_PUBLIC_KEY=BJewJywQ7Ak10DWvymnWvmMwityy85ezyFX1-M-KbAR391vXnN7-rPyhoRkwSHtPKqwyigTRVl7Uq9HvK1czQSA
+VAPID_PRIVATE_KEY=y8x2dss0eHalXbSYajUEkHJa8GF7X9OmYbKaurTBqcM
+```
+
+⚠️ **VAPID_PRIVATE_KEY tenki hela SEKRETU** (la bele hatama iha `.env` frontend ka
+commit ba GitHub) — de'it iha Supabase secrets (pasu 3 kraik). **VAPID_PUBLIC_KEY**
+seguru atu expose iha frontend.
+
+Kopia `VAPID_PUBLIC_KEY` ba `.env` ita boot nian:
+```
+VITE_VAPID_PUBLIC_KEY=BJewJywQ7Ak10DWvymnWvmMwityy85ezyFX1-M-KbAR391vXnN7-rPyhoRkwSHtPKqwyigTRVl7Uq9HvK1czQSA
+```
+
+*(Kalau hakarak jera key foun rasik: `npx web-push generate-vapid-keys`.)*
+
+### Sesta 2 — Install Supabase CLI (se seidauk iha)
+```bash
+npm install -g supabase
+supabase login
+```
+
+### Sesta 3 — Link projeto, hatama secrets, deploy Edge Function
+```bash
+cd uc-pubg-app
+supabase link --project-ref <project-ref-husi-supabase-dashboard>
+supabase secrets set VAPID_PUBLIC_KEY=BJewJywQ7Ak10DWvymnWvmMwityy85ezyFX1-M-KbAR391vXnN7-rPyhoRkwSHtPKqwyigTRVl7Uq9HvK1czQSA
+supabase secrets set VAPID_PRIVATE_KEY=y8x2dss0eHalXbSYajUEkHJa8GF7X9OmYbKaurTBqcM
+supabase functions deploy notify-push --no-verify-jwt
+```
+(`<project-ref>` hetan husi Supabase Dashboard → Project Settings → General. Nota:
+`SUPABASE_URL` no `SUPABASE_SERVICE_ROLE_KEY` fo automátikamente husi Supabase iha
+Edge Function, la presiza hatama manual.)
+
+### Sesta 4 — Kria Database Webhook
+Iha Supabase Dashboard → **Database → Webhooks → Create a new hook**:
+- Table: `orders`
+- Events: `Insert`
+- Type: `Supabase Edge Functions`
+- Edge Function: hili `notify-push`
+
+### Sesta 5 — Deploy website (Vercel) ho env var foun
+Hatama `VITE_VAPID_PUBLIC_KEY` iha Vercel → Project Settings → Environment Variables
+(hanesan `VITE_SUPABASE_URL` no `VITE_SUPABASE_ANON_KEY`), hafoin redeploy.
+
+### Sesta 6 — Ativa iha device admin
+1. Loke link admin (`/painel-admin-x29k7`) iha telemovel ka desktop.
+2. Login.
+3. Iha dashboard, sei iha card "Ativa notifikasaun pedidu foun" — klik **Install App**
+   (se aparese) hodi hatama app ba ecrã inísiu, hafoin klik **Ativa Notifikasaun** →
+   aprova permission browser.
+4. Prontu. Bainhira pedidu foun tama, notifikasaun sei aparese automátikamente —
+   maski app taka ka telemovel screen-off (contanto internet ativu).
+
+**Importante**: ativa notifikasaun ne'e iha KADA device admin ne'ebe hakarak simu
+alerta (cth. telemovel + laptop = ativa iha rua-rua). Sistema suporta mültiplu device
+ho'o de'it — hotu-hotu sei simu notifikasaun bainhira pedidu foun tama.
+

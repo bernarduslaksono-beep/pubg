@@ -39,6 +39,10 @@ export default function OrderPage() {
   const [lastOrderId, setLastOrderId] = useState(null)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [openTiers, setOpenTiers] = useState(() =>
+    Object.fromEntries(PACKAGES.map((g) => [g.tier, true]))
+  )
+  const toggleTier = (tier) => setOpenTiers((o) => ({ ...o, [tier]: !o[tier] }))
 
   const handleField = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }))
   const handleGameIdField = (e) => {
@@ -99,6 +103,8 @@ export default function OrderPage() {
         note: form.note.trim(),
         payment_method: selectedPayment.name,
         pkg_uc: selectedPkg.uc * qty,
+        pkg_unit_uc: selectedPkg.uc,
+        qty: qty,
         pkg_price: subtotal,
         proof_url: proofUrl,
         status: 'menunggu_verifikasi',
@@ -122,11 +128,21 @@ export default function OrderPage() {
     <>
       <div className="hero">
         <h1>Top up UC PUBG</h1>
-        <p>
-          Hili paket UC, halo transferensia, upload bukti transferensia, kria pedidu — ami sei
-          verifika no haruka UC ba game ID ita boot (Prosesu 15 menit).
-        </p>
-        <div className="contact">WhatsApp konfirmasaun: <b>{WHATSAPP_NUMBER}</b></div>
+        <div className="hero-steps">
+          <div className="hero-step"><span className="num">1</span> Hili pakote UC</div>
+          <div className="hero-step"><span className="num">2</span> Halo transferénsia</div>
+          <div className="hero-step"><span className="num">3</span> Upload prova transferénsia</div>
+          <div className="hero-step"><span className="num">4</span> Kria pedidu</div>
+        </div>
+        <p>Ami sei verifika no haruka UC ba game ID ita boot nian (Prosesu ±15 menit).</p>
+        <a
+          className="whatsapp-badge"
+          href={`https://wa.me/670${WHATSAPP_NUMBER}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          💬 WhatsApp Konfirmasaun: <b>{WHATSAPP_NUMBER}</b>
+        </a>
       </div>
 
       <div className="step-indicator">
@@ -150,23 +166,28 @@ export default function OrderPage() {
 
             {PACKAGES.map((group) => (
               <div className="tier-block" key={group.tier}>
-                <div className="tier-head">
+                <div className="tier-head tier-head-toggle" onClick={() => toggleTier(group.tier)}>
                   <h3>{group.tier}</h3>
                   <span className="count">{group.items.length} pakote</span>
+                  <span className={`tier-chevron${openTiers[group.tier] ? ' open' : ''}`}>▾</span>
                 </div>
-                <div className="pkg-grid">
-                  {group.items.map((item) => (
-                    <div
-                      key={item.uc}
-                      className={`pkg-card${selectedPkg?.uc === item.uc ? ' selected' : ''}`}
-                      onClick={() => setSelectedPkg(item)}
-                    >
-                      <div className="pkg-icon"><CoinIcon /></div>
-                      <div className="uc">{item.uc.toLocaleString()} UC</div>
-                      <div className="price">${item.price.toFixed(2)}</div>
-                    </div>
-                  ))}
-                </div>
+                {openTiers[group.tier] && (
+                  <div className="pkg-grid">
+                    {group.items.map((item) => (
+                      <div
+                        key={item.uc}
+                        className={`pkg-card${selectedPkg?.uc === item.uc ? ' selected' : ''}`}
+                        onClick={() => setSelectedPkg(item)}
+                      >
+                        <div className="pkg-card-top">
+                          <CoinIcon size={28} />
+                          <div className="pkg-uc-big">{item.uc.toLocaleString()}<span className="pkg-uc-label">UC</span></div>
+                        </div>
+                        <div className="price">${item.price.toFixed(2)}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -176,7 +197,7 @@ export default function OrderPage() {
               <div className="avatar"><CoinIcon size={20} /></div>
               <div>
                 <div className="name">UC-PUBG Timor Leste</div>
-                <div className="sub">Prosesu haruka: 15 menit</div>
+                <div className="sub">Prosesu haruka: ±15 menit</div>
               </div>
             </div>
 
@@ -195,16 +216,16 @@ export default function OrderPage() {
                 </div>
               </div>
             ) : (
-              <div className="selected-pkg empty">Hili pakote UC iha karik</div>
+              <div className="selected-pkg empty">Hili pakote UC</div>
             )}
 
             <div className="field">
               <label htmlFor="f-gameid">User ID</label>
-              <input id="f-gameid" value={form.gameId} onChange={handleGameIdField} inputMode="numeric" pattern="[0-9]*" placeholder="Contoh: 1234567891234567" />
+              <input id="f-gameid" value={form.gameId} onChange={handleGameIdField} inputMode="numeric" pattern="[0-9]*" placeholder="Ejemplu: 1234567891234567" />
             </div>
             <div className="field">
               <label htmlFor="f-ign">Nickname PUBG Mobile</label>
-              <input id="f-ign" value={form.ign} onChange={handleField('ign')} placeholder="Contoh: ucpubgtl2026" />
+              <input id="f-ign" value={form.ign} onChange={handleField('ign')} placeholder="Ejemplu: ucpubgtl2026" />
             </div>
 
             {selectedPkg && (
@@ -236,13 +257,22 @@ export default function OrderPage() {
               </div>
             )}
 
+            {selectedPkg && (
+              <div className="uc-breakdown">
+                <div className="uc-breakdown-row">
+                  <span>{selectedPkg.uc.toLocaleString()} UC × {qty}</span>
+                </div>
+                <div className="uc-breakdown-row total">
+                  <span>Total UC</span>
+                  <span>{(selectedPkg.uc * qty).toLocaleString()} UC</span>
+                </div>
+              </div>
+            )}
+
             <div className="subtotal-row">
               <div>
                 <div className="lbl">Subtotal</div>
                 <div className="val">${subtotal.toFixed(2)}</div>
-              </div>
-              <div style={{ fontSize: 12.5, color: 'var(--muted)' }}>
-                {selectedPkg ? `${(selectedPkg.uc * qty).toLocaleString()} UC × ${qty}` : '-'}
               </div>
             </div>
 
@@ -285,15 +315,15 @@ export default function OrderPage() {
               </div>
             </div>
 
-            <h3 style={{ marginTop: 22 }}>Bukti Transferénsia</h3>
+            <h3 style={{ marginTop: 22 }}>Upload Prova Transferénsia</h3>
             <div className="field-hint" style={{ marginBottom: 10 }}>
-              Transfere osan ba konta ami, depois upload screenshot bukti transfer iha ne'e.
+              Transfere osan ba ami nia konta, depois upload prova transferénsia iha ne'e.
             </div>
             <label className={`upload-box${proofPreview ? ' has-file' : ''}`}>
               <input type="file" accept="image/*" onChange={handleFile} />
               {proofPreview ? (
                 <div className="upload-preview-row">
-                  <img src={proofPreview} alt="bukti transfer" />
+                  <img src={proofPreview} alt="prova transferénsia" />
                   <div className="upload-preview-meta">
                     <div className="upload-filename">{proofFile?.name}</div>
                     <div className="upload-file-ok">✓ Imajen ona hili</div>
@@ -303,7 +333,7 @@ export default function OrderPage() {
               ) : (
                 <div>
                   <div className="upload-icon-circle">⬆</div>
-                  <div className="upload-text-main">Upload bukti transfer</div>
+                  <div className="upload-text-main">Upload prova transferénsia</div>
                   <div className="upload-text-sub">PNG ka JPG, até 5MB</div>
                   <span className="upload-btn-fake">Hili Imajen</span>
                 </div>
@@ -312,19 +342,23 @@ export default function OrderPage() {
           </div>
 
           <div className="panel-card">
-            <h3>Order Information</h3>
+            <h3>Informasaun Pedido</h3>
             <div className="order-info-card">
               <div className="order-info-head">
                 <CoinIcon size={40} />
                 <div className="meta">
-                  <div className="uc-line">{(selectedPkg.uc * qty).toLocaleString()} UC × {qty}</div>
+                  <div className="uc-line">{selectedPkg.uc.toLocaleString()} UC × {qty}</div>
                   <div className="sub-line">User ID: {form.gameId} · {form.ign}<button className="edit-link" onClick={() => setStep(1)}>Edit</button></div>
                 </div>
                 <div className="price-col">${subtotal.toFixed(2)}</div>
               </div>
+              <div className="order-info-total-row">
+                <span>Total UC</span>
+                <span>{(selectedPkg.uc * qty).toLocaleString()} UC</span>
+              </div>
             </div>
 
-            <h3 style={{ marginTop: 22 }}>Payment Details</h3>
+            <h3 style={{ marginTop: 22 }}>Detalhus Pagamentu</h3>
             <div className="summary-row">
               <span className="k">Metode Pagamentu</span>
               <span>{selectedPayment ? selectedPayment.name : '-'}</span>

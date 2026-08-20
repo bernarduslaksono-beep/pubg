@@ -70,13 +70,25 @@ export default function TrackPage() {
               <span className="dot"></span>{STATUS_LABELS[order.status]}
             </div>
             <div style={{ marginTop: 16 }}>
-              <div className="result-row"><span className="k">Pakote UC</span><span className="v">{order.pkg_uc.toLocaleString()} UC</span></div>
+              <div className="result-row">
+                <span className="k">Pakote UC</span>
+                <span className="v">
+                  {order.pkg_unit_uc ? `${order.pkg_unit_uc.toLocaleString()} UC × ${order.qty}` : `${order.pkg_uc.toLocaleString()} UC`}
+                </span>
+              </div>
+              <div className="result-row"><span className="k">Total UC</span><span className="v">{order.pkg_uc.toLocaleString()} UC</span></div>
               <div className="result-row"><span className="k">Osan</span><span className="v">${Number(order.pkg_price).toFixed(2)}</span></div>
               <div className="result-row"><span className="k">Game ID</span><span className="v">{order.game_id}</span></div>
               <div className="result-row"><span className="k">Naran PUBG</span><span className="v">{order.ign || '-'}</span></div>
               <div className="result-row"><span className="k">Metode Pagamentu</span><span className="v">{order.payment_method || '-'}</span></div>
               <div className="result-row"><span className="k">Data</span><span className="v">{formatDate(order.created_at)}</span></div>
             </div>
+            {order.status === 'dibatalkan' && order.admin_comment && (
+              <div className="admin-comment-box">
+                <div className="admin-comment-label">Nota husi seller</div>
+                <div className="admin-comment-text">{order.admin_comment}</div>
+              </div>
+            )}
           </div>
         ))}
       </div>

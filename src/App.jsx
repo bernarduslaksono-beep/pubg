@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Routes, Route, Link, useLocation } from 'react-router-dom'
 import OrderPage from './pages/OrderPage.jsx'
 import TrackPage from './pages/TrackPage.jsx'
@@ -31,6 +32,23 @@ function TopBar({ isAdminRoute }) {
 export default function App() {
   const location = useLocation()
   const isAdminRoute = location.pathname === ADMIN_PATH
+
+  // Troka manifest PWA (no titulu) tuir pajina ne'ebe ita boot iha —
+  // atu install ba HP husi pajina admin loke direta ba admin, la'os ba pajina cliente.
+  useEffect(() => {
+    const manifestLink = document.querySelector('link[rel="manifest"]')
+    const appleTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]')
+
+    if (isAdminRoute) {
+      if (manifestLink) manifestLink.setAttribute('href', '/manifest-admin.webmanifest')
+      if (appleTitle) appleTitle.setAttribute('content', 'UC-PUBG Admin')
+      document.title = 'UC-PUBG Admin'
+    } else {
+      if (manifestLink) manifestLink.setAttribute('href', '/manifest.webmanifest')
+      if (appleTitle) appleTitle.setAttribute('content', 'UC-PUBG TL')
+      document.title = 'UC-PUBG Timor Leste'
+    }
+  }, [isAdminRoute])
 
   return (
     <>

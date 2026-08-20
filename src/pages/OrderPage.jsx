@@ -37,8 +37,14 @@ export default function OrderPage() {
   const [submitting, setSubmitting] = useState(false)
   const [msg, setMsg] = useState(null)
   const [lastOrderId, setLastOrderId] = useState(null)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   const handleField = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }))
+  const handleGameIdField = (e) => {
+    const digitsOnly = e.target.value.replace(/\D/g, '')
+    setForm((f) => ({ ...f, gameId: digitsOnly }))
+  }
 
   const subtotal = useMemo(() => (selectedPkg ? selectedPkg.price * qty : 0), [selectedPkg, qty])
 
@@ -101,6 +107,8 @@ export default function OrderPage() {
 
       setLastOrderId(orderId)
       setMsg({ type: 'success' })
+      setShowSuccessModal(true)
+      setCopied(false)
       resetAll()
     } catch (err) {
       console.error(err)
@@ -128,117 +136,133 @@ export default function OrderPage() {
       </div>
 
       {step === 1 && (
-        <>
-          {PACKAGES.map((group) => (
-            <div className="tier-block" key={group.tier}>
-              <div className="tier-head">
-                <h3>{group.tier}</h3>
-                <span className="count">{group.items.length} pakote</span>
-              </div>
-              <div className="pkg-grid">
-                {group.items.map((item) => (
-                  <div
-                    key={item.uc}
-                    className={`pkg-card${selectedPkg?.uc === item.uc ? ' selected' : ''}`}
-                    onClick={() => setSelectedPkg(item)}
-                  >
-                    <div className="pkg-icon"><CoinIcon /></div>
-                    <div className="uc">{item.uc.toLocaleString()} UC</div>
-                    <div className="price">${item.price.toFixed(2)}</div>
-                  </div>
-                ))}
+        <div className="split-layout">
+          <div className="panel-card">
+            <div className="shop-header">
+              <div className="badge-icon">UC</div>
+              <div>
+                <h1>Top Up UC PUBG</h1>
+                <div className="avail"><i>✓</i> Disponivel ba Timor-Leste</div>
               </div>
             </div>
-          ))}
 
-          <div className="order-panel">
-            <div>
-              <h3>Detalha Pedidu</h3>
-              {selectedPkg ? (
-                <div className="selected-pkg">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <CoinIcon size={28} />
-                    <div>
-                      <div className="label">Pakote hili</div>
-                      <div className="val">{selectedPkg.uc.toLocaleString()} UC</div>
+            <div className="select-product-label">Hili Produtu</div>
+
+            {PACKAGES.map((group) => (
+              <div className="tier-block" key={group.tier}>
+                <div className="tier-head">
+                  <h3>{group.tier}</h3>
+                  <span className="count">{group.items.length} pakote</span>
+                </div>
+                <div className="pkg-grid">
+                  {group.items.map((item) => (
+                    <div
+                      key={item.uc}
+                      className={`pkg-card${selectedPkg?.uc === item.uc ? ' selected' : ''}`}
+                      onClick={() => setSelectedPkg(item)}
+                    >
+                      <div className="pkg-icon"><CoinIcon /></div>
+                      <div className="uc">{item.uc.toLocaleString()} UC</div>
+                      <div className="price">${item.price.toFixed(2)}</div>
                     </div>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div className="label">Osan / unidade</div>
-                    <div className="val">${selectedPkg.price.toFixed(2)}</div>
-                  </div>
+                  ))}
                 </div>
-              ) : (
-                <div className="selected-pkg empty">Hili pakote UC iha leten lai</div>
-              )}
+              </div>
+            ))}
+          </div>
 
-              {selectedPkg && (
-                <div className="field">
-                  <label>Kuantidade</label>
-                  <div className="qty-stepper">
-                    <button type="button" onClick={() => setQty((q) => Math.max(1, q - 1))} disabled={qty <= 1}>−</button>
-                    <span className="qty-val">{qty}</span>
-                    <button type="button" onClick={() => setQty((q) => Math.min(99, q + 1))}>+</button>
-                  </div>
-                </div>
-              )}
-
-              <div className="field">
-                <label htmlFor="f-name">Naran completu</label>
-                <input id="f-name" value={form.name} onChange={handleField('name')} placeholder="Naran ita boot" />
+          <div className="panel-card sticky-checkout">
+            <div className="checkout-header">
+              <div className="avatar"><CoinIcon size={20} /></div>
+              <div>
+                <div className="name">UC-PUBG Timor Leste</div>
+                <div className="sub">Prosesu haruka: 15 menit</div>
               </div>
-              <div className="field">
-                <label htmlFor="f-wa">Numeru WhatsApp</label>
-                <input id="f-wa" value={form.wa} onChange={handleField('wa')} placeholder="7XXXXXXX" />
-              </div>
-              <div className="field">
-                <label htmlFor="f-gameid">User ID</label>
-                <input id="f-gameid" value={form.gameId} onChange={handleField('gameId')} placeholder="Character ID iha jogu laran" />
-              </div>
-              <div className="field">
-                <label htmlFor="f-ign">Nickname PUBG Mobile</label>
-                <input id="f-ign" value={form.ign} onChange={handleField('ign')} placeholder="Naran karakter iha jogu laran" />
-              </div>
-
-              {!showNote ? (
-                <button className="note-toggle" onClick={() => setShowNote(true)}>+ Hatama nota ba seller</button>
-              ) : (
-                <div className="field">
-                  <label htmlFor="f-note">Nota ba seller</label>
-                  <textarea id="f-note" rows={2} value={form.note} onChange={handleField('note')} placeholder="Informasaun adisional" />
-                </div>
-              )}
             </div>
 
-            <div>
-              <h3>Subtotal</h3>
-              <div className="summary-row total" style={{ borderTop: 'none', paddingTop: 0 }}>
-                <span className="k">{selectedPkg ? `${(selectedPkg.uc * qty).toLocaleString()} UC × ${qty}` : '-'}</span>
-                <span className="v">${subtotal.toFixed(2)}</span>
+            {selectedPkg ? (
+              <div className="selected-pkg">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <CoinIcon size={28} />
+                  <div>
+                    <div className="label">Pakote hili</div>
+                    <div className="val">{selectedPkg.uc.toLocaleString()} UC</div>
+                  </div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div className="label">Osan / unidade</div>
+                  <div className="val">${selectedPkg.price.toFixed(2)}</div>
+                </div>
               </div>
+            ) : (
+              <div className="selected-pkg empty">Hili pakote UC iha karik</div>
+            )}
 
+            <div className="field">
+              <label htmlFor="f-gameid">User ID</label>
+              <input id="f-gameid" value={form.gameId} onChange={handleGameIdField} inputMode="numeric" pattern="[0-9]*" placeholder="Contoh: 1234567891234567" />
+            </div>
+            <div className="field">
+              <label htmlFor="f-ign">Nickname PUBG Mobile</label>
+              <input id="f-ign" value={form.ign} onChange={handleField('ign')} placeholder="Contoh: ucpubgtl2026" />
+            </div>
+
+            {selectedPkg && (
+              <div className="field" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <label style={{ margin: 0 }}>Kuantidade</label>
+                <div className="qty-stepper">
+                  <button type="button" onClick={() => setQty((q) => Math.max(1, q - 1))} disabled={qty <= 1}>−</button>
+                  <span className="qty-val">{qty}</span>
+                  <button type="button" onClick={() => setQty((q) => Math.min(99, q + 1))}>+</button>
+                </div>
+              </div>
+            )}
+
+            <div className="field">
+              <label htmlFor="f-name">Naran completu</label>
+              <input id="f-name" value={form.name} onChange={handleField('name')} placeholder="Naran ita boot" />
+            </div>
+            <div className="field">
+              <label htmlFor="f-wa">Numeru WhatsApp</label>
+              <input id="f-wa" value={form.wa} onChange={handleField('wa')} placeholder="7XXXXXXX" />
+            </div>
+
+            {!showNote ? (
+              <button className="note-toggle" onClick={() => setShowNote(true)}>+ Hatama nota ba seller</button>
+            ) : (
+              <div className="field">
+                <label htmlFor="f-note">Nota ba seller</label>
+                <textarea id="f-note" rows={2} value={form.note} onChange={handleField('note')} placeholder="Informasaun adisional" />
+              </div>
+            )}
+
+            <div className="subtotal-row">
+              <div>
+                <div className="lbl">Subtotal</div>
+                <div className="val">${subtotal.toFixed(2)}</div>
+              </div>
+              <div style={{ fontSize: 12.5, color: 'var(--muted)' }}>
+                {selectedPkg ? `${(selectedPkg.uc * qty).toLocaleString()} UC × ${qty}` : '-'}
+              </div>
+            </div>
+
+            <div className="buy-row">
+              <div className="cart-btn">🛒</div>
               <button
                 className="btn btn-primary"
-                style={{ marginTop: 18 }}
                 disabled={!step1Valid}
                 onClick={() => setStep(2)}
               >
                 Sosa
               </button>
-              {msg?.type === 'success' && (
-                <div className="msg success show">
-                  Pedidu submete ho susesu! Order ID ita boot: <b className="mono">{lastOrderId}</b>. Guarda
-                  ID ne'e atu cek status. Konfirma liu husi WhatsApp <b>{WHATSAPP_NUMBER}</b>.
-                </div>
-              )}
             </div>
           </div>
-        </>
+        </div>
       )}
 
       {step === 2 && selectedPkg && (
-        <div className="order-panel">
-          <div>
+        <div className="split-layout">
+          <div className="panel-card">
             <h3>Metode Pagamentu</h3>
             <div className="field">
               <div className="pay-grid">
@@ -268,17 +292,26 @@ export default function OrderPage() {
             <label className={`upload-box${proofPreview ? ' has-file' : ''}`}>
               <input type="file" accept="image/*" onChange={handleFile} />
               {proofPreview ? (
-                <img src={proofPreview} alt="bukti transfer" />
+                <div className="upload-preview-row">
+                  <img src={proofPreview} alt="bukti transfer" />
+                  <div className="upload-preview-meta">
+                    <div className="upload-filename">{proofFile?.name}</div>
+                    <div className="upload-file-ok">✓ Imajen ona hili</div>
+                    <span className="upload-change-btn">Troka imajen</span>
+                  </div>
+                </div>
               ) : (
                 <div>
-                  <div className="icon">⬆</div>
-                  <div className="txt">Klik ka drag imajen bukti transfer</div>
+                  <div className="upload-icon-circle">⬆</div>
+                  <div className="upload-text-main">Upload bukti transfer</div>
+                  <div className="upload-text-sub">PNG ka JPG, até 5MB</div>
+                  <span className="upload-btn-fake">Hili Imajen</span>
                 </div>
               )}
             </label>
           </div>
 
-          <div>
+          <div className="panel-card">
             <h3>Order Information</h3>
             <div className="order-info-card">
               <div className="order-info-head">
@@ -318,6 +351,31 @@ export default function OrderPage() {
           </div>
         </div>
       )}
+
+      <div className={`modal-overlay${showSuccessModal ? ' show' : ''}`} onClick={(e) => e.target.classList.contains('modal-overlay') && setShowSuccessModal(false)}>
+        <div className="modal success-modal">
+          <div className="icon-circle">✓</div>
+          <h3>Pedidu Submete!</h3>
+          <p>
+            Ami sei verifika pagamentu no haruka UC ba game ID ita boot. Guarda Order ID ne'e atu
+            cek status, no konfirma liu husi WhatsApp <b>{WHATSAPP_NUMBER}</b>.
+          </p>
+          <div className="oid-copy-row">
+            <span className="oid-text mono">{lastOrderId}</span>
+            <button
+              className={`copy-btn${copied ? ' copied' : ''}`}
+              onClick={() => {
+                navigator.clipboard.writeText(lastOrderId || '')
+                setCopied(true)
+                setTimeout(() => setCopied(false), 2000)
+              }}
+            >
+              {copied ? '✓ Tersalin' : '⧉ Copy'}
+            </button>
+          </div>
+          <button className="btn btn-primary" onClick={() => setShowSuccessModal(false)}>Diak</button>
+        </div>
+      </div>
     </>
   )
 }

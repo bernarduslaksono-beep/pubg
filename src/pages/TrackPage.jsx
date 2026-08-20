@@ -6,30 +6,32 @@ export default function TrackPage() {
   const [oid, setOid] = useState('')
   const [wa, setWa] = useState('')
   const [msg, setMsg] = useState(null)
-  const [order, setOrder] = useState(null)
+  const [orders, setOrders] = useState(null)
   const [loading, setLoading] = useState(false)
 
   const handleTrack = async () => {
-    setOrder(null)
+    setOrders(null)
     setMsg(null)
     const trimmedOid = oid.trim().toUpperCase()
     const trimmedWa = wa.trim()
-    if (!trimmedOid || !trimmedWa) {
-      setMsg('Favor hatama Order ID no numeru WhatsApp.')
+
+    if (!trimmedOid && !trimmedWa) {
+      setMsg('Favor hatama Order ID ka numeru WhatsApp (ida ka rua-rua).')
       return
     }
+
     setLoading(true)
     try {
-      const { data, error } = await supabase.rpc('track_order', {
-        p_order_id: trimmedOid,
-        p_whatsapp: trimmedWa,
+      const { data, error } = await supabase.rpc('track_orders', {
+        p_order_id: trimmedOid || null,
+        p_whatsapp: trimmedWa || null,
       })
       if (error) throw error
       if (!data || data.length === 0) {
-        setMsg('Pedidu la hetan. Verifika Order ID no numeru WhatsApp.')
+        setMsg('Pedidu la hetan. Verifika Order ID ka numeru WhatsApp.')
         return
       }
-      setOrder(data[0])
+      setOrders(data)
     } catch (err) {
       console.error(err)
       setMsg('Falha atu buka pedidu. Favor tenta fila fali.')
@@ -45,15 +47,15 @@ export default function TrackPage() {
       <div className="hero">
         <div className="eyebrow"><span className="dot"></span> Status Pedidu</div>
         <h1>Cek progress<br /><span>UC ita boot nian.</span></h1>
-        <p>Fo hatama Order ID no numeru WhatsApp ne'ebe uza bainhira submete pedidu.</p>
+        <p>Hatama Order ID, numeru WhatsApp, ka rua-rua atu buka pedidu ita boot. Uza rua-rua atu buka espesifiku liu.</p>
       </div>
       <div className="track-box">
         <div className="field">
-          <label htmlFor="t-oid">Order ID</label>
+          <label htmlFor="t-oid">Order ID <span style={{ color: 'var(--muted)', fontWeight: 400 }}>(opsional)</span></label>
           <input id="t-oid" className="mono" value={oid} onChange={(e) => setOid(e.target.value)} placeholder="cth. OA-M2K3X9" />
         </div>
         <div className="field">
-          <label htmlFor="t-wa">Numeru WhatsApp</label>
+          <label htmlFor="t-wa">Numeru WhatsApp <span style={{ color: 'var(--muted)', fontWeight: 400 }}>(opsional)</span></label>
           <input id="t-wa" value={wa} onChange={(e) => setWa(e.target.value)} placeholder="7XXXXXXX" />
         </div>
         <button className="btn btn-primary" onClick={handleTrack} disabled={loading}>
@@ -61,8 +63,8 @@ export default function TrackPage() {
         </button>
         {msg && <div className="msg error show">{msg}</div>}
 
-        {order && (
-          <div className="order-result">
+        {orders && orders.map((order) => (
+          <div className="order-result" key={order.id}>
             <div className="oid">{order.id}</div>
             <div className={`status-badge status-${order.status}`}>
               <span className="dot"></span>{STATUS_LABELS[order.status]}
@@ -76,7 +78,7 @@ export default function TrackPage() {
               <div className="result-row"><span className="k">Data</span><span className="v">{formatDate(order.created_at)}</span></div>
             </div>
           </div>
-        )}
+        ))}
       </div>
     </>
   )

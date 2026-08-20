@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { supabase } from '../supabase.js'
 import { PACKAGES, PAYMENT_METHODS, PAYMENT_METHOD_STORAGE_LABEL, WHATSAPP_NUMBER } from '../data/packages.js'
 import { useLanguage } from '../i18n/LanguageContext.jsx'
@@ -46,6 +46,12 @@ export default function OrderPage() {
   )
   const toggleTier = (tierKey) => setOpenTiers((o) => ({ ...o, [tierKey]: !o[tierKey] }))
 
+  // Alfa navigasaun (1=Hili Pakote, 2=Halo Transferénsia, 3=Upload Prova, 4=Kria Pedidu)
+  // — de'it aumenta, la volta ba kotuk bainhira cliente halo Edit.
+  const [flowStage, setFlowStage] = useState(1)
+  const userIdRef = useRef(null)
+  const paymentSectionRef = useRef(null)
+
   const handleField = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }))
   const handleGameIdField = (e) => {
     const digitsOnly = e.target.value.replace(/\D/g, '')
@@ -63,10 +69,28 @@ export default function OrderPage() {
     const file = e.target.files[0]
     if (!file) return
     setProofFile(file)
+    setFlowStage((s) => Math.max(s, 4))
     const reader = new FileReader()
     reader.onload = () => setProofPreview(reader.result)
     reader.readAsDataURL(file)
   }
+
+  // Set-focus: bainhira cliente hili denom UC no kolona User ID sei mamuk,
+  // foka automátikamente ba kolona User ID.
+  useEffect(() => {
+    if (selectedPkg && !form.gameId && userIdRef.current) {
+      userIdRef.current.focus()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedPkg])
+
+  // Set-focus: bainhira tama ba pasu 2 (hafoin click Sosa), foka ba metode pagamentu.
+  useEffect(() => {
+    if (step === 2 && paymentSectionRef.current) {
+      paymentSectionRef.current.focus({ preventScroll: false })
+      paymentSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [step])
 
   const resetAll = () => {
     setStep(1)
@@ -77,6 +101,7 @@ export default function OrderPage() {
     setProofFile(null)
     setProofPreview(null)
     setForm({ name: '', wa: '', gameId: '', ign: '', note: '' })
+    setFlowStage(1)
   }
 
   const handleSubmit = async () => {
@@ -144,11 +169,18 @@ export default function OrderPage() {
     <>
       <div className="hero">
         <h1>{t('hero_title')}</h1>
-        <div className="hero-steps">
-          <div className="hero-step"><span className="num">1</span> {t('step1')}</div>
-          <div className="hero-step"><span className="num">2</span> {t('step2')}</div>
-          <div className="hero-step"><span className="num">3</span> {t('step3')}</div>
-          <div className="hero-step"><span className="num">4</span> {t('step4')}</div>
+        <div className="flow-track">
+          <span className="flow-flag" aria-hidden="true">🚩</span>
+          <span className="flow-line"></span>
+          <span className={`flow-step${flowStage === 1 ? ' active' : ''}`}>{t('step1')}</span>
+          <span className="flow-line"></span>
+          <span className={`flow-step${flowStage === 2 ? ' active' : ''}`}>{t('step2')}</span>
+          <span className="flow-line"></span>
+          <span className={`flow-step${flowStage === 3 ? ' active' : ''}`}>{t('step3')}</span>
+          <span className="flow-line"></span>
+          <span className={`flow-step${flowStage === 4 ? ' active' : ''}`}>{t('step4')}</span>
+          <span className="flow-line"></span>
+          <span className="flow-flag" aria-hidden="true">🏁</span>
         </div>
         <p>{t('hero_desc')}</p>
         <a
@@ -237,7 +269,7 @@ export default function OrderPage() {
 
             <div className="field">
               <label htmlFor="f-gameid">{t('user_id_label')}</label>
-              <input id="f-gameid" value={form.gameId} onChange={handleGameIdField} inputMode="numeric" pattern="[0-9]*" placeholder={t('user_id_placeholder')} />
+              <input id="f-gameid" ref={userIdRef} value={form.gameId} onChange={handleGameIdField} inputMode="numeric" pattern="[0-9]*" placeholder={t('user_id_placeholder')} />
             </div>
             <div className="field">
               <label htmlFor="f-ign">{t('nickname_label')}</label>
@@ -297,7 +329,10 @@ export default function OrderPage() {
               <button
                 className="btn btn-primary"
                 disabled={!step1Valid}
-                onClick={() => setStep(2)}
+                onClick={() => {
+                  setStep(2)
+                  setFlowStage((s) => Math.max(s, 2))
+                }}
               >
                 {t('buy_btn')}
               </button>
@@ -309,14 +344,17 @@ export default function OrderPage() {
       {step === 2 && selectedPkg && (
         <div className="split-layout">
           <div className="panel-card">
-            <h3>{t('payment_method_title')}</h3>
+            <h3 ref={paymentSectionRef} tabIndex={-1} style={{ outline: 'none' }}>{t('payment_method_title')}</h3>
             <div className="field">
               <div className="pay-grid">
                 {PAYMENT_METHODS.map((pm) => (
                   <div
                     key={pm.id}
                     className={`pay-card${selectedPayment?.id === pm.id ? ' selected' : ''}`}
-                    onClick={() => setSelectedPayment(pm)}
+                    onClick={() => {
+                      setSelectedPayment(pm)
+                      setFlowStage((s) => Math.max(s, 3))
+                    }}
                   >
                     <div className="pay-card-head">
                       <span className="pay-radio"></span>

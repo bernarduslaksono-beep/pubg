@@ -415,6 +415,20 @@ main{max-width:1100px; margin:0 auto; padding:36px 24px 80px;}
 .order-table td{padding:12px; border-bottom:1px solid var(--border); vertical-align:middle;}
 .order-table tr:hover td{background:var(--surface-2);}
 .order-table .oid-cell{font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted);}
+
+/* Order foun/la loke ona — hanesan "unread message" */
+.order-table tr.unread-row td{background:var(--gold-dim); font-weight:700; color:var(--text);}
+.order-table tr.unread-row:hover td{background:var(--gold-dim); filter:brightness(0.97);}
+.order-table tr.unread-row .oid-cell{color:var(--text); font-weight:700;}
+.unread-dot{
+  display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--red);
+  margin-right:6px; vertical-align:middle; box-shadow:0 0 0 3px var(--red-dim);
+  animation:unread-pulse 1.8s ease-in-out infinite;
+}
+@keyframes unread-pulse{
+  0%, 100%{ opacity:1; }
+  50%{ opacity:0.5; }
+}
 select.status-select{
   background:var(--surface-2); border:1px solid var(--border); color:var(--text); font-size:12.5px;
   padding:6px 8px; border-radius:6px; font-family:'Inter',sans-serif;

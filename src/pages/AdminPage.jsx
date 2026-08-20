@@ -166,12 +166,42 @@ function OrderDetailModal({ order, onClose, onStatusSaved, onDeleted }) {
   )
 }
 
+const SEEN_ORDERS_KEY = 'admin_seen_order_ids'
+function loadSeenIds() {
+  try {
+    const raw = localStorage.getItem(SEEN_ORDERS_KEY)
+    return raw ? new Set(JSON.parse(raw)) : new Set()
+  } catch {
+    return new Set()
+  }
+}
+function persistSeenIds(set) {
+  try {
+    // Guarda de'it 300 ida ikus, atu la aumenta infinitu
+    const arr = Array.from(set).slice(-300)
+    localStorage.setItem(SEEN_ORDERS_KEY, JSON.stringify(arr))
+  } catch {
+    /* ignora se localStorage la disponivel */
+  }
+}
+
 function Dashboard() {
   const [orders, setOrders] = useState([])
   const [filter, setFilter] = useState('all')
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState(null)
   const [toastOrder, setToastOrder] = useState(null)
+  const [seenIds, setSeenIds] = useState(loadSeenIds)
+
+  const markSeen = (orderId) => {
+    setSeenIds((prev) => {
+      if (prev.has(orderId)) return prev
+      const next = new Set(prev)
+      next.add(orderId)
+      persistSeenIds(next)
+      return next
+    })
+  }
 
   const loadOrders = async () => {
     const { data, error } = await supabase
@@ -295,28 +325,39 @@ function Dashboard() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((o) => (
-                <tr key={o.id} onClick={() => setSelected(o)} style={{ cursor: 'pointer' }}>
-                  <td className="oid-cell">{o.id}</td>
-                  <td>
-                    {o.customer_name}
-                    <br />
-                    <span style={{ color: 'var(--muted)', fontSize: 11.5 }}>
-                      {o.whatsapp} · {o.game_id}{o.ign ? ` · ${o.ign}` : ''}
-                    </span>
-                  </td>
-                  <td>{o.pkg_uc.toLocaleString()} UC</td>
-                  <td>${Number(o.pkg_price).toFixed(2)}</td>
-                  <td style={{ fontSize: 12, color: 'var(--muted)' }}>{o.payment_method || '-'}</td>
-                  <td style={{ fontSize: 12, color: 'var(--muted)' }}>{formatDate(o.created_at)}</td>
-                  <td>
-                    <span className={`status-badge status-${o.status}`}><span className="dot"></span>{STATUS_LABELS[o.status]}</span>
-                  </td>
-                  <td>
-                    <button className="link-btn" style={{ color: 'var(--danger)' }} onClick={(e) => handleQuickDelete(o, e)}>Apaga</button>
-                  </td>
-                </tr>
-              ))}
+              {filtered.map((o) => {
+                const isUnread = !seenIds.has(o.id)
+                return (
+                  <tr
+                    key={o.id}
+                    className={isUnread ? 'unread-row' : ''}
+                    onClick={() => { setSelected(o); markSeen(o.id) }}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <td className="oid-cell">
+                      {isUnread && <span className="unread-dot" title="Pedidu foun"></span>}
+                      {o.id}
+                    </td>
+                    <td>
+                      {o.customer_name}
+                      <br />
+                      <span style={{ color: 'var(--muted)', fontSize: 11.5 }}>
+                        {o.whatsapp} · {o.game_id}{o.ign ? ` · ${o.ign}` : ''}
+                      </span>
+                    </td>
+                    <td>{o.pkg_uc.toLocaleString()} UC</td>
+                    <td>${Number(o.pkg_price).toFixed(2)}</td>
+                    <td style={{ fontSize: 12, color: 'var(--muted)' }}>{o.payment_method || '-'}</td>
+                    <td style={{ fontSize: 12, color: 'var(--muted)' }}>{formatDate(o.created_at)}</td>
+                    <td>
+                      <span className={`status-badge status-${o.status}`}><span className="dot"></span>{STATUS_LABELS[o.status]}</span>
+                    </td>
+                    <td>
+                      <button className="link-btn" style={{ color: 'var(--danger)' }} onClick={(e) => handleQuickDelete(o, e)}>Apaga</button>
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>

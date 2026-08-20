@@ -50,7 +50,7 @@ export default function OrderPage() {
   // — de'it aumenta, la volta ba kotuk bainhira cliente halo Edit.
   const [flowStage, setFlowStage] = useState(1)
   const userIdRef = useRef(null)
-  const paymentSectionRef = useRef(null)
+  const stepIndicatorRef = useRef(null)
 
   const handleField = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }))
   const handleGameIdField = (e) => {
@@ -85,12 +85,13 @@ export default function OrderPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedPkg])
 
-  // Set-focus: bainhira tama ba pasu 2 (hafoin click Sosa), foka ba metode pagamentu,
-  // ho movimentu scroll neneik.
+  // Set-focus: bainhira tama ba pasu 2 (hafoin click Sosa), foka ba step-indicator
+  // ("Hili Pakote --- Pagamentu") — ne'e halo hotu-hotu opsaun metode pagamentu bele
+  // aparese iha ecrã smartphone, tanba pajina la scroll toman ba kraik.
   useEffect(() => {
-    if (step === 2 && paymentSectionRef.current) {
-      paymentSectionRef.current.focus({ preventScroll: true })
-      paymentSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    if (step === 2 && stepIndicatorRef.current) {
+      stepIndicatorRef.current.focus({ preventScroll: true })
+      stepIndicatorRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
   }, [step])
 
@@ -195,7 +196,7 @@ export default function OrderPage() {
         </a>
       </div>
 
-      <div className="step-indicator">
+      <div className="step-indicator" ref={stepIndicatorRef} tabIndex={-1} style={{ outline: 'none' }}>
         <div className={`step ${step === 1 ? 'active' : 'done'}`}><span className="num">{step > 1 ? '✓' : '1'}</span> {t('step_indicator_pick')}</div>
         <div className="sep"></div>
         <div className={`step ${step === 2 ? 'active' : ''}`}><span className="num">2</span> {t('step_indicator_pay')}</div>
@@ -346,7 +347,7 @@ export default function OrderPage() {
       {step === 2 && selectedPkg && (
         <div className="split-layout">
           <div className="panel-card">
-            <h3 ref={paymentSectionRef} tabIndex={-1} style={{ outline: 'none' }}>{t('payment_method_title')}</h3>
+            <h3>{t('payment_method_title')}</h3>
             <div className="field">
               <div className="pay-grid">
                 {PAYMENT_METHODS.map((pm) => (

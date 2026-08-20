@@ -12,7 +12,8 @@ export const TRANSLATIONS = {
     nav_track: "Cek Status",
     footer_text: "Top Up UC PUBG · Dili, Timor-Leste",
 
-    hero_title: "Top up UC PUBG",
+    hero_title: "Top up UC PUBG Global",
+    shop_title: "Top up UC PUBG Global",
     step1: "Hili pakote UC",
     step2: "Halo transferénsia",
     step3: "Upload prova transferénsia",
@@ -37,8 +38,9 @@ export const TRANSLATIONS = {
     price_per_unit_label: "Osan / unidade",
     select_pkg_empty: "Hili pakote UC",
 
-    user_id_label: "User ID",
+    user_id_label: "User ID PUBG Global",
     user_id_placeholder: "Ejemplu: 1234567891234567",
+    user_id_placeholder_suffix: "234567891234567",
     nickname_label: "Nickname PUBG Mobile",
     nickname_placeholder: "Ejemplu: ucpubgtl2026",
     quantity_label: "Kuantidade",
@@ -118,7 +120,8 @@ export const TRANSLATIONS = {
     nav_track: "Check Status",
     footer_text: "Top Up UC PUBG · Dili, Timor-Leste",
 
-    hero_title: "Top up UC PUBG",
+    hero_title: "Top up UC PUBG Global",
+    shop_title: "Top up UC PUBG Global",
     step1: "Choose a UC package",
     step2: "Make the transfer",
     step3: "Upload proof of transfer",
@@ -143,8 +146,9 @@ export const TRANSLATIONS = {
     price_per_unit_label: "Price / unit",
     select_pkg_empty: "Choose a UC package",
 
-    user_id_label: "User ID",
+    user_id_label: "User ID PUBG Global",
     user_id_placeholder: "Example: 1234567891234567",
+    user_id_placeholder_suffix: "234567891234567",
     nickname_label: "Nickname PUBG Mobile",
     nickname_placeholder: "Example: ucpubgtl2026",
     quantity_label: "Quantity",
@@ -224,7 +228,8 @@ export const TRANSLATIONS = {
     nav_track: "Cek Status",
     footer_text: "Top Up UC PUBG · Dili, Timor-Leste",
 
-    hero_title: "Top up UC PUBG",
+    hero_title: "Top up UC PUBG Global",
+    shop_title: "Top up UC PUBG Global",
     step1: "Pilih paket UC",
     step2: "Lakukan transfer",
     step3: "Upload bukti transfer",
@@ -249,8 +254,9 @@ export const TRANSLATIONS = {
     price_per_unit_label: "Harga / unit",
     select_pkg_empty: "Pilih paket UC",
 
-    user_id_label: "User ID",
+    user_id_label: "User ID PUBG Global",
     user_id_placeholder: "Contoh: 1234567891234567",
+    user_id_placeholder_suffix: "234567891234567",
     nickname_label: "Nickname PUBG Mobile",
     nickname_placeholder: "Contoh: ucpubgtl2026",
     quantity_label: "Kuantitas",

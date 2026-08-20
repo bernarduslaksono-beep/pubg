@@ -35,7 +35,7 @@ export default function OrderPage() {
   const [selectedPayment, setSelectedPayment] = useState(null)
   const [proofFile, setProofFile] = useState(null)
   const [proofPreview, setProofPreview] = useState(null)
-  const [form, setForm] = useState({ name: '', wa: '', gameId: '', ign: '', note: '' })
+  const [form, setForm] = useState({ name: '', wa: '', gameId: '5', ign: '', note: '' })
   const [submitting, setSubmitting] = useState(false)
   const [msg, setMsg] = useState(null)
   const [lastOrderId, setLastOrderId] = useState(null)
@@ -55,13 +55,13 @@ export default function OrderPage() {
   const handleField = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }))
   const handleGameIdField = (e) => {
     const digitsOnly = e.target.value.replace(/\D/g, '')
-    setForm((f) => ({ ...f, gameId: digitsOnly }))
+    setForm((f) => ({ ...f, gameId: '5' + digitsOnly }))
   }
 
   const subtotal = useMemo(() => (selectedPkg ? selectedPkg.price * qty : 0), [selectedPkg, qty])
 
   const step1Valid =
-    selectedPkg && form.name.trim() && form.wa.trim() && form.gameId.trim() && form.ign.trim()
+    selectedPkg && form.name.trim() && form.wa.trim() && form.gameId.length > 1 && form.ign.trim()
 
   const step2Valid = selectedPayment && proofFile
 
@@ -78,7 +78,7 @@ export default function OrderPage() {
   // Set-focus: bainhira cliente hili denom UC no kolona User ID sei mamuk,
   // foka automátikamente ba kolona User ID, ho movimentu scroll neneik (la'os lalais/diretu).
   useEffect(() => {
-    if (selectedPkg && !form.gameId && userIdRef.current) {
+    if (selectedPkg && form.gameId.length <= 1 && userIdRef.current) {
       userIdRef.current.focus({ preventScroll: true })
       userIdRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
     }
@@ -103,7 +103,7 @@ export default function OrderPage() {
     setSelectedPayment(null)
     setProofFile(null)
     setProofPreview(null)
-    setForm({ name: '', wa: '', gameId: '', ign: '', note: '' })
+    setForm({ name: '', wa: '', gameId: '5', ign: '', note: '' })
     setFlowStage(1)
   }
 
@@ -208,7 +208,7 @@ export default function OrderPage() {
             <div className="shop-header">
               <div className="badge-icon">UC</div>
               <div>
-                <h1>{t('hero_title')}</h1>
+                <h1>{t('shop_title')}</h1>
                 <div className="avail"><i>✓</i> {t('shop_avail')}</div>
               </div>
             </div>
@@ -272,7 +272,18 @@ export default function OrderPage() {
 
             <div className="field">
               <label htmlFor="f-gameid">{t('user_id_label')}</label>
-              <input id="f-gameid" ref={userIdRef} value={form.gameId} onChange={handleGameIdField} inputMode="numeric" pattern="[0-9]*" placeholder={t('user_id_placeholder')} />
+              <div className="prefixed-input">
+                <span className="input-prefix">5</span>
+                <input
+                  id="f-gameid"
+                  ref={userIdRef}
+                  value={form.gameId.slice(1)}
+                  onChange={handleGameIdField}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  placeholder={t('user_id_placeholder_suffix')}
+                />
+              </div>
             </div>
             <div className="field">
               <label htmlFor="f-ign">{t('nickname_label')}</label>

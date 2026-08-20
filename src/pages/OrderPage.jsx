@@ -92,9 +92,15 @@ export default function OrderPage() {
         .slice(0, 5) || 'jpg'
       const filePath = `${orderId}.${fileExt}`
 
+      // Nota: la haruka objetu File diretamente — Safari/WebKit (iPhone) iha bug
+      // konhesidu ne'ebe kadaan haruka konteudu mamuk ("No content provided").
+      // Lee file ba ArrayBuffer lai antes upload, ne'e funsiona ho fiar iha
+      // hotu-hotu browser.
+      const fileBuffer = await proofFile.arrayBuffer()
+
       const { error: uploadError } = await supabase.storage
         .from('proofs')
-        .upload(filePath, proofFile, {
+        .upload(filePath, fileBuffer, {
           upsert: false,
           contentType: proofFile.type || 'image/jpeg',
         })

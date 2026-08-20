@@ -76,18 +76,20 @@ export default function OrderPage() {
   }
 
   // Set-focus: bainhira cliente hili denom UC no kolona User ID sei mamuk,
-  // foka automátikamente ba kolona User ID.
+  // foka automátikamente ba kolona User ID, ho movimentu scroll neneik (la'os lalais/diretu).
   useEffect(() => {
     if (selectedPkg && !form.gameId && userIdRef.current) {
-      userIdRef.current.focus()
+      userIdRef.current.focus({ preventScroll: true })
+      userIdRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedPkg])
 
-  // Set-focus: bainhira tama ba pasu 2 (hafoin click Sosa), foka ba metode pagamentu.
+  // Set-focus: bainhira tama ba pasu 2 (hafoin click Sosa), foka ba metode pagamentu,
+  // ho movimentu scroll neneik.
   useEffect(() => {
     if (step === 2 && paymentSectionRef.current) {
-      paymentSectionRef.current.focus({ preventScroll: false })
+      paymentSectionRef.current.focus({ preventScroll: true })
       paymentSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
   }, [step])

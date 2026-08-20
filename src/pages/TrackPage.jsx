@@ -9,6 +9,7 @@ export default function TrackPage() {
   const [msg, setMsg] = useState(null)
   const [orders, setOrders] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [refreshingIds, setRefreshingIds] = useState(new Set())
 
   const handleTrack = async () => {
     setOrders(null)
@@ -41,6 +42,27 @@ export default function TrackPage() {
     }
   }
 
+  const handleRefreshOne = async (orderId) => {
+    setRefreshingIds((prev) => new Set(prev).add(orderId))
+    try {
+      const { data, error } = await supabase.rpc('track_orders', {
+        p_order_id: orderId,
+        p_whatsapp: null,
+      })
+      if (!error && data && data.length > 0) {
+        setOrders((prev) => prev.map((o) => (o.id === orderId ? data[0] : o)))
+      }
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setRefreshingIds((prev) => {
+        const next = new Set(prev)
+        next.delete(orderId)
+        return next
+      })
+    }
+  }
+
   const formatDate = (ts) => (ts ? new Date(ts).toLocaleString('id-ID') : '-')
 
   return (
@@ -64,34 +86,48 @@ export default function TrackPage() {
         </button>
         {msg && <div className="msg error show">{msg}</div>}
 
-        {orders && orders.map((order) => (
-          <div className="order-result" key={order.id}>
-            <div className="oid">{order.id}</div>
-            <div className={`status-badge status-${order.status}`}>
-              <span className="dot"></span>{statusLabel(order.status)}
-            </div>
-            <div style={{ marginTop: 16 }}>
-              <div className="result-row">
-                <span className="k">{t('pkg_row_label')}</span>
-                <span className="v">
-                  {order.pkg_unit_uc ? `${order.pkg_unit_uc.toLocaleString()} UC × ${order.qty}` : `${order.pkg_uc.toLocaleString()} UC`}
-                </span>
+        {orders && orders.map((order) => {
+          const isRefreshing = refreshingIds.has(order.id)
+          return (
+            <div className="order-result" key={order.id}>
+              <div className="order-result-head">
+                <div className="oid">{order.id}</div>
+                <button
+                  className={`refresh-btn${isRefreshing ? ' spinning' : ''}`}
+                  onClick={() => handleRefreshOne(order.id)}
+                  disabled={isRefreshing}
+                  title={t('refresh_status_label')}
+                  aria-label={t('refresh_status_label')}
+                >
+                  ↻
+                </button>
               </div>
-              <div className="result-row"><span className="k">{t('total_uc_label')}</span><span className="v">{order.pkg_uc.toLocaleString()} UC</span></div>
-              <div className="result-row"><span className="k">{t('price_row_label')}</span><span className="v">${Number(order.pkg_price).toFixed(2)}</span></div>
-              <div className="result-row"><span className="k">{t('game_id_row_label')}</span><span className="v">{order.game_id}</span></div>
-              <div className="result-row"><span className="k">{t('pubg_name_row_label')}</span><span className="v">{order.ign || '-'}</span></div>
-              <div className="result-row"><span className="k">{t('payment_method_title')}</span><span className="v">{order.payment_method || '-'}</span></div>
-              <div className="result-row"><span className="k">{t('date_row_label')}</span><span className="v">{formatDate(order.created_at)}</span></div>
-            </div>
-            {order.status === 'dibatalkan' && order.admin_comment && (
-              <div className="admin-comment-box">
-                <div className="admin-comment-label">{t('seller_note_label')}</div>
-                <div className="admin-comment-text">{order.admin_comment}</div>
+              <div className={`status-badge status-${order.status}`}>
+                <span className="dot"></span>{statusLabel(order.status)}
               </div>
-            )}
-          </div>
-        ))}
+              <div style={{ marginTop: 16 }}>
+                <div className="result-row">
+                  <span className="k">{t('pkg_row_label')}</span>
+                  <span className="v">
+                    {order.pkg_unit_uc ? `${order.pkg_unit_uc.toLocaleString()} UC × ${order.qty}` : `${order.pkg_uc.toLocaleString()} UC`}
+                  </span>
+                </div>
+                <div className="result-row"><span className="k">{t('total_uc_label')}</span><span className="v">{order.pkg_uc.toLocaleString()} UC</span></div>
+                <div className="result-row"><span className="k">{t('price_row_label')}</span><span className="v">${Number(order.pkg_price).toFixed(2)}</span></div>
+                <div className="result-row"><span className="k">{t('game_id_row_label')}</span><span className="v">{order.game_id}</span></div>
+                <div className="result-row"><span className="k">{t('pubg_name_row_label')}</span><span className="v">{order.ign || '-'}</span></div>
+                <div className="result-row"><span className="k">{t('payment_method_title')}</span><span className="v">{order.payment_method || '-'}</span></div>
+                <div className="result-row"><span className="k">{t('date_row_label')}</span><span className="v">{formatDate(order.created_at)}</span></div>
+              </div>
+              {order.status === 'dibatalkan' && order.admin_comment && (
+                <div className="admin-comment-box">
+                  <div className="admin-comment-label">{t('seller_note_label')}</div>
+                  <div className="admin-comment-text">{order.admin_comment}</div>
+                </div>
+              )}
+            </div>
+          )
+        })}
       </div>
     </>
   )

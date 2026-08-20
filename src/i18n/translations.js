@@ -60,6 +60,8 @@ export const TRANSLATIONS = {
 
     upload_title: "Upload Prova Transferénsia",
     upload_hint: "Transfere osan ba ami nia konta, depois upload prova transferénsia iha ne'e.",
+    upload_locked_hint: "Hili metode pagamentu uluk antes upload prova transferénsia.",
+    upload_locked_main: "Hili metode pagamentu uluk",
     upload_main: "Upload prova transferénsia",
     upload_sub: "PNG ka JPG, até 5MB",
     upload_btn: "Hili Imajen",
@@ -101,6 +103,7 @@ export const TRANSLATIONS = {
     pubg_name_row_label: "Naran PUBG",
     date_row_label: "Data",
     seller_note_label: "Nota husi seller",
+    refresh_status_label: "Atualiza status",
 
     status: {
       menunggu_verifikasi: "Hein Verifikasaun",
@@ -163,6 +166,8 @@ export const TRANSLATIONS = {
 
     upload_title: "Upload Proof of Transfer",
     upload_hint: "Transfer the payment to our account, then upload proof of transfer here.",
+    upload_locked_hint: "Choose a payment method first before uploading proof of transfer.",
+    upload_locked_main: "Choose a payment method first",
     upload_main: "Upload proof of transfer",
     upload_sub: "PNG or JPG, up to 5MB",
     upload_btn: "Choose Image",
@@ -204,6 +209,7 @@ export const TRANSLATIONS = {
     pubg_name_row_label: "PUBG Name",
     date_row_label: "Date",
     seller_note_label: "Note from seller",
+    refresh_status_label: "Refresh status",
 
     status: {
       menunggu_verifikasi: "Awaiting Verification",
@@ -266,6 +272,8 @@ export const TRANSLATIONS = {
 
     upload_title: "Upload Bukti Transfer",
     upload_hint: "Transfer pembayaran ke rekening kami, lalu upload bukti transfer di sini.",
+    upload_locked_hint: "Pilih metode pembayaran dulu sebelum upload bukti transfer.",
+    upload_locked_main: "Pilih metode pembayaran dulu",
     upload_main: "Upload bukti transfer",
     upload_sub: "PNG atau JPG, maks 5MB",
     upload_btn: "Pilih Gambar",
@@ -307,6 +315,7 @@ export const TRANSLATIONS = {
     pubg_name_row_label: "Nama PUBG",
     date_row_label: "Tanggal",
     seller_note_label: "Catatan dari penjual",
+    refresh_status_label: "Segarkan status",
 
     status: {
       menunggu_verifikasi: "Menunggu Verifikasi",

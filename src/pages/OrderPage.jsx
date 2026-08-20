@@ -374,10 +374,10 @@ export default function OrderPage() {
 
             <h3 style={{ marginTop: 22 }}>{t('upload_title')}</h3>
             <div className="field-hint" style={{ marginBottom: 10 }}>
-              {t('upload_hint')}
+              {selectedPayment ? t('upload_hint') : t('upload_locked_hint')}
             </div>
-            <label className={`upload-box${proofPreview ? ' has-file' : ''}`}>
-              <input type="file" accept="image/*" onChange={handleFile} />
+            <label className={`upload-box${proofPreview ? ' has-file' : ''}${!selectedPayment ? ' disabled' : ''}`}>
+              <input type="file" accept="image/*" onChange={handleFile} disabled={!selectedPayment} />
               {proofPreview ? (
                 <div className="upload-preview-row">
                   <img src={proofPreview} alt="proof" />
@@ -389,10 +389,10 @@ export default function OrderPage() {
                 </div>
               ) : (
                 <div>
-                  <div className="upload-icon-circle">⬆</div>
-                  <div className="upload-text-main">{t('upload_main')}</div>
+                  <div className="upload-icon-circle">{selectedPayment ? '⬆' : '🔒'}</div>
+                  <div className="upload-text-main">{selectedPayment ? t('upload_main') : t('upload_locked_main')}</div>
                   <div className="upload-text-sub">{t('upload_sub')}</div>
-                  <span className="upload-btn-fake">{t('upload_btn')}</span>
+                  {selectedPayment && <span className="upload-btn-fake">{t('upload_btn')}</span>}
                 </div>
               )}
             </label>

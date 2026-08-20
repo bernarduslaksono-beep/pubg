@@ -6,10 +6,10 @@ import OrderToast from '../components/OrderToast.jsx'
 
 const FILTERS = [
   { key: 'all', label: 'Hotu' },
-  { key: 'menunggu_verifikasi', label: 'Menunggu' },
-  { key: 'terverifikasi', label: 'Terverifikasi' },
-  { key: 'terkirim', label: 'Terkirim' },
-  { key: 'dibatalkan', label: 'Dibatalkan' },
+  { key: 'menunggu_verifikasi', label: 'Hein Verifikasaun' },
+  { key: 'terverifikasi', label: 'Verifikadu' },
+  { key: 'terkirim', label: 'Haruka Ona' },
+  { key: 'dibatalkan', label: 'Kanseladu' },
 ]
 
 // Foti path storage husi public URL, ba ne'ebe presiza atu apaga file husi bucket
@@ -145,7 +145,7 @@ function OrderDetailModal({ order, onClose, onStatusSaved, onDeleted }) {
               rows={3}
               value={adminComment}
               onChange={(e) => setAdminComment(e.target.value)}
-              placeholder="Ezemplu: bukti transfer la klaru, favor haruka fila fali"
+              placeholder="Ezemplu: prova transferénsia la klaru, favor haruka fila fali"
             />
           </div>
         )}
@@ -253,9 +253,9 @@ function Dashboard() {
 
       <div className="stat-grid">
         <div className="stat-card red"><div className="lbl">Total Pedidu</div><div className="num">{stats.total}</div></div>
-        <div className="stat-card gold"><div className="lbl">Menunggu Verifikasi</div><div className="num">{stats.pending}</div></div>
-        <div className="stat-card green"><div className="lbl">UC Terkirim</div><div className="num">{stats.sent}</div></div>
-        <div className="stat-card"><div className="lbl">Total Revenue</div><div className="num">${stats.revenue.toFixed(2)}</div></div>
+        <div className="stat-card gold"><div className="lbl">Hein Verifikasaun</div><div className="num">{stats.pending}</div></div>
+        <div className="stat-card green"><div className="lbl">UC Haruka Ona</div><div className="num">{stats.sent}</div></div>
+        <div className="stat-card"><div className="lbl">Rendimentu Totál</div><div className="num">${stats.revenue.toFixed(2)}</div></div>
       </div>
 
       <div className="toolbar">

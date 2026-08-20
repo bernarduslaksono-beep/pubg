@@ -2,23 +2,23 @@ export const PACKAGES = [
   {
     tierKey: 'kiik',
     items: [
-      { uc: 325, price: 6 }, { uc: 385, price: 7 }, { uc: 445, price: 8 }, { uc: 505, price: 9 },
-      { uc: 660, price: 11 }, { uc: 780, price: 13 }, { uc: 985, price: 16 }, { uc: 1045, price: 17 },
-      { uc: 1320, price: 22 }, { uc: 1645, price: 27 },
+      { uc: 325, price: 5 }, { uc: 385, price: 6 }, { uc: 445, price: 7 }, { uc: 505, price: 8 },
+      { uc: 660, price: 10 }, { uc: 780, price: 12 }, { uc: 985, price: 15 }, { uc: 1045, price: 16 },
+      { uc: 1320, price: 20 }, { uc: 1645, price: 26 },
     ],
   },
   {
     tierKey: 'medium',
     items: [
-      { uc: 1860, price: 28 }, { uc: 2125, price: 35 }, { uc: 2520, price: 40 }, { uc: 2845, price: 47 },
-      { uc: 3850, price: 55 }, { uc: 4510, price: 66 }, { uc: 5650, price: 83 }, { uc: 6035, price: 89 },
-      { uc: 8160, price: 110 }, { uc: 9085, price: 125 },
+      { uc: 1860, price: 27 }, { uc: 2125, price: 31 }, { uc: 2520, price: 37 }, { uc: 2845, price: 44 },
+      { uc: 3850, price: 52 }, { uc: 4510, price: 63 }, { uc: 5650, price: 79 }, { uc: 6035, price: 84 },
+      { uc: 8160, price: 105 }, { uc: 9085, price: 120 },
     ],
   },
   {
     tierKey: 'boot',
     items: [
-      { uc: 10225, price: 140 }, { uc: 12010, price: 165 }, { uc: 14075, price: 195 }, { uc: 17520, price: 235 },
+      { uc: 10225, price: 135 }, { uc: 12010, price: 160 }, { uc: 14075, price: 185 }, { uc: 17520, price: 225 },
     ],
   },
 ];

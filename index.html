@@ -7,6 +7,12 @@
 
     <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="theme-color" content="#E7343F" />
+    <script>
+      (function () {
+        var saved = localStorage.getItem('theme');
+        if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+      })();
+    </script>
     <link rel="icon" href="/icons/icon-192.png" type="image/png" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <meta name="mobile-web-app-capable" content="yes" />

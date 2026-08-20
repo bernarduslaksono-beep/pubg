@@ -164,7 +164,7 @@ language plpgsql
 as $$
 begin
   perform net.http_post(
-    url := 'https://zreejzlomoroygsuogea.supabase.co/functions/v1/notify-push',
+    url := 'https://<PROJECT-REF>.supabase.co/functions/v1/notify-push',
     headers := '{"Content-Type": "application/json"}'::jsonb,
     body := jsonb_build_object('type', 'INSERT', 'table', 'orders', 'record', row_to_json(NEW))
   );

@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import { supabase } from '../supabase.js'
-import { PACKAGES, PAYMENT_METHODS, WHATSAPP_NUMBER } from '../data/packages.js'
+import { PACKAGES, PAYMENT_METHODS, PAYMENT_METHOD_STORAGE_LABEL, WHATSAPP_NUMBER } from '../data/packages.js'
+import { useLanguage } from '../i18n/LanguageContext.jsx'
 
 function genOrderId() {
   return (
@@ -26,6 +27,7 @@ function CoinIcon({ size = 34 }) {
 }
 
 export default function OrderPage() {
+  const { t } = useLanguage()
   const [step, setStep] = useState(1) // 1 = hili pakote, 2 = pagamentu
   const [selectedPkg, setSelectedPkg] = useState(null)
   const [qty, setQty] = useState(1)
@@ -40,9 +42,9 @@ export default function OrderPage() {
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [copied, setCopied] = useState(false)
   const [openTiers, setOpenTiers] = useState(() =>
-    Object.fromEntries(PACKAGES.map((g) => [g.tier, true]))
+    Object.fromEntries(PACKAGES.map((g) => [g.tierKey, true]))
   )
-  const toggleTier = (tier) => setOpenTiers((o) => ({ ...o, [tier]: !o[tier] }))
+  const toggleTier = (tierKey) => setOpenTiers((o) => ({ ...o, [tierKey]: !o[tierKey] }))
 
   const handleField = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }))
   const handleGameIdField = (e) => {
@@ -83,12 +85,19 @@ export default function OrderPage() {
     setMsg(null)
     try {
       const orderId = genOrderId()
-      const fileExt = proofFile.name.split('.').pop()
+      const rawExt = proofFile.name.includes('.') ? proofFile.name.split('.').pop() : ''
+      const fileExt = (rawExt || (proofFile.type ? proofFile.type.split('/').pop() : '') || 'jpg')
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '')
+        .slice(0, 5) || 'jpg'
       const filePath = `${orderId}.${fileExt}`
 
       const { error: uploadError } = await supabase.storage
         .from('proofs')
-        .upload(filePath, proofFile, { upsert: false })
+        .upload(filePath, proofFile, {
+          upsert: false,
+          contentType: proofFile.type || 'image/jpeg',
+        })
       if (uploadError) throw uploadError
 
       const { data: urlData } = supabase.storage.from('proofs').getPublicUrl(filePath)
@@ -101,7 +110,7 @@ export default function OrderPage() {
         game_id: form.gameId.trim(),
         ign: form.ign.trim(),
         note: form.note.trim(),
-        payment_method: selectedPayment.name,
+        payment_method: PAYMENT_METHOD_STORAGE_LABEL[selectedPayment.id],
         pkg_uc: selectedPkg.uc * qty,
         pkg_unit_uc: selectedPkg.uc,
         qty: qty,
@@ -118,7 +127,8 @@ export default function OrderPage() {
       resetAll()
     } catch (err) {
       console.error(err)
-      setMsg({ type: 'error', text: 'Falha atu haruka pedidu. Favor tenta fila fali.' })
+      const detail = err?.message || err?.error_description || String(err)
+      setMsg({ type: 'error', text: `${t('submit_error')} (${detail})` })
     } finally {
       setSubmitting(false)
     }
@@ -127,28 +137,28 @@ export default function OrderPage() {
   return (
     <>
       <div className="hero">
-        <h1>Top up UC PUBG</h1>
+        <h1>{t('hero_title')}</h1>
         <div className="hero-steps">
-          <div className="hero-step"><span className="num">1</span> Hili pakote UC</div>
-          <div className="hero-step"><span className="num">2</span> Halo transferénsia</div>
-          <div className="hero-step"><span className="num">3</span> Upload prova transferénsia</div>
-          <div className="hero-step"><span className="num">4</span> Kria pedidu</div>
+          <div className="hero-step"><span className="num">1</span> {t('step1')}</div>
+          <div className="hero-step"><span className="num">2</span> {t('step2')}</div>
+          <div className="hero-step"><span className="num">3</span> {t('step3')}</div>
+          <div className="hero-step"><span className="num">4</span> {t('step4')}</div>
         </div>
-        <p>Ami sei verifika no haruka UC ba game ID ita boot nian (Prosesu ±15 menit).</p>
+        <p>{t('hero_desc')}</p>
         <a
           className="whatsapp-badge"
           href={`https://wa.me/670${WHATSAPP_NUMBER}`}
           target="_blank"
           rel="noopener noreferrer"
         >
-          💬 WhatsApp Konfirmasaun: <b>{WHATSAPP_NUMBER}</b>
+          💬 {t('whatsapp_confirm')}: <b>{WHATSAPP_NUMBER}</b>
         </a>
       </div>
 
       <div className="step-indicator">
-        <div className={`step ${step === 1 ? 'active' : 'done'}`}><span className="num">{step > 1 ? '✓' : '1'}</span> Hili Pakote</div>
+        <div className={`step ${step === 1 ? 'active' : 'done'}`}><span className="num">{step > 1 ? '✓' : '1'}</span> {t('step_indicator_pick')}</div>
         <div className="sep"></div>
-        <div className={`step ${step === 2 ? 'active' : ''}`}><span className="num">2</span> Pagamentu</div>
+        <div className={`step ${step === 2 ? 'active' : ''}`}><span className="num">2</span> {t('step_indicator_pay')}</div>
       </div>
 
       {step === 1 && (
@@ -157,21 +167,21 @@ export default function OrderPage() {
             <div className="shop-header">
               <div className="badge-icon">UC</div>
               <div>
-                <h1>Top Up UC PUBG</h1>
-                <div className="avail"><i>✓</i> Disponivel ba Timor-Leste</div>
+                <h1>{t('hero_title')}</h1>
+                <div className="avail"><i>✓</i> {t('shop_avail')}</div>
               </div>
             </div>
 
-            <div className="select-product-label">Hili Produtu</div>
+            <div className="select-product-label">{t('select_product_label')}</div>
 
             {PACKAGES.map((group) => (
-              <div className="tier-block" key={group.tier}>
-                <div className="tier-head tier-head-toggle" onClick={() => toggleTier(group.tier)}>
-                  <h3>{group.tier}</h3>
-                  <span className="count">{group.items.length} pakote</span>
-                  <span className={`tier-chevron${openTiers[group.tier] ? ' open' : ''}`}>▾</span>
+              <div className="tier-block" key={group.tierKey}>
+                <div className="tier-head tier-head-toggle" onClick={() => toggleTier(group.tierKey)}>
+                  <h3>{t(`tier_${group.tierKey}`)}</h3>
+                  <span className="count">{group.items.length} {t('pkg_count_suffix')}</span>
+                  <span className={`tier-chevron${openTiers[group.tierKey] ? ' open' : ''}`}>▾</span>
                 </div>
-                {openTiers[group.tier] && (
+                {openTiers[group.tierKey] && (
                   <div className="pkg-grid">
                     {group.items.map((item) => (
                       <div
@@ -197,7 +207,7 @@ export default function OrderPage() {
               <div className="avatar"><CoinIcon size={20} /></div>
               <div>
                 <div className="name">UC-PUBG Timor Leste</div>
-                <div className="sub">Prosesu haruka: ±15 menit</div>
+                <div className="sub">{t('checkout_process_time')}</div>
               </div>
             </div>
 
@@ -206,31 +216,31 @@ export default function OrderPage() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <CoinIcon size={28} />
                   <div>
-                    <div className="label">Pakote hili</div>
+                    <div className="label">{t('selected_pkg_label')}</div>
                     <div className="val">{selectedPkg.uc.toLocaleString()} UC</div>
                   </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div className="label">Osan / unidade</div>
+                  <div className="label">{t('price_per_unit_label')}</div>
                   <div className="val">${selectedPkg.price.toFixed(2)}</div>
                 </div>
               </div>
             ) : (
-              <div className="selected-pkg empty">Hili pakote UC</div>
+              <div className="selected-pkg empty">{t('select_pkg_empty')}</div>
             )}
 
             <div className="field">
-              <label htmlFor="f-gameid">User ID</label>
-              <input id="f-gameid" value={form.gameId} onChange={handleGameIdField} inputMode="numeric" pattern="[0-9]*" placeholder="Ejemplu: 1234567891234567" />
+              <label htmlFor="f-gameid">{t('user_id_label')}</label>
+              <input id="f-gameid" value={form.gameId} onChange={handleGameIdField} inputMode="numeric" pattern="[0-9]*" placeholder={t('user_id_placeholder')} />
             </div>
             <div className="field">
-              <label htmlFor="f-ign">Nickname PUBG Mobile</label>
-              <input id="f-ign" value={form.ign} onChange={handleField('ign')} placeholder="Ejemplu: ucpubgtl2026" />
+              <label htmlFor="f-ign">{t('nickname_label')}</label>
+              <input id="f-ign" value={form.ign} onChange={handleField('ign')} placeholder={t('nickname_placeholder')} />
             </div>
 
             {selectedPkg && (
               <div className="field" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <label style={{ margin: 0 }}>Kuantidade</label>
+                <label style={{ margin: 0 }}>{t('quantity_label')}</label>
                 <div className="qty-stepper">
                   <button type="button" onClick={() => setQty((q) => Math.max(1, q - 1))} disabled={qty <= 1}>−</button>
                   <span className="qty-val">{qty}</span>
@@ -240,20 +250,20 @@ export default function OrderPage() {
             )}
 
             <div className="field">
-              <label htmlFor="f-name">Naran completu</label>
-              <input id="f-name" value={form.name} onChange={handleField('name')} placeholder="Naran ita boot" />
+              <label htmlFor="f-name">{t('fullname_label')}</label>
+              <input id="f-name" value={form.name} onChange={handleField('name')} placeholder={t('fullname_placeholder')} />
             </div>
             <div className="field">
-              <label htmlFor="f-wa">Numeru WhatsApp</label>
-              <input id="f-wa" value={form.wa} onChange={handleField('wa')} placeholder="7XXXXXXX" />
+              <label htmlFor="f-wa">{t('whatsapp_label')}</label>
+              <input id="f-wa" value={form.wa} onChange={handleField('wa')} placeholder={t('whatsapp_placeholder')} />
             </div>
 
             {!showNote ? (
-              <button className="note-toggle" onClick={() => setShowNote(true)}>+ Hatama nota ba seller</button>
+              <button className="note-toggle" onClick={() => setShowNote(true)}>{t('add_note_btn')}</button>
             ) : (
               <div className="field">
-                <label htmlFor="f-note">Nota ba seller</label>
-                <textarea id="f-note" rows={2} value={form.note} onChange={handleField('note')} placeholder="Informasaun adisional" />
+                <label htmlFor="f-note">{t('note_label')}</label>
+                <textarea id="f-note" rows={2} value={form.note} onChange={handleField('note')} placeholder={t('note_placeholder')} />
               </div>
             )}
 
@@ -263,7 +273,7 @@ export default function OrderPage() {
                   <span>{selectedPkg.uc.toLocaleString()} UC × {qty}</span>
                 </div>
                 <div className="uc-breakdown-row total">
-                  <span>Total UC</span>
+                  <span>{t('total_uc_label')}</span>
                   <span>{(selectedPkg.uc * qty).toLocaleString()} UC</span>
                 </div>
               </div>
@@ -271,7 +281,7 @@ export default function OrderPage() {
 
             <div className="subtotal-row">
               <div>
-                <div className="lbl">Subtotal</div>
+                <div className="lbl">{t('subtotal_label')}</div>
                 <div className="val">${subtotal.toFixed(2)}</div>
               </div>
             </div>
@@ -283,7 +293,7 @@ export default function OrderPage() {
                 disabled={!step1Valid}
                 onClick={() => setStep(2)}
               >
-                Sosa
+                {t('buy_btn')}
               </button>
             </div>
           </div>
@@ -293,7 +303,7 @@ export default function OrderPage() {
       {step === 2 && selectedPkg && (
         <div className="split-layout">
           <div className="panel-card">
-            <h3>Metode Pagamentu</h3>
+            <h3>{t('payment_method_title')}</h3>
             <div className="field">
               <div className="pay-grid">
                 {PAYMENT_METHODS.map((pm) => (
@@ -304,7 +314,7 @@ export default function OrderPage() {
                   >
                     <div className="pay-card-head">
                       <span className="pay-radio"></span>
-                      <span className="pay-name">{pm.name}</span>
+                      <span className="pay-name">{t(pm.typeKey)} — {pm.brand}</span>
                     </div>
                     <div className="pay-detail">
                       <span className="pay-num mono">{pm.number}</span>
@@ -315,60 +325,60 @@ export default function OrderPage() {
               </div>
             </div>
 
-            <h3 style={{ marginTop: 22 }}>Upload Prova Transferénsia</h3>
+            <h3 style={{ marginTop: 22 }}>{t('upload_title')}</h3>
             <div className="field-hint" style={{ marginBottom: 10 }}>
-              Transfere osan ba ami nia konta, depois upload prova transferénsia iha ne'e.
+              {t('upload_hint')}
             </div>
             <label className={`upload-box${proofPreview ? ' has-file' : ''}`}>
               <input type="file" accept="image/*" onChange={handleFile} />
               {proofPreview ? (
                 <div className="upload-preview-row">
-                  <img src={proofPreview} alt="prova transferénsia" />
+                  <img src={proofPreview} alt="proof" />
                   <div className="upload-preview-meta">
                     <div className="upload-filename">{proofFile?.name}</div>
-                    <div className="upload-file-ok">✓ Imajen ona hili</div>
-                    <span className="upload-change-btn">Troka imajen</span>
+                    <div className="upload-file-ok">✓ {t('upload_file_ok')}</div>
+                    <span className="upload-change-btn">{t('upload_change_btn')}</span>
                   </div>
                 </div>
               ) : (
                 <div>
                   <div className="upload-icon-circle">⬆</div>
-                  <div className="upload-text-main">Upload prova transferénsia</div>
-                  <div className="upload-text-sub">PNG ka JPG, até 5MB</div>
-                  <span className="upload-btn-fake">Hili Imajen</span>
+                  <div className="upload-text-main">{t('upload_main')}</div>
+                  <div className="upload-text-sub">{t('upload_sub')}</div>
+                  <span className="upload-btn-fake">{t('upload_btn')}</span>
                 </div>
               )}
             </label>
           </div>
 
           <div className="panel-card">
-            <h3>Informasaun Pedido</h3>
+            <h3>{t('order_info_title')}</h3>
             <div className="order-info-card">
               <div className="order-info-head">
                 <CoinIcon size={40} />
                 <div className="meta">
                   <div className="uc-line">{selectedPkg.uc.toLocaleString()} UC × {qty}</div>
-                  <div className="sub-line">User ID: {form.gameId} · {form.ign}<button className="edit-link" onClick={() => setStep(1)}>Edit</button></div>
+                  <div className="sub-line">{t('user_id_label')}: {form.gameId} · {form.ign}<button className="edit-link" onClick={() => setStep(1)}>{t('edit_link')}</button></div>
                 </div>
                 <div className="price-col">${subtotal.toFixed(2)}</div>
               </div>
               <div className="order-info-total-row">
-                <span>Total UC</span>
+                <span>{t('total_uc_label')}</span>
                 <span>{(selectedPkg.uc * qty).toLocaleString()} UC</span>
               </div>
             </div>
 
-            <h3 style={{ marginTop: 22 }}>Detalhus Pagamentu</h3>
+            <h3 style={{ marginTop: 22 }}>{t('payment_details_title')}</h3>
             <div className="summary-row">
-              <span className="k">Metode Pagamentu</span>
-              <span>{selectedPayment ? selectedPayment.name : '-'}</span>
+              <span className="k">{t('payment_method_title')}</span>
+              <span>{selectedPayment ? `${t(selectedPayment.typeKey)} — ${selectedPayment.brand}` : '-'}</span>
             </div>
             <div className="summary-row">
-              <span className="k">Total Pedidu</span>
+              <span className="k">{t('total_order_label')}</span>
               <span>${subtotal.toFixed(2)}</span>
             </div>
             <div className="summary-row total">
-              <span className="k">Total Pagamentu</span>
+              <span className="k">{t('total_payment_label')}</span>
               <span className="v">${subtotal.toFixed(2)}</span>
             </div>
 
@@ -378,7 +388,7 @@ export default function OrderPage() {
               disabled={!step2Valid || submitting}
               onClick={handleSubmit}
             >
-              {submitting ? 'Haruka...' : 'Haruka Pedidu'}
+              {submitting ? t('submitting_label') : t('submit_btn')}
             </button>
 
             {msg?.type === 'error' && <div className="msg error show">{msg.text}</div>}
@@ -389,11 +399,8 @@ export default function OrderPage() {
       <div className={`modal-overlay${showSuccessModal ? ' show' : ''}`} onClick={(e) => e.target.classList.contains('modal-overlay') && setShowSuccessModal(false)}>
         <div className="modal success-modal">
           <div className="icon-circle">✓</div>
-          <h3>Pedidu Submete!</h3>
-          <p>
-            Ami sei verifika pagamentu no haruka UC ba game ID ita boot. Guarda Order ID ne'e atu
-            cek status, no konfirma liu husi WhatsApp <b>{WHATSAPP_NUMBER}</b>.
-          </p>
+          <h3>{t('success_title')}</h3>
+          <p>{t('success_desc', WHATSAPP_NUMBER)}</p>
           <div className="oid-copy-row">
             <span className="oid-text mono">{lastOrderId}</span>
             <button
@@ -404,10 +411,10 @@ export default function OrderPage() {
                 setTimeout(() => setCopied(false), 2000)
               }}
             >
-              {copied ? '✓ Tersalin' : '⧉ Copy'}
+              {copied ? `✓ ${t('copied_btn')}` : `⧉ ${t('copy_btn')}`}
             </button>
           </div>
-          <button className="btn btn-primary" onClick={() => setShowSuccessModal(false)}>Diak</button>
+          <button className="btn btn-primary" onClick={() => setShowSuccessModal(false)}>{t('ok_btn')}</button>
         </div>
       </div>
     </>

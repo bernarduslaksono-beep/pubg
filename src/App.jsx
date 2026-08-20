@@ -4,6 +4,9 @@ import OrderPage from './pages/OrderPage.jsx'
 import TrackPage from './pages/TrackPage.jsx'
 import AdminPage from './pages/AdminPage.jsx'
 import InstallPrompt from './components/InstallPrompt.jsx'
+import ThemeToggle from './components/ThemeToggle.jsx'
+import LanguageToggle from './components/LanguageToggle.jsx'
+import { useLanguage } from './i18n/LanguageContext.jsx'
 import logo from './assets/logo.png'
 
 // Rota admin "sekretu" — la aparese iha menu públiku.
@@ -12,6 +15,7 @@ const ADMIN_PATH = '/painel-admin-x29k7'
 
 function TopBar({ isAdminRoute }) {
   const location = useLocation()
+  const { t } = useLanguage()
   const isActive = (path) => location.pathname === path
 
   return (
@@ -21,16 +25,21 @@ function TopBar({ isAdminRoute }) {
       </div>
       {!isAdminRoute && (
         <nav>
-          <Link to="/"><button className={isActive('/') ? 'active' : ''}>Pesan UC</button></Link>
-          <Link to="/track"><button className={isActive('/track') ? 'active' : ''}>Cek Status</button></Link>
+          <Link to="/"><button className={isActive('/') ? 'active' : ''}>{t('nav_order')}</button></Link>
+          <Link to="/track"><button className={isActive('/track') ? 'active' : ''}>{t('nav_track')}</button></Link>
         </nav>
       )}
+      <div className="topbar-controls">
+        {!isAdminRoute && <LanguageToggle />}
+        <ThemeToggle />
+      </div>
     </div>
   )
 }
 
 export default function App() {
   const location = useLocation()
+  const { t } = useLanguage()
   const isAdminRoute = location.pathname === ADMIN_PATH
 
   // Troka manifest PWA (no titulu) tuir pajina ne'ebe ita boot iha —
@@ -60,7 +69,7 @@ export default function App() {
           <Route path={ADMIN_PATH} element={<AdminPage />} />
         </Routes>
       </main>
-      {!isAdminRoute && <footer>Top Up UC PUBG · Dili, Timor-Leste</footer>}
+      {!isAdminRoute && <footer>{t('footer_text')}</footer>}
       {!isAdminRoute && <InstallPrompt />}
     </>
   )

@@ -1,33 +1,24 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
+import { useParams, Navigate } from 'react-router-dom'
 import { supabase } from '../supabase.js'
-import { PACKAGES, PAYMENT_METHODS, PAYMENT_METHOD_STORAGE_LABEL, WHATSAPP_NUMBER } from '../data/packages.js'
+import { PAYMENT_METHODS, PAYMENT_METHOD_STORAGE_LABEL, WHATSAPP_NUMBER } from '../data/packages.js'
+import { getGame } from '../data/games.js'
+import DenomIcon from '../components/DenomIcon.jsx'
 import { useLanguage } from '../i18n/LanguageContext.jsx'
 
-function genOrderId() {
+function genOrderId(prefix) {
   return (
-    'OA-' +
+    `${prefix}-` +
     Date.now().toString(36).toUpperCase().slice(-5) +
     Math.random().toString(36).toUpperCase().slice(2, 5)
   )
 }
 
-function CoinIcon({ size = 34 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="17" cy="17" r="15" fill="url(#coinGrad)" stroke="#B8860B" strokeWidth="1.5" />
-      <text x="17" y="22" textAnchor="middle" fontFamily="Rajdhani, sans-serif" fontWeight="700" fontSize="13" fill="#7A5B00">UC</text>
-      <defs>
-        <linearGradient id="coinGrad" x1="0" y1="0" x2="34" y2="34" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#FFE38A" />
-          <stop offset="1" stopColor="#F0B93E" />
-        </linearGradient>
-      </defs>
-    </svg>
-  )
-}
-
 export default function OrderPage() {
+  const { gameKey } = useParams()
+  const game = getGame(gameKey)
   const { t } = useLanguage()
+
   const [step, setStep] = useState(1) // 1 = hili pakote, 2 = pagamentu
   const [selectedPkg, setSelectedPkg] = useState(null)
   const [qty, setQty] = useState(1)
@@ -35,14 +26,14 @@ export default function OrderPage() {
   const [selectedPayment, setSelectedPayment] = useState(null)
   const [proofFile, setProofFile] = useState(null)
   const [proofPreview, setProofPreview] = useState(null)
-  const [form, setForm] = useState({ name: '', wa: '', gameId: '5', ign: '', note: '' })
+  const [form, setForm] = useState({ name: '', wa: '', gameId: '', zoneId: '', ign: '', note: '' })
   const [submitting, setSubmitting] = useState(false)
   const [msg, setMsg] = useState(null)
   const [lastOrderId, setLastOrderId] = useState(null)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [copied, setCopied] = useState(false)
   const [openTiers, setOpenTiers] = useState(() =>
-    Object.fromEntries(PACKAGES.map((g) => [g.tierKey, true]))
+    Object.fromEntries((game?.tiers ?? []).map((g) => [g.tierKey, true]))
   )
   const toggleTier = (tierKey) => setOpenTiers((o) => ({ ...o, [tierKey]: !o[tierKey] }))
 
@@ -52,18 +43,25 @@ export default function OrderPage() {
   const userIdRef = useRef(null)
   const stepIndicatorRef = useRef(null)
 
+  const isPubg = game?.key === 'pubg'
+
   const handleField = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }))
   const handleGameIdField = (e) => {
     const digitsOnly = e.target.value.replace(/\D/g, '')
     setForm((f) => ({ ...f, gameId: digitsOnly }))
   }
-  const gameIdStartsWrong = form.gameId.length > 0 && !form.gameId.startsWith('5')
+  const handleZoneIdField = (e) => {
+    const digitsOnly = e.target.value.replace(/\D/g, '')
+    setForm((f) => ({ ...f, zoneId: digitsOnly }))
+  }
+  const gameIdStartsWrong = isPubg && form.gameId.length > 0 && !form.gameId.startsWith('5')
 
   const subtotal = useMemo(() => (selectedPkg ? selectedPkg.price * qty : 0), [selectedPkg, qty])
 
   const step1Valid =
-    selectedPkg && form.name.trim() && form.wa.trim() &&
-    form.gameId.length > 1 && form.gameId.startsWith('5') && form.ign.trim()
+    selectedPkg && form.name.trim() && form.wa.trim() && form.ign.trim() &&
+    (isPubg ? (form.gameId.length > 1 && form.gameId.startsWith('5')) : form.gameId.trim().length > 0) &&
+    (!game?.hasZoneId || form.zoneId.trim().length > 0)
 
   const step2Valid = selectedPayment && proofFile
 
@@ -77,10 +75,10 @@ export default function OrderPage() {
     reader.readAsDataURL(file)
   }
 
-  // Set-focus: bainhira cliente hili denom UC no kolona User ID sei mamuk,
+  // Set-focus: bainhira cliente hili denom no kolona User ID sei mamuk,
   // foka automátikamente ba kolona User ID, ho movimentu scroll neneik (la'os lalais/diretu).
   useEffect(() => {
-    if (selectedPkg && form.gameId.length <= 1 && userIdRef.current) {
+    if (selectedPkg && form.gameId.length === 0 && userIdRef.current) {
       userIdRef.current.focus({ preventScroll: true })
       userIdRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
     }
@@ -105,7 +103,7 @@ export default function OrderPage() {
     setSelectedPayment(null)
     setProofFile(null)
     setProofPreview(null)
-    setForm({ name: '', wa: '', gameId: '5', ign: '', note: '' })
+    setForm({ name: '', wa: '', gameId: '', zoneId: '', ign: '', note: '' })
     setFlowStage(1)
   }
 
@@ -114,7 +112,7 @@ export default function OrderPage() {
     setSubmitting(true)
     setMsg(null)
     try {
-      const orderId = genOrderId()
+      const orderId = genOrderId(game.orderPrefix)
       const rawExt = proofFile.name.includes('.') ? proofFile.name.split('.').pop() : ''
       const fileExt = (rawExt || (proofFile.type ? proofFile.type.split('/').pop() : '') || 'jpg')
         .toLowerCase()
@@ -141,14 +139,16 @@ export default function OrderPage() {
 
       const { error: insertError } = await supabase.from('orders').insert({
         id: orderId,
+        game: game.key,
         customer_name: form.name.trim(),
         whatsapp: form.wa.trim(),
         game_id: form.gameId.trim(),
+        zone_id: game.hasZoneId ? form.zoneId.trim() : null,
         ign: form.ign.trim(),
         note: form.note.trim(),
         payment_method: PAYMENT_METHOD_STORAGE_LABEL[selectedPayment.id],
-        pkg_uc: selectedPkg.uc * qty,
-        pkg_unit_uc: selectedPkg.uc,
+        pkg_uc: selectedPkg.amount * qty,
+        pkg_unit_uc: selectedPkg.amount,
         qty: qty,
         pkg_price: subtotal,
         proof_url: proofUrl,
@@ -170,10 +170,15 @@ export default function OrderPage() {
     }
   }
 
+  if (!game) return <Navigate to="/" replace />
+
+  const userIdLabel = isPubg ? t('user_id_label') : t('user_id_label_generic')
+  const userIdPlaceholder = isPubg ? t('user_id_placeholder') : t('user_id_placeholder_generic')
+
   return (
     <>
       <div className="hero">
-        <h1>{t('hero_title')}</h1>
+        <h1>{t('hero_title_for', game.name)}</h1>
         <div className="flow-track">
           <span className="flow-flag" aria-hidden="true">🚩</span>
           <span className="flow-line"></span>
@@ -208,16 +213,16 @@ export default function OrderPage() {
         <div className="split-layout">
           <div className="panel-card">
             <div className="shop-header">
-              <div className="badge-icon">UC</div>
+              <div className="badge-icon" style={{ background: game.accentColor }}>{game.currencyLabel === 'UC' ? 'UC' : '◆'}</div>
               <div>
-                <h1>{t('shop_title')}</h1>
+                <h1>{t('shop_title_for', game.name)}</h1>
                 <div className="avail"><i>✓</i> {t('shop_avail')}</div>
               </div>
             </div>
 
             <div className="select-product-label">{t('select_product_label')}</div>
 
-            {PACKAGES.map((group) => (
+            {game.tiers.map((group) => (
               <div className="tier-block" key={group.tierKey}>
                 <div className="tier-head tier-head-toggle" onClick={() => toggleTier(group.tierKey)}>
                   <h3>{t(`tier_${group.tierKey}`)}</h3>
@@ -228,13 +233,13 @@ export default function OrderPage() {
                   <div className="pkg-grid">
                     {group.items.map((item) => (
                       <div
-                        key={item.uc}
-                        className={`pkg-card${selectedPkg?.uc === item.uc ? ' selected' : ''}`}
+                        key={item.amount}
+                        className={`pkg-card${selectedPkg?.amount === item.amount ? ' selected' : ''}`}
                         onClick={() => setSelectedPkg(item)}
                       >
                         <div className="pkg-card-top">
-                          <CoinIcon size={28} />
-                          <div className="pkg-uc-big">{item.uc.toLocaleString()}<span className="pkg-uc-label">UC</span></div>
+                          <DenomIcon game={game} size={28} />
+                          <div className="pkg-uc-big">{item.amount.toLocaleString()}<span className="pkg-uc-label">{game.currencyLabel}</span></div>
                         </div>
                         <div className="price">${item.price.toFixed(2)}</div>
                       </div>
@@ -247,9 +252,9 @@ export default function OrderPage() {
 
           <div className="panel-card sticky-checkout">
             <div className="checkout-header">
-              <div className="avatar"><CoinIcon size={20} /></div>
+              <div className="avatar"><DenomIcon game={game} size={20} /></div>
               <div>
-                <div className="name">UC-PUBG Timor Leste</div>
+                <div className="name">{game.name} — Timor Leste</div>
                 <div className="sub">{t('checkout_process_time')}</div>
               </div>
             </div>
@@ -257,10 +262,10 @@ export default function OrderPage() {
             {selectedPkg ? (
               <div className="selected-pkg">
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <CoinIcon size={28} />
+                  <DenomIcon game={game} size={28} />
                   <div>
                     <div className="label">{t('selected_pkg_label')}</div>
-                    <div className="val">{selectedPkg.uc.toLocaleString()} UC</div>
+                    <div className="val">{selectedPkg.amount.toLocaleString()} {game.currencyLabel}</div>
                   </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
@@ -273,7 +278,7 @@ export default function OrderPage() {
             )}
 
             <div className="field">
-              <label htmlFor="f-gameid">{t('user_id_label')}</label>
+              <label htmlFor="f-gameid">{userIdLabel}</label>
               <input
                 id="f-gameid"
                 ref={userIdRef}
@@ -281,13 +286,28 @@ export default function OrderPage() {
                 onChange={handleGameIdField}
                 inputMode="numeric"
                 pattern="[0-9]*"
-                placeholder={t('user_id_placeholder')}
+                placeholder={userIdPlaceholder}
                 style={gameIdStartsWrong ? { borderColor: 'var(--danger)' } : undefined}
               />
               {gameIdStartsWrong && (
                 <div className="field-error">{t('user_id_must_start_5')}</div>
               )}
             </div>
+
+            {game.hasZoneId && (
+              <div className="field">
+                <label htmlFor="f-zoneid">{t('zone_id_label')}</label>
+                <input
+                  id="f-zoneid"
+                  value={form.zoneId}
+                  onChange={handleZoneIdField}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  placeholder={t('zone_id_placeholder')}
+                />
+              </div>
+            )}
+
             <div className="field">
               <label htmlFor="f-ign">{t('nickname_label')}</label>
               <input id="f-ign" value={form.ign} onChange={handleField('ign')} placeholder={t('nickname_placeholder')} />
@@ -325,11 +345,11 @@ export default function OrderPage() {
             {selectedPkg && (
               <div className="uc-breakdown">
                 <div className="uc-breakdown-row">
-                  <span>{selectedPkg.uc.toLocaleString()} UC × {qty}</span>
+                  <span>{selectedPkg.amount.toLocaleString()} {game.currencyLabel} × {qty}</span>
                 </div>
                 <div className="uc-breakdown-row total">
                   <span>{t('total_uc_label')}</span>
-                  <span>{(selectedPkg.uc * qty).toLocaleString()} UC</span>
+                  <span>{(selectedPkg.amount * qty).toLocaleString()} {game.currencyLabel}</span>
                 </div>
               </div>
             )}
@@ -416,16 +436,19 @@ export default function OrderPage() {
             <h3>{t('order_info_title')}</h3>
             <div className="order-info-card">
               <div className="order-info-head">
-                <CoinIcon size={40} />
+                <DenomIcon game={game} size={40} />
                 <div className="meta">
-                  <div className="uc-line">{selectedPkg.uc.toLocaleString()} UC × {qty}</div>
-                  <div className="sub-line">{t('user_id_label')}: {form.gameId} · {form.ign}<button className="edit-link" onClick={() => setStep(1)}>{t('edit_link')}</button></div>
+                  <div className="uc-line">{selectedPkg.amount.toLocaleString()} {game.currencyLabel} × {qty}</div>
+                  <div className="sub-line">
+                    {userIdLabel}: {form.gameId}{game.hasZoneId ? ` (${form.zoneId})` : ''} · {form.ign}
+                    <button className="edit-link" onClick={() => setStep(1)}>{t('edit_link')}</button>
+                  </div>
                 </div>
                 <div className="price-col">${subtotal.toFixed(2)}</div>
               </div>
               <div className="order-info-total-row">
                 <span>{t('total_uc_label')}</span>
-                <span>{(selectedPkg.uc * qty).toLocaleString()} UC</span>
+                <span>{(selectedPkg.amount * qty).toLocaleString()} {game.currencyLabel}</span>
               </div>
             </div>
 

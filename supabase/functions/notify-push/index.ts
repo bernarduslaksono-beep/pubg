@@ -31,13 +31,18 @@ Deno.serve(async (req) => {
     const { data: subs, error } = await supabase.from("push_subscriptions").select("*");
     if (error) throw error;
 
-    const ucLine = order.pkg_unit_uc
-      ? `${order.pkg_unit_uc} UC × ${order.qty} (${order.pkg_uc} UC)`
-      : `${order.pkg_uc} UC`;
+    const GAME_NAMES = { pubg: "PUBG Mobile", ml: "Mobile Legends", ff: "Free Fire" };
+    const CURRENCY = { pubg: "UC", ml: "Diamond", ff: "Diamond" };
+    const gameName = GAME_NAMES[order.game] ?? order.game ?? "";
+    const unit = CURRENCY[order.game] ?? "UC";
+
+    const amountLine = order.pkg_unit_uc
+      ? `${order.pkg_unit_uc} ${unit} × ${order.qty} (${order.pkg_uc} ${unit})`
+      : `${order.pkg_uc} ${unit}`;
 
     const notifPayload = JSON.stringify({
-      title: "🔔 Pedidu UC Foun!",
-      body: `${order.customer_name} — ${ucLine} — $${order.pkg_price}`,
+      title: `🔔 Pedidu ${gameName} Foun!`,
+      body: `${order.customer_name} — ${amountLine} — $${order.pkg_price}`,
       orderId: order.id,
     });
 

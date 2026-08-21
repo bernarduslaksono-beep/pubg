@@ -1,4 +1,5 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useRef } from 'react'
+import { GAMES } from '../data/games.js'
 
 function playBeep() {
   try {
@@ -20,20 +21,23 @@ function playBeep() {
 
 export default function OrderToast({ order, onDismiss }) {
   const timerRef = useRef(null)
+  const gameName = order ? (GAMES[order.game]?.name || order.game) : ''
+  const currency = order ? (GAMES[order.game]?.currencyLabel || 'UC') : 'UC'
 
   useEffect(() => {
     if (!order) return
     playBeep()
 
     if ('Notification' in window && Notification.permission === 'granted' && document.hidden) {
-      new Notification('🔔 Pedidu UC Foun!', {
-        body: `${order.customer_name} — ${order.pkg_uc.toLocaleString()} UC`,
+      new Notification(`🔔 Pedidu ${gameName} Foun!`, {
+        body: `${order.customer_name} — ${order.pkg_uc.toLocaleString()} ${currency}`,
         icon: '/icons/icon-192.png',
       })
     }
 
     timerRef.current = setTimeout(onDismiss, 6000)
     return () => clearTimeout(timerRef.current)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [order])
 
   if (!order) return null
@@ -42,8 +46,8 @@ export default function OrderToast({ order, onDismiss }) {
     <div className="order-toast">
       <div className="order-toast-icon">🔔</div>
       <div className="order-toast-body">
-        <div className="order-toast-title">Pedidu UC Foun!</div>
-        <div className="order-toast-sub">{order.customer_name} — {order.pkg_uc.toLocaleString()} UC (${Number(order.pkg_price).toFixed(2)})</div>
+        <div className="order-toast-title">Pedidu {gameName} Foun!</div>
+        <div className="order-toast-sub">{order.customer_name} — {order.pkg_uc.toLocaleString()} {currency} (${Number(order.pkg_price).toFixed(2)})</div>
       </div>
       <button className="order-toast-close" onClick={onDismiss}>✕</button>
     </div>

@@ -23,7 +23,9 @@ create table if not exists public.orders (
   created_at timestamptz not null default now(),
   pkg_unit_uc integer,
   qty integer not null default 1,
-  admin_comment text default ''
+  admin_comment text default '',
+  game text not null default 'pubg' check (game in ('pubg','ml','ff')),
+  zone_id text
 );
 
 -- Se tabela ona iha husi antes (versaun tuan), hatama kolona foun ne'e
@@ -31,6 +33,16 @@ create table if not exists public.orders (
 alter table public.orders add column if not exists pkg_unit_uc integer;
 alter table public.orders add column if not exists qty integer not null default 1;
 alter table public.orders add column if not exists admin_comment text default '';
+alter table public.orders add column if not exists game text not null default 'pubg';
+alter table public.orders add column if not exists zone_id text;
+do $$
+begin
+  if not exists (
+    select 1 from pg_constraint where conname = 'orders_game_check'
+  ) then
+    alter table public.orders add constraint orders_game_check check (game in ('pubg','ml','ff'));
+  end if;
+end $$;
 
 -- 2) Hamosu Row Level Security (RLS) — importante atu proteje data cliente
 alter table public.orders enable row level security;
@@ -65,20 +77,23 @@ create policy "admin_can_delete_orders"
   using (true);
 
 -- 3) Funsaun públiku ba "Cek Status" — klienti bele buka uza Order ID de'it,
---    WhatsApp de'it, ka rua-rua (importante: pelumenus 1 filtru tenki fo)
+--    WhatsApp de'it, ka rua-rua (importante: pelumenus 1 filtru tenki fo).
+--    p_game opsional — atu limita rezultadu ba jogu ida de'it (pubg/ml/ff).
 drop function if exists public.track_order(text, text);
-
 drop function if exists public.track_orders(text, text);
+drop function if exists public.track_orders(text, text, text);
 
-create or replace function public.track_orders(p_order_id text default null, p_whatsapp text default null)
+create or replace function public.track_orders(p_order_id text default null, p_whatsapp text default null, p_game text default null)
 returns table (
   id text,
   status text,
+  game text,
   pkg_uc integer,
   pkg_unit_uc integer,
   qty integer,
   pkg_price numeric,
   game_id text,
+  zone_id text,
   ign text,
   payment_method text,
   admin_comment text,
@@ -88,16 +103,17 @@ language sql
 security definer
 set search_path = public
 as $$
-  select o.id, o.status, o.pkg_uc, o.pkg_unit_uc, o.qty, o.pkg_price, o.game_id, o.ign, o.payment_method, o.admin_comment, o.created_at
+  select o.id, o.status, o.game, o.pkg_uc, o.pkg_unit_uc, o.qty, o.pkg_price, o.game_id, o.zone_id, o.ign, o.payment_method, o.admin_comment, o.created_at
   from public.orders o
   where (p_order_id is not null or p_whatsapp is not null)
     and (p_order_id is null or o.id = p_order_id)
     and (p_whatsapp is null or o.whatsapp = p_whatsapp)
+    and (p_game is null or o.game = p_game)
   order by o.created_at desc
   limit 50;
 $$;
 
-grant execute on function public.track_orders(text, text) to anon, authenticated;
+grant execute on function public.track_orders(text, text, text) to anon, authenticated;
 
 -- 4) Storage bucket ba imajen bukti transferénsia
 insert into storage.buckets (id, name, public)
@@ -164,7 +180,7 @@ language plpgsql
 as $$
 begin
   perform net.http_post(
-    url := 'https://<PROJECT-REF>.supabase.co/functions/v1/notify-push',
+    url := 'https://zreejzlomoroygsuogea.supabase.co/functions/v1/notify-push',
     headers := '{"Content-Type": "application/json"}'::jsonb,
     body := jsonb_build_object('type', 'INSERT', 'table', 'orders', 'record', row_to_json(NEW))
   );
@@ -177,4 +193,46 @@ create trigger orders_notify_push
   after insert on public.orders
   for each row
   execute function public.trigger_notify_push();
+
+-- =====================================================================
+-- 7) Visitor counter ba portal (halaman "Hili Jogu")
+-- =====================================================================
+create table if not exists public.visitor_stats (
+  id smallint primary key default 1,
+  count bigint not null default 0,
+  constraint single_row check (id = 1)
+);
+insert into public.visitor_stats (id, count) values (1, 0) on conflict (id) do nothing;
+
+alter table public.visitor_stats enable row level security;
+
+-- La bele haree/troka diretamente husi tabela — de'it liu husi funsaun kraik
+drop policy if exists "no_direct_access_visitor_stats" on public.visitor_stats;
+create policy "no_direct_access_visitor_stats"
+  on public.visitor_stats for all
+  to anon, authenticated
+  using (false)
+  with check (false);
+
+create or replace function public.increment_visitor_count()
+returns bigint
+language sql
+security definer
+set search_path = public
+as $$
+  update public.visitor_stats set count = count + 1 where id = 1
+  returning count;
+$$;
+
+create or replace function public.get_visitor_count()
+returns bigint
+language sql
+security definer
+set search_path = public
+as $$
+  select count from public.visitor_stats where id = 1;
+$$;
+
+grant execute on function public.increment_visitor_count() to anon, authenticated;
+grant execute on function public.get_visitor_count() to anon, authenticated;
 

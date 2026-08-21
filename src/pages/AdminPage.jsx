@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../supabase.js'
 import { STATUS_LABELS } from '../data/packages.js'
+import { GAMES } from '../data/games.js'
 import NotificationSetup from '../components/NotificationSetup.jsx'
 import OrderToast from '../components/OrderToast.jsx'
 
@@ -12,12 +13,35 @@ const FILTERS = [
   { key: 'dibatalkan', label: 'Kanseladu' },
 ]
 
+const GAME_FILTERS = [
+  { key: 'all', label: 'Hotu Jogu' },
+  { key: 'pubg', label: 'PUBG' },
+  { key: 'ml', label: 'Mobile Legends' },
+  { key: 'ff', label: 'Free Fire' },
+]
+
+function currencyOf(gameKey) {
+  return GAMES[gameKey]?.currencyLabel || 'UC'
+}
+function gameNameOf(gameKey) {
+  return GAMES[gameKey]?.name || gameKey
+}
+function gameColorOf(gameKey) {
+  return GAMES[gameKey]?.accentColor || '#6E7787'
+}
+
 // Foti path storage husi public URL, ba ne'ebe presiza atu apaga file husi bucket
 function storagePathFromUrl(url) {
   if (!url) return null
   const marker = '/proofs/'
   const idx = url.indexOf(marker)
   return idx >= 0 ? url.slice(idx + marker.length) : null
+}
+
+function formatDate(ts) {
+  return ts ? new Date(ts).toLocaleString('id-ID', {
+    day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit',
+  }) : '-'
 }
 
 function AdminLogin() {
@@ -63,6 +87,7 @@ function OrderDetailModal({ order, onClose, onStatusSaved, onDeleted }) {
   const [adminComment, setAdminComment] = useState(order.admin_comment || '')
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const currency = currencyOf(order.game)
 
   const handleSave = async () => {
     setSaving(true)
@@ -107,21 +132,26 @@ function OrderDetailModal({ order, onClose, onStatusSaved, onDeleted }) {
           <button onClick={onClose}>✕</button>
         </div>
 
-        <div className="mono" style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 10 }}>{order.id}</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+          <span className="mono" style={{ fontSize: 13, color: 'var(--muted)' }}>{order.id}</span>
+          <span className="game-tag" style={{ '--tag-color': gameColorOf(order.game) }}>{gameNameOf(order.game)}</span>
+        </div>
 
         <div className="result-row"><span className="k">Cliente</span><span className="v">{order.customer_name}</span></div>
         <div className="result-row"><span className="k">WhatsApp</span><span className="v">{order.whatsapp}</span></div>
         <div className="result-row"><span className="k">User ID</span><span className="v">{order.game_id}</span></div>
+        {order.zone_id && <div className="result-row"><span className="k">Zone ID</span><span className="v">{order.zone_id}</span></div>}
         <div className="result-row"><span className="k">Nickname</span><span className="v">{order.ign}</span></div>
         <div className="result-row">
-          <span className="k">Pakote UC</span>
+          <span className="k">Pakote {currency}</span>
           <span className="v">
-            {order.pkg_unit_uc ? `${order.pkg_unit_uc.toLocaleString()} UC × ${order.qty}` : `${order.pkg_uc.toLocaleString()} UC`}
+            {order.pkg_unit_uc ? `${order.pkg_unit_uc.toLocaleString()} ${currency} × ${order.qty}` : `${order.pkg_uc.toLocaleString()} ${currency}`}
           </span>
         </div>
-        <div className="result-row"><span className="k">Total UC</span><span className="v">{order.pkg_uc.toLocaleString()} UC</span></div>
+        <div className="result-row"><span className="k">Total {currency}</span><span className="v">{order.pkg_uc.toLocaleString()} {currency}</span></div>
         <div className="result-row"><span className="k">Osan</span><span className="v">${Number(order.pkg_price).toFixed(2)}</span></div>
         <div className="result-row"><span className="k">Metode Pagamentu</span><span className="v">{order.payment_method}</span></div>
+        <div className="result-row"><span className="k">Data</span><span className="v">{formatDate(order.created_at)}</span></div>
         {order.note && <div className="result-row"><span className="k">Nota</span><span className="v">{order.note}</span></div>}
 
         <div style={{ margin: '16px 0' }}>
@@ -188,6 +218,7 @@ function persistSeenIds(set) {
 function Dashboard() {
   const [orders, setOrders] = useState([])
   const [filter, setFilter] = useState('all')
+  const [gameFilter, setGameFilter] = useState('all')
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState(null)
   const [toastOrder, setToastOrder] = useState(null)
@@ -241,16 +272,17 @@ function Dashboard() {
 
   const filtered = useMemo(() => {
     let list = filter === 'all' ? orders : orders.filter((o) => o.status === filter)
+    list = gameFilter === 'all' ? list : list.filter((o) => o.game === gameFilter)
     const q = search.trim().toLowerCase()
     if (q) {
       list = list.filter((o) =>
-        [o.id, o.customer_name, o.whatsapp, o.game_id, o.ign]
+        [o.id, o.customer_name, o.whatsapp, o.game_id, o.zone_id, o.ign]
           .filter(Boolean)
           .some((field) => field.toLowerCase().includes(q))
       )
     }
     return list
-  }, [orders, filter, search])
+  }, [orders, filter, gameFilter, search])
 
   const handleQuickDelete = async (order, e) => {
     e.stopPropagation()
@@ -267,8 +299,6 @@ function Dashboard() {
     }
   }
 
-  const formatDate = (ts) => (ts ? new Date(ts).toLocaleDateString('id-ID') : '-')
-
   return (
     <>
       <div className="hero" style={{ marginBottom: 24 }}>
@@ -284,8 +314,18 @@ function Dashboard() {
       <div className="stat-grid">
         <div className="stat-card red"><div className="lbl">Total Pedidu</div><div className="num">{stats.total}</div></div>
         <div className="stat-card gold"><div className="lbl">Hein Verifikasaun</div><div className="num">{stats.pending}</div></div>
-        <div className="stat-card green"><div className="lbl">UC Haruka Ona</div><div className="num">{stats.sent}</div></div>
+        <div className="stat-card green"><div className="lbl">Haruka Ona</div><div className="num">{stats.sent}</div></div>
         <div className="stat-card"><div className="lbl">Rendimentu Totál</div><div className="num">${stats.revenue.toFixed(2)}</div></div>
+      </div>
+
+      <div className="toolbar">
+        <div className="filter-tabs">
+          {GAME_FILTERS.map((f) => (
+            <button key={f.key} className={gameFilter === f.key ? 'active' : ''} onClick={() => setGameFilter(f.key)}>
+              {f.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="toolbar">
@@ -315,8 +355,9 @@ function Dashboard() {
             <thead>
               <tr>
                 <th>Order ID</th>
+                <th>Jogu</th>
                 <th>Cliente</th>
-                <th>Pakote UC</th>
+                <th>Pakote</th>
                 <th>Osan</th>
                 <th>Pagamentu</th>
                 <th>Data</th>
@@ -327,6 +368,7 @@ function Dashboard() {
             <tbody>
               {filtered.map((o) => {
                 const isUnread = !seenIds.has(o.id)
+                const currency = currencyOf(o.game)
                 return (
                   <tr
                     key={o.id}
@@ -339,13 +381,16 @@ function Dashboard() {
                       {o.id}
                     </td>
                     <td>
+                      <span className="game-tag" style={{ '--tag-color': gameColorOf(o.game) }}>{gameNameOf(o.game)}</span>
+                    </td>
+                    <td>
                       {o.customer_name}
                       <br />
                       <span style={{ color: 'var(--muted)', fontSize: 11.5 }}>
-                        {o.whatsapp} · {o.game_id}{o.ign ? ` · ${o.ign}` : ''}
+                        {o.whatsapp} · {o.game_id}{o.zone_id ? ` (${o.zone_id})` : ''}{o.ign ? ` · ${o.ign}` : ''}
                       </span>
                     </td>
-                    <td>{o.pkg_uc.toLocaleString()} UC</td>
+                    <td>{o.pkg_uc.toLocaleString()} {currency}</td>
                     <td>${Number(o.pkg_price).toFixed(2)}</td>
                     <td style={{ fontSize: 12, color: 'var(--muted)' }}>{o.payment_method || '-'}</td>
                     <td style={{ fontSize: 12, color: 'var(--muted)' }}>{formatDate(o.created_at)}</td>

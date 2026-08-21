@@ -1,8 +1,12 @@
 import { useState } from 'react'
+import { useParams, Navigate } from 'react-router-dom'
 import { supabase } from '../supabase.js'
+import { getGame } from '../data/games.js'
 import { useLanguage } from '../i18n/LanguageContext.jsx'
 
 export default function TrackPage() {
+  const { gameKey } = useParams()
+  const game = getGame(gameKey)
   const { t, statusLabel } = useLanguage()
   const [oid, setOid] = useState('')
   const [wa, setWa] = useState('')
@@ -27,6 +31,7 @@ export default function TrackPage() {
       const { data, error } = await supabase.rpc('track_orders', {
         p_order_id: trimmedOid || null,
         p_whatsapp: trimmedWa || null,
+        p_game: game.key,
       })
       if (error) throw error
       if (!data || data.length === 0) {
@@ -48,6 +53,7 @@ export default function TrackPage() {
       const { data, error } = await supabase.rpc('track_orders', {
         p_order_id: orderId,
         p_whatsapp: null,
+        p_game: game.key,
       })
       if (!error && data && data.length > 0) {
         setOrders((prev) => prev.map((o) => (o.id === orderId ? data[0] : o)))
@@ -65,17 +71,19 @@ export default function TrackPage() {
 
   const formatDate = (ts) => (ts ? new Date(ts).toLocaleString('id-ID') : '-')
 
+  if (!game) return <Navigate to="/" replace />
+
   return (
     <>
       <div className="hero">
         <div className="eyebrow"><span className="dot"></span> {t('track_eyebrow')}</div>
-        <h1>{t('track_title_line1')}<br /><span>{t('track_title_line2')}</span></h1>
+        <h1>{t('track_title_line1')}<br /><span>{game.name}.</span></h1>
         <p>{t('track_desc')}</p>
       </div>
       <div className="track-box">
         <div className="field">
           <label htmlFor="t-oid">{t('order_id_label')} <span style={{ color: 'var(--muted)', fontWeight: 400 }}>{t('optional_label')}</span></label>
-          <input id="t-oid" className="mono" value={oid} onChange={(e) => setOid(e.target.value)} placeholder="cth. OA-M2K3X9" />
+          <input id="t-oid" className="mono" value={oid} onChange={(e) => setOid(e.target.value)} placeholder={`cth. ${game.orderPrefix}-M2K3X9`} />
         </div>
         <div className="field">
           <label htmlFor="t-wa">{t('whatsapp_label')} <span style={{ color: 'var(--muted)', fontWeight: 400 }}>{t('optional_label')}</span></label>
@@ -109,12 +117,15 @@ export default function TrackPage() {
                 <div className="result-row">
                   <span className="k">{t('pkg_row_label')}</span>
                   <span className="v">
-                    {order.pkg_unit_uc ? `${order.pkg_unit_uc.toLocaleString()} UC × ${order.qty}` : `${order.pkg_uc.toLocaleString()} UC`}
+                    {order.pkg_unit_uc ? `${order.pkg_unit_uc.toLocaleString()} ${game.currencyLabel} × ${order.qty}` : `${order.pkg_uc.toLocaleString()} ${game.currencyLabel}`}
                   </span>
                 </div>
-                <div className="result-row"><span className="k">{t('total_uc_label')}</span><span className="v">{order.pkg_uc.toLocaleString()} UC</span></div>
+                <div className="result-row"><span className="k">{t('total_uc_label')}</span><span className="v">{order.pkg_uc.toLocaleString()} {game.currencyLabel}</span></div>
                 <div className="result-row"><span className="k">{t('price_row_label')}</span><span className="v">${Number(order.pkg_price).toFixed(2)}</span></div>
                 <div className="result-row"><span className="k">{t('game_id_row_label')}</span><span className="v">{order.game_id}</span></div>
+                {game.hasZoneId && (
+                  <div className="result-row"><span className="k">{t('zone_id_label')}</span><span className="v">{order.zone_id || '-'}</span></div>
+                )}
                 <div className="result-row"><span className="k">{t('pubg_name_row_label')}</span><span className="v">{order.ign || '-'}</span></div>
                 <div className="result-row"><span className="k">{t('payment_method_title')}</span><span className="v">{order.payment_method || '-'}</span></div>
                 <div className="result-row"><span className="k">{t('date_row_label')}</span><span className="v">{formatDate(order.created_at)}</span></div>

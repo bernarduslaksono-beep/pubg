@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Routes, Route, Link, useLocation, useParams } from 'react-router-dom'
 import PortalPage from './pages/PortalPage.jsx'
 import OrderPage from './pages/OrderPage.jsx'
@@ -7,32 +7,53 @@ import AdminPage from './pages/AdminPage.jsx'
 import InstallPrompt from './components/InstallPrompt.jsx'
 import Footer from './components/Footer.jsx'
 import ThemeToggle from './components/ThemeToggle.jsx'
-import TimorLesteFlag from './components/TimorLesteFlag.jsx'
 import ScrollToTopButton from './components/ScrollToTopButton.jsx'
 import { useLanguage } from './i18n/LanguageContext.jsx'
 import { GAMES } from './data/games.js'
+import { hasUnread, subscribeHistoryChanges } from './lib/orderHistory.js'
 import logo from './assets/logo-lojagame.png'
 
 // Rota admin "sekretu" — la aparese iha menu públiku.
 // Troka slug ne'e ba naran seluk se hakarak (dala ida de'it, hafoin fahe link ba ita boot rasik).
 const ADMIN_PATH = '/painel-admin-x29k7'
 
-function TopBar({ gameKey, showAdminTheme }) {
+function TopBar({ gameKey, showAdminTheme, linkBrand = true }) {
   const location = useLocation()
   const { t } = useLanguage()
   const isActive = (path) => location.pathname === path
+  const [unread, setUnread] = useState(false)
+
+  useEffect(() => {
+    if (!gameKey) return
+    const check = () => setUnread(hasUnread(gameKey))
+    check()
+    const unsubscribe = subscribeHistoryChanges(check)
+    return unsubscribe
+  }, [gameKey, location.pathname])
+
+  const brandContent = (
+    <>
+      <img className="brand-logo" src={logo} alt="Loja-Game Timor Leste" />
+      <span className="topbar-tagline">{t('portal_desc')}</span>
+    </>
+  )
 
   return (
     <div className="topbar">
-      <Link to="/" className="topbar-brand-row">
-        <img className="brand-logo" src={logo} alt="Loja-Game Timor Leste" />
-        <TimorLesteFlag />
-        <span className="topbar-tagline">{t('portal_desc')}</span>
-      </Link>
+      {linkBrand ? (
+        <Link to="/" className="topbar-brand-row">{brandContent}</Link>
+      ) : (
+        <div className="topbar-brand-row no-link">{brandContent}</div>
+      )}
       {gameKey && (
         <nav className="topbar-nav-right">
           <Link to={`/${gameKey}`}><button className={isActive(`/${gameKey}`) ? 'active' : ''}>{t('nav_order')}</button></Link>
-          <Link to={`/${gameKey}/track`}><button className={isActive(`/${gameKey}/track`) ? 'active' : ''}>{t('nav_track')}</button></Link>
+          <Link to={`/${gameKey}/track`}>
+            <button className={`nav-btn-with-dot${isActive(`/${gameKey}/track`) ? ' active' : ''}`}>
+              {t('nav_track')}
+              {unread && <span className="nav-unread-dot"></span>}
+            </button>
+          </Link>
         </nav>
       )}
       {showAdminTheme && (
@@ -83,7 +104,7 @@ export default function App() {
   if (isAdminRoute) {
     return (
       <>
-        <TopBar gameKey={null} showAdminTheme />
+        <TopBar gameKey={null} showAdminTheme linkBrand={false} />
         <main>
           <AdminPage />
         </main>

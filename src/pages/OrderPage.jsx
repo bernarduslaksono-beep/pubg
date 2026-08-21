@@ -5,19 +5,7 @@ import { PAYMENT_METHODS, PAYMENT_METHOD_STORAGE_LABEL, WHATSAPP_NUMBER } from '
 import { getGame } from '../data/games.js'
 import DenomIcon from '../components/DenomIcon.jsx'
 import { useLanguage } from '../i18n/LanguageContext.jsx'
-
-const ORDER_HISTORY_KEY = 'order_history'
-
-function saveToOrderHistory(entry) {
-  try {
-    const raw = localStorage.getItem(ORDER_HISTORY_KEY)
-    const list = raw ? JSON.parse(raw) : []
-    const next = [entry, ...list.filter((o) => o.id !== entry.id)].slice(0, 10)
-    localStorage.setItem(ORDER_HISTORY_KEY, JSON.stringify(next))
-  } catch {
-    /* ignora se localStorage la disponivel */
-  }
-}
+import { saveNewOrder } from '../lib/orderHistory.js'
 
 function genOrderId(prefix) {
   return (
@@ -168,7 +156,7 @@ export default function OrderPage() {
       })
       if (insertError) throw insertError
 
-      saveToOrderHistory({ id: orderId, game: game.key, gameName: game.name, createdAt: Date.now() })
+      saveNewOrder({ id: orderId, game: game.key, gameName: game.name, createdAt: Date.now() })
 
       setLastOrderId(orderId)
       setMsg({ type: 'success' })

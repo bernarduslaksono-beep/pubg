@@ -137,8 +137,6 @@ function OrderDetailModal({ order, onClose, onStatusSaved, onDeleted }) {
           <span className="game-tag" style={{ '--tag-color': gameColorOf(order.game) }}>{gameNameOf(order.game)}</span>
         </div>
 
-        <div className="result-row"><span className="k">Cliente</span><span className="v">{order.customer_name}</span></div>
-        <div className="result-row"><span className="k">WhatsApp</span><span className="v">{order.whatsapp}</span></div>
         <div className="result-row"><span className="k">User ID</span><span className="v">{order.game_id}</span></div>
         {order.zone_id && <div className="result-row"><span className="k">Zone ID</span><span className="v">{order.zone_id}</span></div>}
         <div className="result-row"><span className="k">Nickname</span><span className="v">{order.ign}</span></div>
@@ -276,7 +274,7 @@ function Dashboard() {
     const q = search.trim().toLowerCase()
     if (q) {
       list = list.filter((o) =>
-        [o.id, o.customer_name, o.whatsapp, o.game_id, o.zone_id, o.ign]
+        [o.id, o.game_id, o.zone_id, o.ign]
           .filter(Boolean)
           .some((field) => field.toLowerCase().includes(q))
       )
@@ -338,7 +336,7 @@ function Dashboard() {
         </div>
         <input
           className="admin-search"
-          placeholder="Buka Order ID, naran, WhatsApp, User ID..."
+          placeholder="Buka Order ID, User ID, Zone ID, Nickname..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -356,7 +354,7 @@ function Dashboard() {
               <tr>
                 <th>Order ID</th>
                 <th>Jogu</th>
-                <th>Cliente</th>
+                <th>User ID</th>
                 <th>Pakote</th>
                 <th>Osan</th>
                 <th>Pagamentu</th>
@@ -384,10 +382,10 @@ function Dashboard() {
                       <span className="game-tag" style={{ '--tag-color': gameColorOf(o.game) }}>{gameNameOf(o.game)}</span>
                     </td>
                     <td>
-                      {o.customer_name}
+                      {o.game_id}{o.zone_id ? ` (${o.zone_id})` : ''}
                       <br />
                       <span style={{ color: 'var(--muted)', fontSize: 11.5 }}>
-                        {o.whatsapp} · {o.game_id}{o.zone_id ? ` (${o.zone_id})` : ''}{o.ign ? ` · ${o.ign}` : ''}
+                        {o.ign || '-'}
                       </span>
                     </td>
                     <td>{o.pkg_uc.toLocaleString()} {currency}</td>

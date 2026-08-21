@@ -68,31 +68,15 @@ const GAMES = [
 export default function PortalPage() {
   const { t } = useLanguage()
   const navigate = useNavigate()
-  const [visitorCount, setVisitorCount] = useState(null)
 
   useEffect(() => {
-    let cancelled = false
-    const alreadyCounted = sessionStorage.getItem('visit_counted')
-
-    async function countVisit() {
-      try {
-        if (!alreadyCounted) {
-          const { data, error } = await supabase.rpc('increment_visitor_count')
-          if (!error && !cancelled) {
-            setVisitorCount(data)
-            sessionStorage.setItem('visit_counted', '1')
-            return
-          }
-        }
-        // Fallback: cuma haree total ne'ebe ona iha, la aumenta fila fali
-        const { data, error } = await supabase.rpc('get_visitor_count')
-        if (!error && !cancelled) setVisitorCount(data)
-      } catch (err) {
-        console.error(err)
-      }
+    // Konta vizita ba portal ida-ida (de'it dala ida ba kada sesaun browser).
+    // Total ne'e hatudu iha Footer, la iha ne'e ona.
+    if (!sessionStorage.getItem('visit_counted')) {
+      supabase.rpc('increment_visitor_count').then(({ error }) => {
+        if (!error) sessionStorage.setItem('visit_counted', '1')
+      })
     }
-    countVisit()
-    return () => { cancelled = true }
   }, [])
 
   const handleSelect = (game) => {
@@ -102,15 +86,6 @@ export default function PortalPage() {
 
   return (
     <>
-      <div className="hero">
-        <p className="portal-desc">{t('portal_desc')}</p>
-        {visitorCount !== null && (
-          <div className="visitor-badge">
-            👁 {t('visitor_label')}: <b>{visitorCount.toLocaleString()}</b>
-          </div>
-        )}
-      </div>
-
       <div className="game-grid">
         {GAMES.map((game) => (
           <div

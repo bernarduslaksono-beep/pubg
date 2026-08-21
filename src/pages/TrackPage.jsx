@@ -1,27 +1,42 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, Navigate } from 'react-router-dom'
 import { supabase } from '../supabase.js'
 import { getGame } from '../data/games.js'
 import { useLanguage } from '../i18n/LanguageContext.jsx'
+
+const ORDER_HISTORY_KEY = 'order_history'
+
+function loadOrderHistory(gameKey) {
+  try {
+    const raw = localStorage.getItem(ORDER_HISTORY_KEY)
+    const list = raw ? JSON.parse(raw) : []
+    return list.filter((o) => o.game === gameKey).slice(0, 5)
+  } catch {
+    return []
+  }
+}
 
 export default function TrackPage() {
   const { gameKey } = useParams()
   const game = getGame(gameKey)
   const { t, statusLabel } = useLanguage()
   const [oid, setOid] = useState('')
-  const [wa, setWa] = useState('')
   const [msg, setMsg] = useState(null)
   const [orders, setOrders] = useState(null)
   const [loading, setLoading] = useState(false)
   const [refreshingIds, setRefreshingIds] = useState(new Set())
+  const [history, setHistory] = useState([])
 
-  const handleTrack = async () => {
+  useEffect(() => {
+    if (game) setHistory(loadOrderHistory(game.key))
+  }, [game])
+
+  const handleTrack = async (directId) => {
     setOrders(null)
     setMsg(null)
-    const trimmedOid = oid.trim().toUpperCase()
-    const trimmedWa = wa.trim()
+    const trimmedOid = (directId ?? oid).trim().toUpperCase()
 
-    if (!trimmedOid && !trimmedWa) {
+    if (!trimmedOid) {
       setMsg(t('track_empty_input'))
       return
     }
@@ -29,8 +44,8 @@ export default function TrackPage() {
     setLoading(true)
     try {
       const { data, error } = await supabase.rpc('track_orders', {
-        p_order_id: trimmedOid || null,
-        p_whatsapp: trimmedWa || null,
+        p_order_id: trimmedOid,
+        p_whatsapp: null,
         p_game: game.key,
       })
       if (error) throw error
@@ -82,17 +97,28 @@ export default function TrackPage() {
       </div>
       <div className="track-box">
         <div className="field">
-          <label htmlFor="t-oid">{t('order_id_label')} <span style={{ color: 'var(--muted)', fontWeight: 400 }}>{t('optional_label')}</span></label>
+          <label htmlFor="t-oid">{t('order_id_label')}</label>
           <input id="t-oid" className="mono" value={oid} onChange={(e) => setOid(e.target.value)} placeholder={`cth. ${game.orderPrefix}-M2K3X9`} />
         </div>
-        <div className="field">
-          <label htmlFor="t-wa">{t('whatsapp_label')} <span style={{ color: 'var(--muted)', fontWeight: 400 }}>{t('optional_label')}</span></label>
-          <input id="t-wa" value={wa} onChange={(e) => setWa(e.target.value)} placeholder="7XXXXXXX" />
-        </div>
-        <button className="btn btn-primary" onClick={handleTrack} disabled={loading}>
+        <button className="btn btn-primary" onClick={() => handleTrack()} disabled={loading}>
           {loading ? t('track_loading') : t('track_btn')}
         </button>
         {msg && <div className="msg error show">{msg}</div>}
+
+        {!orders && history.length > 0 && (
+          <div className="order-history">
+            <div className="order-history-title">{t('order_history_label')}</div>
+            {history.map((h) => (
+              <div className="order-history-item" key={h.id} onClick={() => { setOid(h.id); handleTrack(h.id) }}>
+                <div>
+                  <div className="oh-id">{h.id}</div>
+                  <div className="oh-meta">{new Date(h.createdAt).toLocaleDateString('id-ID')}</div>
+                </div>
+                <span className="oh-arrow">→</span>
+              </div>
+            ))}
+          </div>
+        )}
 
         {orders && orders.map((order) => {
           const isRefreshing = refreshingIds.has(order.id)

@@ -9,8 +9,8 @@
 -- 1) Tabela orders
 create table if not exists public.orders (
   id text primary key,
-  customer_name text not null,
-  whatsapp text not null,
+  customer_name text,
+  whatsapp text,
   game_id text not null,
   ign text not null,
   note text default '',
@@ -35,6 +35,10 @@ alter table public.orders add column if not exists qty integer not null default 
 alter table public.orders add column if not exists admin_comment text default '';
 alter table public.orders add column if not exists game text not null default 'pubg';
 alter table public.orders add column if not exists zone_id text;
+-- Naran completu no numeru WhatsApp ona hasai husi formuláriu pedidu —
+-- kolona ne'e agora opsional (la bele "not null" ona)
+alter table public.orders alter column customer_name drop not null;
+alter table public.orders alter column whatsapp drop not null;
 do $$
 begin
   if not exists (
@@ -169,7 +173,7 @@ create policy "admin_can_manage_push_subs"
 -- does not exist" (bug husi platform, la'os erru husi setup). Métodu iha ne'e
 -- kontorna problema ne'e.
 --
--- IMPORTANTE: troka <PROJECT-REF> tuir project-ref ita boot nian
+-- Project ref ne'e: zreejzlomoroygsuogea
 -- (haree iha Project Settings > General).
 -- =====================================================================
 create extension if not exists pg_net with schema extensions;

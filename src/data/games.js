@@ -55,13 +55,13 @@ export const GAMES = {
       {
         tierKey: 'medium',
         items: [
-          { amount: 370, price: 10 }, { amount: 408, price: 11 }, { amount: 568, price: 13 }, { amount: 875, price: 20 },
+          { amount: 370, price: 10 }, { amount: 408, price: 11 }, { amount: 568, price: 13 }, { amount: 875, price: 19 },
         ],
       },
       {
         tierKey: 'boot',
         items: [
-          { amount: 966, price: 22 }, { amount: 2010, price: 44 }, { amount: 4830, price: 100 },
+          { amount: 966, price: 21 }, { amount: 2010, price: 41 }, { amount: 4830, price: 98 },
         ],
       },
     ],
@@ -87,14 +87,14 @@ export const GAMES = {
         tierKey: 'medium',
         items: [
           { amount: 1200, price: 13 }, { amount: 1450, price: 16 }, { amount: 1800, price: 19 },
-          { amount: 2000, price: 22 }, { amount: 2160, price: 24 }, { amount: 2400, price: 26 },
+          { amount: 2000, price: 21 }, { amount: 2160, price: 23 }, { amount: 2400, price: 25 },
         ],
       },
       {
         tierKey: 'boot',
         items: [
-          { amount: 3640, price: 40 }, { amount: 4000, price: 43 }, { amount: 4450, price: 48 },
-          { amount: 7290, price: 78 }, { amount: 98000, price: 105 },
+          { amount: 3640, price: 37 }, { amount: 4000, price: 42 }, { amount: 4450, price: 46 },
+          { amount: 7290, price: 71 }, { amount: 9800, price: 93 },
         ],
       },
     ],

@@ -6,6 +6,19 @@ import { getGame } from '../data/games.js'
 import DenomIcon from '../components/DenomIcon.jsx'
 import { useLanguage } from '../i18n/LanguageContext.jsx'
 
+const ORDER_HISTORY_KEY = 'order_history'
+
+function saveToOrderHistory(entry) {
+  try {
+    const raw = localStorage.getItem(ORDER_HISTORY_KEY)
+    const list = raw ? JSON.parse(raw) : []
+    const next = [entry, ...list.filter((o) => o.id !== entry.id)].slice(0, 10)
+    localStorage.setItem(ORDER_HISTORY_KEY, JSON.stringify(next))
+  } catch {
+    /* ignora se localStorage la disponivel */
+  }
+}
+
 function genOrderId(prefix) {
   return (
     `${prefix}-` +
@@ -26,12 +39,13 @@ export default function OrderPage() {
   const [selectedPayment, setSelectedPayment] = useState(null)
   const [proofFile, setProofFile] = useState(null)
   const [proofPreview, setProofPreview] = useState(null)
-  const [form, setForm] = useState({ name: '', wa: '', gameId: '', zoneId: '', ign: '', note: '' })
+  const [form, setForm] = useState({ gameId: '', zoneId: '', ign: '', note: '' })
   const [submitting, setSubmitting] = useState(false)
   const [msg, setMsg] = useState(null)
   const [lastOrderId, setLastOrderId] = useState(null)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [copiedPayId, setCopiedPayId] = useState(null)
   const [openTiers, setOpenTiers] = useState(() =>
     Object.fromEntries((game?.tiers ?? []).map((g) => [g.tierKey, true]))
   )
@@ -59,7 +73,7 @@ export default function OrderPage() {
   const subtotal = useMemo(() => (selectedPkg ? selectedPkg.price * qty : 0), [selectedPkg, qty])
 
   const step1Valid =
-    selectedPkg && form.name.trim() && form.wa.trim() && form.ign.trim() &&
+    selectedPkg && form.ign.trim() &&
     (isPubg ? (form.gameId.length > 1 && form.gameId.startsWith('5')) : form.gameId.trim().length > 0) &&
     (!game?.hasZoneId || form.zoneId.trim().length > 0)
 
@@ -103,7 +117,7 @@ export default function OrderPage() {
     setSelectedPayment(null)
     setProofFile(null)
     setProofPreview(null)
-    setForm({ name: '', wa: '', gameId: '', zoneId: '', ign: '', note: '' })
+    setForm({ gameId: '', zoneId: '', ign: '', note: '' })
     setFlowStage(1)
   }
 
@@ -140,8 +154,6 @@ export default function OrderPage() {
       const { error: insertError } = await supabase.from('orders').insert({
         id: orderId,
         game: game.key,
-        customer_name: form.name.trim(),
-        whatsapp: form.wa.trim(),
         game_id: form.gameId.trim(),
         zone_id: game.hasZoneId ? form.zoneId.trim() : null,
         ign: form.ign.trim(),
@@ -155,6 +167,8 @@ export default function OrderPage() {
         status: 'menunggu_verifikasi',
       })
       if (insertError) throw insertError
+
+      saveToOrderHistory({ id: orderId, game: game.key, gameName: game.name, createdAt: Date.now() })
 
       setLastOrderId(orderId)
       setMsg({ type: 'success' })
@@ -193,14 +207,6 @@ export default function OrderPage() {
           <span className="flow-flag" aria-hidden="true">🏁</span>
         </div>
         <p>{t('hero_desc')}</p>
-        <a
-          className="whatsapp-badge"
-          href={`https://wa.me/670${WHATSAPP_NUMBER}`}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          💬 {t('whatsapp_confirm')}: <b>{WHATSAPP_NUMBER}</b>
-        </a>
       </div>
 
       <div className="step-indicator" ref={stepIndicatorRef} tabIndex={-1} style={{ outline: 'none' }}>
@@ -324,15 +330,6 @@ export default function OrderPage() {
               </div>
             )}
 
-            <div className="field">
-              <label htmlFor="f-name">{t('fullname_label')}</label>
-              <input id="f-name" value={form.name} onChange={handleField('name')} placeholder={t('fullname_placeholder')} />
-            </div>
-            <div className="field">
-              <label htmlFor="f-wa">{t('whatsapp_label')}</label>
-              <input id="f-wa" value={form.wa} onChange={handleField('wa')} placeholder={t('whatsapp_placeholder')} />
-            </div>
-
             {!showNote ? (
               <button className="note-toggle" onClick={() => setShowNote(true)}>{t('add_note_btn')}</button>
             ) : (
@@ -394,11 +391,22 @@ export default function OrderPage() {
                     }}
                   >
                     <div className="pay-card-head">
-                      <span className="pay-radio"></span>
                       <span className="pay-name">{t(pm.typeKey)} — {pm.brand}</span>
                     </div>
                     <div className="pay-detail">
                       <span className="pay-num mono">{pm.number}</span>
+                      <button
+                        type="button"
+                        className={`pay-copy-btn${copiedPayId === pm.id ? ' copied' : ''}`}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          navigator.clipboard.writeText(pm.number)
+                          setCopiedPayId(pm.id)
+                          setTimeout(() => setCopiedPayId((cur) => (cur === pm.id ? null : cur)), 1800)
+                        }}
+                      >
+                        {copiedPayId === pm.id ? `✓ ${t('copied_btn')}` : `⧉ ${t('copy_btn')}`}
+                      </button>
                       <span className="pay-holder">{pm.holder}</span>
                     </div>
                   </div>

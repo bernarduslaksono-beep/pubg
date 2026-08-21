@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
 
     const notifPayload = JSON.stringify({
       title: `🔔 Pedidu ${gameName} Foun!`,
-      body: `${order.customer_name} — ${amountLine} — $${order.pkg_price}`,
+      body: `User ID: ${order.game_id} — ${amountLine} — $${order.pkg_price}`,
       orderId: order.id,
     });
 

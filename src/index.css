@@ -62,23 +62,30 @@ a{color:inherit;}
 
 /* Top bar */
 .topbar{
-  display:flex; align-items:center; justify-content:space-between; gap:12px;
-  padding:16px 28px; border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;
+  padding:14px 28px; border-bottom:1px solid var(--border);
   background:var(--topbar-bg); backdrop-filter:blur(8px);
   position:sticky; top:0; z-index:40;
 }
-.brand{display:flex; align-items:center; gap:10px;}
-.brand-logo{height:44px; width:auto; display:block;}
+.topbar-brand-row{
+  display:flex; align-items:center; gap:12px; text-decoration:none; color:inherit; min-width:0; flex:1;
+}
+.brand-logo{height:46px; width:auto; display:block; flex-shrink:0;}
+.topbar-tagline{
+  font-family:'Rajdhani',sans-serif; font-weight:700; font-size:clamp(11px,2.6vw,21px);
+  color:var(--text); line-height:1.15; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  min-width:0; flex:1;
+}
+.topbar-nav-right{display:flex; gap:4px; background:var(--surface-2); padding:4px; border-radius:10px; border:1px solid var(--border); flex-shrink:0;}
 .topbar-controls{display:flex; align-items:center; gap:10px;}
 
-nav{display:flex; gap:4px; background:var(--surface-2); padding:4px; border-radius:10px; border:1px solid var(--border);}
-nav button{
+nav button, .topbar-nav-right button{
   background:transparent; border:none; color:var(--muted); font-family:'Rajdhani',sans-serif;
   font-weight:600; font-size:14.5px; letter-spacing:0.03em; padding:8px 16px; border-radius:7px;
   cursor:pointer; transition:all .15s ease;
 }
-nav button.active{background:var(--surface); color:var(--red); box-shadow:0 0 0 1px var(--border), var(--shadow);}
-nav button:hover:not(.active){color:var(--text);}
+nav button.active, .topbar-nav-right button.active{background:var(--surface); color:var(--red); box-shadow:0 0 0 1px var(--border), var(--shadow);}
+nav button:hover:not(.active), .topbar-nav-right button:hover:not(.active){color:var(--text);}
 
 .theme-toggle{display:flex; gap:2px; background:var(--surface-2); padding:3px; border-radius:9px; border:1px solid var(--border);}
 .theme-toggle button{
@@ -93,6 +100,15 @@ nav button:hover:not(.active){color:var(--text);}
   padding:6px 10px; border-radius:6px; cursor:pointer; font-size:12px; letter-spacing:0.03em; transition:all .15s ease;
 }
 .lang-toggle button.active{background:var(--surface); color:var(--red); box-shadow:0 0 0 1px var(--border);}
+@media(max-width:760px){
+  .topbar{padding:10px 14px; gap:8px;}
+  .brand-logo{height:32px;}
+  .topbar-nav-right button{padding:7px 11px; font-size:13px;}
+}
+@media(max-width:480px){
+  .topbar-tagline{font-size:11px;}
+  .brand-logo{height:28px;}
+}
 
 main{max-width:1100px; margin:0 auto; padding:36px 24px 80px;}
 
@@ -300,13 +316,16 @@ main{max-width:1100px; margin:0 auto; padding:36px 24px 80px;}
 .pay-card:hover{border-color:var(--gold-border-hover);}
 .pay-card.selected{border-color:var(--gold); background:var(--gold-dim); box-shadow:0 0 0 1.5px var(--gold);}
 .pay-card-head{display:flex; align-items:center; gap:10px; margin-bottom:8px;}
-.pay-radio{width:16px; height:16px; border-radius:50%; border:1.5px solid var(--border); flex-shrink:0; position:relative; background:var(--surface);}
-.pay-card.selected .pay-radio{border-color:var(--gold);}
-.pay-card.selected .pay-radio::after{content:""; position:absolute; inset:3px; border-radius:50%; background:var(--gold);}
 .pay-name{font-family:'Rajdhani',sans-serif; font-weight:600; font-size:14.5px;}
-.pay-detail{display:flex; align-items:baseline; justify-content:space-between; padding-left:26px; gap:10px; flex-wrap:wrap;}
+.pay-detail{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
 .pay-num{font-size:14px; color:var(--gold-text); font-weight:700;}
-.pay-holder{font-size:12px; color:var(--muted);}
+.pay-holder{font-size:12px; color:var(--muted); width:100%;}
+.pay-copy-btn{
+  display:inline-flex; align-items:center; gap:4px; background:var(--surface); border:1px solid var(--border);
+  border-radius:6px; padding:4px 10px; font-size:11.5px; font-weight:600; color:var(--red); cursor:pointer;
+  flex-shrink:0; margin-left:auto;
+}
+.pay-copy-btn.copied{color:var(--success); border-color:var(--success);}
 
 .upload-box{
   display:block; width:100%; box-sizing:border-box;
@@ -470,7 +489,43 @@ select.status-select{
 .modal-head button{background:none; border:none; color:var(--muted); font-size:20px; cursor:pointer; line-height:1;}
 .modal img{width:100%; border-radius:8px; border:1px solid var(--border);}
 
-footer{text-align:center; padding:30px; color:var(--muted); font-size:12px; border-top:1px solid var(--border);}
+.site-footer{
+  border-top:1px solid var(--border); background:var(--surface); margin-top:40px;
+  padding:28px 28px 20px;
+}
+.footer-grid{
+  max-width:1100px; margin:0 auto; display:flex; align-items:center; justify-content:space-between;
+  gap:20px; flex-wrap:wrap;
+}
+.footer-col-end{text-align:right;}
+
+.footer-whatsapp-text{
+  font-size:13.5px; font-weight:600; color:var(--muted); text-decoration:none;
+}
+.footer-whatsapp-text b{color:var(--text); font-family:'JetBrains Mono',monospace;}
+.footer-whatsapp-text:hover{text-decoration:underline;}
+
+.footer-toggles{display:flex; gap:8px; justify-content:flex-end; margin-bottom:10px;}
+.footer-visitor-badge{margin-top:0;}
+
+.footer-copyright{
+  max-width:1100px; margin:20px auto 0; padding-top:16px; border-top:1px solid var(--border);
+  text-align:center; font-size:12px; color:var(--muted);
+}
+@media(max-width:760px){
+  .footer-grid{flex-direction:column; text-align:center; gap:18px;}
+  .footer-col-end{text-align:center;}
+  .footer-toggles{justify-content:center;}
+}
+
+/* Scroll to top button — de'it aparese bainhira scroll toʼo kraik */
+.scroll-top-btn{
+  position:fixed; right:20px; bottom:20px; width:48px; height:48px; border-radius:50%;
+  background:var(--red); color:#fff; border:none; font-size:20px; font-weight:700; cursor:pointer;
+  box-shadow:var(--shadow); z-index:90; display:flex; align-items:center; justify-content:center;
+  transition:transform .15s ease, filter .15s ease;
+}
+.scroll-top-btn:hover{transform:translateY(-3px); filter:brightness(1.08);}
 
 /* Install banner (PWA) */
 .install-banner{
@@ -587,4 +642,32 @@ footer{text-align:center; padding:30px; color:var(--muted); font-size:12px; bord
   .game-badge-icon{width:52px; height:52px; font-size:18px; margin-bottom:12px;}
   .game-name{font-size:16px;}
 }
+
+/* Trust badges */
+.trust-badges{display:flex; flex-wrap:wrap; gap:10px; margin:14px 0 6px;}
+.trust-badge{
+  display:flex; align-items:center; gap:6px; font-size:12px; font-weight:600; color:var(--muted);
+  background:var(--surface-2); border:1px solid var(--border); padding:6px 12px; border-radius:16px;
+}
+.trust-check{color:var(--success); font-weight:700;}
+
+/* Package search */
+.pkg-search{
+  width:100%; background:var(--surface-2); border:1px solid var(--border); border-radius:9px;
+  padding:10px 14px; font-size:13.5px; color:var(--text); margin-top:8px;
+}
+.pkg-search:focus{outline:none; border-color:var(--red); background:var(--surface);}
+
+/* Order history shortcuts (Cek Status) */
+.order-history{margin-top:22px;}
+.order-history-title{font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px;}
+.order-history-item{
+  display:flex; align-items:center; justify-content:space-between; background:var(--surface);
+  border:1px solid var(--border); border-radius:10px; padding:10px 14px; margin-bottom:8px; cursor:pointer;
+  transition:border-color .15s ease;
+}
+.order-history-item:hover{border-color:var(--gold);}
+.order-history-item .oh-id{font-family:'JetBrains Mono',monospace; font-size:12.5px; font-weight:700; color:var(--text);}
+.order-history-item .oh-meta{font-size:11px; color:var(--muted); margin-top:2px;}
+.order-history-item .oh-arrow{color:var(--muted); font-size:14px;}
 

@@ -10,7 +10,7 @@
     <script>
       (function () {
         var saved = localStorage.getItem('theme');
-        if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+        if (saved !== 'light') document.documentElement.setAttribute('data-theme', 'dark');
       })();
     </script>
     <link rel="icon" href="/icons/icon-192.png" type="image/png" />

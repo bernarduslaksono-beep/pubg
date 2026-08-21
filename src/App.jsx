@@ -5,8 +5,10 @@ import OrderPage from './pages/OrderPage.jsx'
 import TrackPage from './pages/TrackPage.jsx'
 import AdminPage from './pages/AdminPage.jsx'
 import InstallPrompt from './components/InstallPrompt.jsx'
+import Footer from './components/Footer.jsx'
 import ThemeToggle from './components/ThemeToggle.jsx'
-import LanguageToggle from './components/LanguageToggle.jsx'
+import TimorLesteFlag from './components/TimorLesteFlag.jsx'
+import ScrollToTopButton from './components/ScrollToTopButton.jsx'
 import { useLanguage } from './i18n/LanguageContext.jsx'
 import { GAMES } from './data/games.js'
 import logo from './assets/logo-lojagame.png'
@@ -15,28 +17,29 @@ import logo from './assets/logo-lojagame.png'
 // Troka slug ne'e ba naran seluk se hakarak (dala ida de'it, hafoin fahe link ba ita boot rasik).
 const ADMIN_PATH = '/painel-admin-x29k7'
 
-function TopBar({ isAdminRoute, gameKey }) {
+function TopBar({ gameKey, showAdminTheme }) {
   const location = useLocation()
   const { t } = useLanguage()
   const isActive = (path) => location.pathname === path
 
   return (
     <div className="topbar">
-      <div className="brand">
-        <Link to="/" style={{ display: 'flex', alignItems: 'center' }}>
-          <img className="brand-logo" src={logo} alt="Loja-Game Timor Leste" />
-        </Link>
-      </div>
+      <Link to="/" className="topbar-brand-row">
+        <img className="brand-logo" src={logo} alt="Loja-Game Timor Leste" />
+        <TimorLesteFlag />
+        <span className="topbar-tagline">{t('portal_desc')}</span>
+      </Link>
       {gameKey && (
-        <nav>
+        <nav className="topbar-nav-right">
           <Link to={`/${gameKey}`}><button className={isActive(`/${gameKey}`) ? 'active' : ''}>{t('nav_order')}</button></Link>
           <Link to={`/${gameKey}/track`}><button className={isActive(`/${gameKey}/track`) ? 'active' : ''}>{t('nav_track')}</button></Link>
         </nav>
       )}
-      <div className="topbar-controls">
-        {!isAdminRoute && <LanguageToggle />}
-        <ThemeToggle />
-      </div>
+      {showAdminTheme && (
+        <div className="topbar-controls">
+          <ThemeToggle />
+        </div>
+      )}
     </div>
   )
 }
@@ -46,26 +49,17 @@ function GameRouteShell({ children }) {
   const validGame = Boolean(GAMES[gameKey])
   return (
     <>
-      <TopBar isAdminRoute={false} gameKey={validGame ? gameKey : null} />
+      <TopBar gameKey={validGame ? gameKey : null} />
       <main>{children}</main>
-      <FooterAndInstall />
-    </>
-  )
-}
-
-function FooterAndInstall() {
-  const { t } = useLanguage()
-  return (
-    <>
-      <footer>{t('footer_text')}</footer>
+      <Footer />
       <InstallPrompt />
+      <ScrollToTopButton />
     </>
   )
 }
 
 export default function App() {
   const location = useLocation()
-  const { t } = useLanguage()
   const isAdminRoute = location.pathname === ADMIN_PATH
   const isPortalRoute = location.pathname === '/'
 
@@ -89,10 +83,11 @@ export default function App() {
   if (isAdminRoute) {
     return (
       <>
-        <TopBar isAdminRoute />
+        <TopBar gameKey={null} showAdminTheme />
         <main>
           <AdminPage />
         </main>
+        <ScrollToTopButton />
       </>
     )
   }
@@ -100,12 +95,13 @@ export default function App() {
   if (isPortalRoute) {
     return (
       <>
-        <TopBar isAdminRoute={false} gameKey={null} />
+        <TopBar gameKey={null} />
         <main>
           <PortalPage />
         </main>
-        <footer>{t('footer_text')}</footer>
+        <Footer />
         <InstallPrompt />
+        <ScrollToTopButton />
       </>
     )
   }

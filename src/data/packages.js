@@ -7,6 +7,13 @@ export const PAYMENT_METHODS = [
     holder: "Bernardus Rano Laksono",
   },
   {
+    id: "bank_mandiri_tl",
+    typeKey: "type_bank_transfer",
+    brand: "Mandiri Timor Leste",
+    number: "6010000722846",
+    holder: "Bernardus Rano Laksono",
+  },
+  {
     id: "ewallet_mosan",
     typeKey: "type_ewallet",
     brand: "MOSAN",
@@ -19,6 +26,7 @@ export const PAYMENT_METHODS = [
 // tuir lian ne'ebe cliente hili), tanba dashboard admin de'it uza Tetum.
 export const PAYMENT_METHOD_STORAGE_LABEL = {
   bank_bnctl: "Transferénsia — Bank BNCTL",
+  bank_mandiri_tl: "Transferénsia — Mandiri Timor Leste",
   ewallet_mosan: "E-Wallet — MOSAN",
 };
 

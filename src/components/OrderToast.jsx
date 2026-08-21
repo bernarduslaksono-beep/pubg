@@ -30,7 +30,7 @@ export default function OrderToast({ order, onDismiss }) {
 
     if ('Notification' in window && Notification.permission === 'granted' && document.hidden) {
       new Notification(`🔔 Pedidu ${gameName} Foun!`, {
-        body: `${order.customer_name} — ${order.pkg_uc.toLocaleString()} ${currency}`,
+        body: `User ID: ${order.game_id} — ${order.pkg_uc.toLocaleString()} ${currency}`,
         icon: '/icons/icon-192.png',
       })
     }
@@ -47,7 +47,7 @@ export default function OrderToast({ order, onDismiss }) {
       <div className="order-toast-icon">🔔</div>
       <div className="order-toast-body">
         <div className="order-toast-title">Pedidu {gameName} Foun!</div>
-        <div className="order-toast-sub">{order.customer_name} — {order.pkg_uc.toLocaleString()} {currency} (${Number(order.pkg_price).toFixed(2)})</div>
+        <div className="order-toast-sub">User ID: {order.game_id} — {order.pkg_uc.toLocaleString()} {currency} (${Number(order.pkg_price).toFixed(2)})</div>
       </div>
       <button className="order-toast-close" onClick={onDismiss}>✕</button>
     </div>

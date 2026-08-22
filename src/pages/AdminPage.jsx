@@ -18,6 +18,7 @@ const GAME_FILTERS = [
   { key: 'pubg', label: 'PUBG' },
   { key: 'ml', label: 'Mobile Legends' },
   { key: 'ff', label: 'Free Fire' },
+  { key: 'roblox', label: 'Robux Roblox' },
 ]
 
 function currencyOf(gameKey) {
@@ -137,9 +138,9 @@ function OrderDetailModal({ order, onClose, onStatusSaved, onDeleted }) {
           <span className="game-tag" style={{ '--tag-color': gameColorOf(order.game) }}>{gameNameOf(order.game)}</span>
         </div>
 
-        <div className="result-row"><span className="k">User ID</span><span className="v">{order.game_id}</span></div>
+        {order.game_id && <div className="result-row"><span className="k">User ID</span><span className="v">{order.game_id}</span></div>}
         {order.zone_id && <div className="result-row"><span className="k">Zone ID</span><span className="v">{order.zone_id}</span></div>}
-        <div className="result-row"><span className="k">Nickname</span><span className="v">{order.ign}</span></div>
+        {order.ign && <div className="result-row"><span className="k">Nickname</span><span className="v">{order.ign}</span></div>}
         <div className="result-row">
           <span className="k">Pakote {currency}</span>
           <span className="v">
@@ -166,14 +167,22 @@ function OrderDetailModal({ order, onClose, onStatusSaved, onDeleted }) {
           </select>
         </div>
 
-        {status === 'dibatalkan' && (
+        {(status === 'dibatalkan' || status === 'terkirim') && (
           <div className="field">
-            <label>Komentariu ba cliente (razaun kanselamentu)</label>
+            <label>
+              {status === 'terkirim'
+                ? 'Mensajen ba cliente (opsional)'
+                : 'Komentariu ba cliente (razaun kanselamentu)'}
+            </label>
             <textarea
               rows={3}
               value={adminComment}
               onChange={(e) => setAdminComment(e.target.value)}
-              placeholder="Ezemplu: prova transferénsia la klaru, favor haruka fila fali"
+              placeholder={
+                status === 'terkirim'
+                  ? "Ezemplu: kode redeem, ka informasaun adisional ba cliente"
+                  : "Ezemplu: prova transferénsia la klaru, favor haruka fila fali"
+              }
             />
           </div>
         )}
@@ -382,7 +391,7 @@ function Dashboard() {
                       <span className="game-tag" style={{ '--tag-color': gameColorOf(o.game) }}>{gameNameOf(o.game)}</span>
                     </td>
                     <td>
-                      {o.game_id}{o.zone_id ? ` (${o.zone_id})` : ''}
+                      {o.game_id ? `${o.game_id}${o.zone_id ? ` (${o.zone_id})` : ''}` : '-'}
                       <br />
                       <span style={{ color: 'var(--muted)', fontSize: 11.5 }}>
                         {o.ign || '-'}

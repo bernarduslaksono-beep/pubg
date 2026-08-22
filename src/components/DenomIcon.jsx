@@ -1,5 +1,5 @@
-// Icon denom ne'ebe muda tuir jogu — koin gold ba "UC" (PUBG), permata ba "Diamond" (ML/FF).
-// Icon orisinal, la'os kópia husi logo ofisial jogu sira.
+// Icon denom ne'ebe muda tuir jogu — koin gold ba "UC" (PUBG), permata ba "Diamond" (ML/FF),
+// koin verde ba "Robux" (Roblox). Icon orisinal, la'os kópia husi logo ofisial jogu sira.
 
 export default function DenomIcon({ game, size = 34 }) {
   if (game.currencyLabel === 'UC') {
@@ -11,6 +11,21 @@ export default function DenomIcon({ game, size = 34 }) {
           <linearGradient id="coinGrad" x1="0" y1="0" x2="34" y2="34" gradientUnits="userSpaceOnUse">
             <stop stopColor="#FFE38A" />
             <stop offset="1" stopColor="#F0B93E" />
+          </linearGradient>
+        </defs>
+      </svg>
+    )
+  }
+
+  if (game.currencyLabel === 'Robux') {
+    return (
+      <svg width={size} height={size} viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="17" cy="17" r="15" fill="url(#robuxGrad)" stroke="#00753A" strokeWidth="1.5" />
+        <text x="17" y="21.5" textAnchor="middle" fontFamily="Rajdhani, sans-serif" fontWeight="700" fontSize="11.5" fill="#FFFFFF">R$</text>
+        <defs>
+          <linearGradient id="robuxGrad" x1="0" y1="0" x2="34" y2="34" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#2ECC71" />
+            <stop offset="1" stopColor="#00A651" />
           </linearGradient>
         </defs>
       </svg>

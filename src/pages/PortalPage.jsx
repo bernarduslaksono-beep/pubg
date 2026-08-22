@@ -32,6 +32,15 @@ function FlameIcon() {
   )
 }
 
+function RobuxIcon() {
+  return (
+    <svg width="30" height="30" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="24" cy="24" r="18" fill="rgba(255,255,255,0.14)" stroke="#fff" strokeWidth="2.5"/>
+      <text x="24" y="30" textAnchor="middle" fontFamily="Rajdhani, sans-serif" fontWeight="700" fontSize="16" fill="#fff">R$</text>
+    </svg>
+  )
+}
+
 const GAMES = [
   {
     id: 'pubg',
@@ -62,6 +71,16 @@ const GAMES = [
     Icon: FlameIcon,
     available: true,
     path: '/ff',
+  },
+  {
+    id: 'roblox',
+    name: 'Robux Roblox',
+    tagline: 'Robux',
+    color: '#00A651',
+    colorDim: 'rgba(0,166,81,0.10)',
+    Icon: RobuxIcon,
+    available: true,
+    path: '/roblox',
   },
 ]
 

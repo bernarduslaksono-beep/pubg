@@ -46,6 +46,7 @@ export default function OrderPage() {
   const stepIndicatorRef = useRef(null)
 
   const isPubg = game?.key === 'pubg'
+  const noUserInfo = Boolean(game?.noUserInfo)
 
   const handleField = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }))
   const handleGameIdField = (e) => {
@@ -60,10 +61,11 @@ export default function OrderPage() {
 
   const subtotal = useMemo(() => (selectedPkg ? selectedPkg.price * qty : 0), [selectedPkg, qty])
 
-  const step1Valid =
-    selectedPkg && form.ign.trim() &&
-    (isPubg ? (form.gameId.length > 1 && form.gameId.startsWith('5')) : form.gameId.trim().length > 0) &&
-    (!game?.hasZoneId || form.zoneId.trim().length > 0)
+  const step1Valid = noUserInfo
+    ? Boolean(selectedPkg)
+    : selectedPkg && form.ign.trim() &&
+      (isPubg ? (form.gameId.length > 1 && form.gameId.startsWith('5')) : form.gameId.trim().length > 0) &&
+      (!game?.hasZoneId || form.zoneId.trim().length > 0)
 
   const step2Valid = selectedPayment && proofFile
 
@@ -80,6 +82,7 @@ export default function OrderPage() {
   // Set-focus: bainhira cliente hili denom no kolona User ID sei mamuk,
   // foka automátikamente ba kolona User ID, ho movimentu scroll neneik (la'os lalais/diretu).
   useEffect(() => {
+    if (noUserInfo) return
     if (selectedPkg && form.gameId.length === 0 && userIdRef.current) {
       userIdRef.current.focus({ preventScroll: true })
       userIdRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
@@ -142,9 +145,9 @@ export default function OrderPage() {
       const { error: insertError } = await supabase.from('orders').insert({
         id: orderId,
         game: game.key,
-        game_id: form.gameId.trim(),
+        game_id: noUserInfo ? null : form.gameId.trim(),
         zone_id: game.hasZoneId ? form.zoneId.trim() : null,
-        ign: form.ign.trim(),
+        ign: noUserInfo ? null : form.ign.trim(),
         note: form.note.trim(),
         payment_method: PAYMENT_METHOD_STORAGE_LABEL[selectedPayment.id],
         pkg_uc: selectedPkg.amount * qty,
@@ -271,41 +274,45 @@ export default function OrderPage() {
               <div className="selected-pkg empty">{t('select_pkg_empty')}</div>
             )}
 
-            <div className="field">
-              <label htmlFor="f-gameid">{userIdLabel}</label>
-              <input
-                id="f-gameid"
-                ref={userIdRef}
-                value={form.gameId}
-                onChange={handleGameIdField}
-                inputMode="numeric"
-                pattern="[0-9]*"
-                placeholder={userIdPlaceholder}
-                style={gameIdStartsWrong ? { borderColor: 'var(--danger)' } : undefined}
-              />
-              {gameIdStartsWrong && (
-                <div className="field-error">{t('user_id_must_start_5')}</div>
-              )}
-            </div>
+            {!noUserInfo && (
+              <>
+                <div className="field">
+                  <label htmlFor="f-gameid">{userIdLabel}</label>
+                  <input
+                    id="f-gameid"
+                    ref={userIdRef}
+                    value={form.gameId}
+                    onChange={handleGameIdField}
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    placeholder={userIdPlaceholder}
+                    style={gameIdStartsWrong ? { borderColor: 'var(--danger)' } : undefined}
+                  />
+                  {gameIdStartsWrong && (
+                    <div className="field-error">{t('user_id_must_start_5')}</div>
+                  )}
+                </div>
 
-            {game.hasZoneId && (
-              <div className="field">
-                <label htmlFor="f-zoneid">{t('zone_id_label')}</label>
-                <input
-                  id="f-zoneid"
-                  value={form.zoneId}
-                  onChange={handleZoneIdField}
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  placeholder={t('zone_id_placeholder')}
-                />
-              </div>
+                {game.hasZoneId && (
+                  <div className="field">
+                    <label htmlFor="f-zoneid">{t('zone_id_label')}</label>
+                    <input
+                      id="f-zoneid"
+                      value={form.zoneId}
+                      onChange={handleZoneIdField}
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      placeholder={t('zone_id_placeholder')}
+                    />
+                  </div>
+                )}
+
+                <div className="field">
+                  <label htmlFor="f-ign">{t('nickname_label')}</label>
+                  <input id="f-ign" value={form.ign} onChange={handleField('ign')} placeholder={t('nickname_placeholder')} />
+                </div>
+              </>
             )}
-
-            <div className="field">
-              <label htmlFor="f-ign">{t('nickname_label')}</label>
-              <input id="f-ign" value={form.ign} onChange={handleField('ign')} placeholder={t('nickname_placeholder')} />
-            </div>
 
             {selectedPkg && (
               <div className="field" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -436,8 +443,14 @@ export default function OrderPage() {
                 <div className="meta">
                   <div className="uc-line">{selectedPkg.amount.toLocaleString()} {game.currencyLabel} × {qty}</div>
                   <div className="sub-line">
-                    {userIdLabel}: {form.gameId}{game.hasZoneId ? ` (${form.zoneId})` : ''} · {form.ign}
-                    <button className="edit-link" onClick={() => setStep(1)}>{t('edit_link')}</button>
+                    {noUserInfo ? (
+                      <button className="edit-link" style={{ marginLeft: 0 }} onClick={() => setStep(1)}>{t('edit_link')}</button>
+                    ) : (
+                      <>
+                        {userIdLabel}: {form.gameId}{game.hasZoneId ? ` (${form.zoneId})` : ''} · {form.ign}
+                        <button className="edit-link" onClick={() => setStep(1)}>{t('edit_link')}</button>
+                      </>
+                    )}
                   </div>
                 </div>
                 <div className="price-col">${subtotal.toFixed(2)}</div>

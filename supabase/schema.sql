@@ -11,8 +11,8 @@ create table if not exists public.orders (
   id text primary key,
   customer_name text,
   whatsapp text,
-  game_id text not null,
-  ign text not null,
+  game_id text,
+  ign text,
   note text default '',
   payment_method text not null,
   pkg_uc integer not null,
@@ -24,7 +24,7 @@ create table if not exists public.orders (
   pkg_unit_uc integer,
   qty integer not null default 1,
   admin_comment text default '',
-  game text not null default 'pubg' check (game in ('pubg','ml','ff')),
+  game text not null default 'pubg' check (game in ('pubg','ml','ff','roblox')),
   zone_id text
 );
 
@@ -39,13 +39,13 @@ alter table public.orders add column if not exists zone_id text;
 -- kolona ne'e agora opsional (la bele "not null" ona)
 alter table public.orders alter column customer_name drop not null;
 alter table public.orders alter column whatsapp drop not null;
+-- Robux Roblox la presiza User ID/Nickname — kolona ne'e mos agora opsional
+alter table public.orders alter column game_id drop not null;
+alter table public.orders alter column ign drop not null;
 do $$
 begin
-  if not exists (
-    select 1 from pg_constraint where conname = 'orders_game_check'
-  ) then
-    alter table public.orders add constraint orders_game_check check (game in ('pubg','ml','ff'));
-  end if;
+  alter table public.orders drop constraint if exists orders_game_check;
+  alter table public.orders add constraint orders_game_check check (game in ('pubg','ml','ff','roblox'));
 end $$;
 
 -- 2) Hamosu Row Level Security (RLS) — importante atu proteje data cliente

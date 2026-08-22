@@ -186,15 +186,19 @@ export default function TrackPage() {
             </div>
             <div className="result-row"><span className="k">{t('total_uc_label')}</span><span className="v">{selectedOrder.pkg_uc.toLocaleString()} {game.currencyLabel}</span></div>
             <div className="result-row"><span className="k">{t('price_row_label')}</span><span className="v">${Number(selectedOrder.pkg_price).toFixed(2)}</span></div>
-            <div className="result-row"><span className="k">{t('game_id_row_label')}</span><span className="v">{selectedOrder.game_id}</span></div>
+            {selectedOrder.game_id && (
+              <div className="result-row"><span className="k">{t('game_id_row_label')}</span><span className="v">{selectedOrder.game_id}</span></div>
+            )}
             {game.hasZoneId && (
               <div className="result-row"><span className="k">{t('zone_id_label')}</span><span className="v">{selectedOrder.zone_id || '-'}</span></div>
             )}
-            <div className="result-row"><span className="k">{t('pubg_name_row_label')}</span><span className="v">{selectedOrder.ign || '-'}</span></div>
+            {selectedOrder.ign && (
+              <div className="result-row"><span className="k">{t('pubg_name_row_label')}</span><span className="v">{selectedOrder.ign}</span></div>
+            )}
             <div className="result-row"><span className="k">{t('payment_method_title')}</span><span className="v">{selectedOrder.payment_method || '-'}</span></div>
             <div className="result-row"><span className="k">{t('date_row_label')}</span><span className="v">{formatDate(selectedOrder.created_at)}</span></div>
 
-            {selectedOrder.status === 'dibatalkan' && selectedOrder.admin_comment && (
+            {(selectedOrder.status === 'dibatalkan' || selectedOrder.status === 'terkirim') && selectedOrder.admin_comment && (
               <div className="admin-comment-box">
                 <div className="admin-comment-label">{t('seller_note_label')}</div>
                 <div className="admin-comment-text">{selectedOrder.admin_comment}</div>

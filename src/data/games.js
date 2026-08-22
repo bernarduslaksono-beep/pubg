@@ -99,6 +99,44 @@ export const GAMES = {
       },
     ],
   },
+
+  roblox: {
+    key: 'roblox',
+    name: 'Robux Roblox',
+    orderPrefix: 'RBX',
+    currencyLabel: 'Robux',
+    hasZoneId: false,
+    // La presiza User ID/Nickname ba jogu ida ne'e — cliente hili pakote, ajusta
+    // kuantidade, hafoin diretu tuir ba pagamentu.
+    noUserInfo: true,
+    accentColor: '#00A651',
+    accentColorDim: 'rgba(0,166,81,0.10)',
+    tiers: [
+      {
+        tierKey: 'kiik',
+        items: [
+          { amount: 400, price: 5 }, { amount: 500, price: 7 }, { amount: 800, price: 10 },
+          { amount: 1000, price: 12 }, { amount: 1200, price: 15 }, { amount: 1500, price: 17 },
+          { amount: 1600, price: 18 },
+        ],
+      },
+      {
+        tierKey: 'medium',
+        items: [
+          { amount: 1700, price: 19 }, { amount: 2000, price: 23 }, { amount: 2200, price: 25 },
+          { amount: 2500, price: 28 }, { amount: 2700, price: 31 }, { amount: 3000, price: 33 },
+          { amount: 3600, price: 36 },
+        ],
+      },
+      {
+        tierKey: 'boot',
+        items: [
+          { amount: 4000, price: 43 }, { amount: 4500, price: 50 }, { amount: 5250, price: 55 },
+          { amount: 7000, price: 75 }, { amount: 8000, price: 90 }, { amount: 10000, price: 110 },
+        ],
+      },
+    ],
+  },
 }
 
 export function getGame(key) {

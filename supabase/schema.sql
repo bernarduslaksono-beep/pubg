@@ -35,6 +35,7 @@ alter table public.orders add column if not exists qty integer not null default 
 alter table public.orders add column if not exists admin_comment text default '';
 alter table public.orders add column if not exists game text not null default 'pubg';
 alter table public.orders add column if not exists zone_id text;
+alter table public.orders add column if not exists device_fingerprint text;
 -- Naran completu no numeru WhatsApp ona hasai husi formuláriu pedidu —
 -- kolona ne'e agora opsional (la bele "not null" ona)
 alter table public.orders alter column customer_name drop not null;
@@ -239,4 +240,108 @@ $$;
 
 grant execute on function public.increment_visitor_count() to anon, authenticated;
 grant execute on function public.get_visitor_count() to anon, authenticated;
+
+-- =====================================================================
+-- 8) Security: hases order fiktivu/spam — baseia iha "device_fingerprint"
+-- (la'os de'it IP), atu limita:
+--   (a) máximu 3 pedidu ne'ebe seidauk prosesu ("menunggu_verifikasi")
+--   (b) máximu 5 pedidu "dibatalkan" iha loron hanesan (tuir horário Timor-Leste)
+--   (c) device ne'ebe admin ona blokeia manual
+-- =====================================================================
+
+-- Lista device ne'ebe admin blokeia manual (ezemplu: pedidu fiktivu klaru)
+create table if not exists public.blocked_devices (
+  device_fingerprint text primary key,
+  blocked_at timestamptz not null default now(),
+  reason text
+);
+
+alter table public.blocked_devices enable row level security;
+
+-- De'it admin (authenticated) bele haree/hatama/hasai husi lista blokeia.
+-- Cliente (anon) la iha asesu diretu — check_order_eligibility (security definer)
+-- de'it mak konsulta lista ne'e ba klienti.
+drop policy if exists "admin_can_manage_blocked_devices" on public.blocked_devices;
+create policy "admin_can_manage_blocked_devices"
+  on public.blocked_devices for all
+  to authenticated
+  using (true)
+  with check (true);
+
+create or replace function public.check_order_eligibility(p_fingerprint text)
+returns table (allowed boolean, reason text, pending_count int, cancelled_count int)
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_pending int;
+  v_cancelled int;
+  v_blocked boolean;
+begin
+  if p_fingerprint is null or p_fingerprint = '' then
+    return query select true, null::text, 0, 0;
+    return;
+  end if;
+
+  select exists(
+    select 1 from public.blocked_devices where device_fingerprint = p_fingerprint
+  ) into v_blocked;
+
+  if v_blocked then
+    return query select false, 'blocked', 0, 0;
+    return;
+  end if;
+
+  select count(*) into v_pending
+  from public.orders
+  where device_fingerprint = p_fingerprint
+    and status = 'menunggu_verifikasi';
+
+  select count(*) into v_cancelled
+  from public.orders
+  where device_fingerprint = p_fingerprint
+    and status = 'dibatalkan'
+    and (created_at at time zone 'Asia/Dili')::date = (now() at time zone 'Asia/Dili')::date;
+
+  if v_pending >= 3 then
+    return query select false, 'pending_limit', v_pending, v_cancelled;
+    return;
+  end if;
+
+  if v_cancelled >= 5 then
+    return query select false, 'cancelled_limit', v_pending, v_cancelled;
+    return;
+  end if;
+
+  return query select true, null::text, v_pending, v_cancelled;
+end;
+$$;
+
+grant execute on function public.check_order_eligibility(text) to anon, authenticated;
+
+-- =====================================================================
+-- 9) Deteksi prova transferénsia duplikadu — de'it bloke se imajen hanesan
+-- ona uza ba pedidu SELUK ne'ebe SEIDAUK kanselamentu (status != 'dibatalkan').
+-- Se pedidu tuan ona kanselamentu, prova hanesan bele uza fila fali (ezemplu:
+-- cliente halo sala iha ID/naran, hafoin order fila fali ho prova hanesan).
+-- =====================================================================
+alter table public.orders add column if not exists proof_hash text;
+
+create or replace function public.check_proof_duplicate(p_proof_hash text)
+returns table (order_id text, status text)
+language sql
+security definer
+set search_path = public
+as $$
+  select id, status
+  from public.orders
+  where p_proof_hash is not null
+    and proof_hash = p_proof_hash
+    and status != 'dibatalkan'
+  order by created_at desc
+  limit 1;
+$$;
+
+grant execute on function public.check_proof_duplicate(text) to anon, authenticated;
 

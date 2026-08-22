@@ -83,11 +83,12 @@ function AdminLogin() {
   )
 }
 
-function OrderDetailModal({ order, onClose, onStatusSaved, onDeleted }) {
+function OrderDetailModal({ order, onClose, onStatusSaved, onDeleted, deviceStats, isBlocked, onBlockToggle, onFilterByDevice }) {
   const [status, setStatus] = useState(order.status)
   const [adminComment, setAdminComment] = useState(order.admin_comment || '')
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [blocking, setBlocking] = useState(false)
   const currency = currencyOf(order.game)
 
   const handleSave = async () => {
@@ -125,6 +126,17 @@ function OrderDetailModal({ order, onClose, onStatusSaved, onDeleted }) {
     }
   }
 
+  const handleBlock = async () => {
+    if (!order.device_fingerprint) return
+    const confirmMsg = isBlocked
+      ? 'Buka blokir device ne\'e? Nia sei bele halo pedidu fila fali.'
+      : 'Blokeia device ne\'e? Nia sei la bele halo pedidu foun to\'o ita boot buka blokir fila fali.'
+    if (!confirm(confirmMsg)) return
+    setBlocking(true)
+    await onBlockToggle(order.device_fingerprint, isBlocked)
+    setBlocking(false)
+  }
+
   return (
     <div className="modal-overlay show" onClick={(e) => e.target.classList.contains('modal-overlay') && onClose()}>
       <div className="modal" style={{ maxWidth: 460 }}>
@@ -152,6 +164,31 @@ function OrderDetailModal({ order, onClose, onStatusSaved, onDeleted }) {
         <div className="result-row"><span className="k">Metode Pagamentu</span><span className="v">{order.payment_method}</span></div>
         <div className="result-row"><span className="k">Data</span><span className="v">{formatDate(order.created_at)}</span></div>
         {order.note && <div className="result-row"><span className="k">Nota</span><span className="v">{order.note}</span></div>}
+
+        {order.device_fingerprint && (
+          <div className={`device-info-box${isBlocked ? ' blocked' : ''}`}>
+            <div className="device-info-row">
+              <span className="mono">{order.device_fingerprint.slice(0, 10)}…</span>
+              {isBlocked && <span className="device-blocked-tag">BLOKEADU</span>}
+            </div>
+            <div className="device-info-stats">
+              {deviceStats.total} pedidu hotu-hotu ({deviceStats.pending} hein verifikasaun, {deviceStats.cancelled} kanseladu)
+            </div>
+            <div className="device-info-actions">
+              <button type="button" className="link-btn" onClick={() => onFilterByDevice(order.device_fingerprint)}>
+                Haree Hotu-hotu Pedidu Husi Device Ne'e
+              </button>
+              <button
+                type="button"
+                className={`link-btn${isBlocked ? '' : ' danger'}`}
+                onClick={handleBlock}
+                disabled={blocking}
+              >
+                {blocking ? '...' : isBlocked ? 'Buka Blokir' : 'Blokeia Device Ne\'e'}
+              </button>
+            </div>
+          </div>
+        )}
 
         <div style={{ margin: '16px 0' }}>
           <div className="field-hint" style={{ marginBottom: 8 }}>Prova Transferénsia</div>
@@ -230,6 +267,7 @@ function Dashboard() {
   const [selected, setSelected] = useState(null)
   const [toastOrder, setToastOrder] = useState(null)
   const [seenIds, setSeenIds] = useState(loadSeenIds)
+  const [blockedFingerprints, setBlockedFingerprints] = useState(new Set())
 
   const markSeen = (orderId) => {
     setSeenIds((prev) => {
@@ -241,6 +279,52 @@ function Dashboard() {
     })
   }
 
+  const loadBlockedDevices = async () => {
+    const { data, error } = await supabase.from('blocked_devices').select('device_fingerprint')
+    if (!error && data) setBlockedFingerprints(new Set(data.map((d) => d.device_fingerprint)))
+  }
+
+  const handleBlockToggle = async (fingerprint, currentlyBlocked) => {
+    if (currentlyBlocked) {
+      const { error } = await supabase.from('blocked_devices').delete().eq('device_fingerprint', fingerprint)
+      if (!error) {
+        setBlockedFingerprints((prev) => {
+          const next = new Set(prev)
+          next.delete(fingerprint)
+          return next
+        })
+      } else {
+        alert('Falha atu buka blokir.')
+      }
+    } else {
+      const { error } = await supabase.from('blocked_devices').insert({ device_fingerprint: fingerprint })
+      if (!error) {
+        setBlockedFingerprints((prev) => new Set(prev).add(fingerprint))
+      } else {
+        alert('Falha atu blokeia device.')
+      }
+    }
+  }
+
+  const handleFilterByDevice = (fingerprint) => {
+    setSearch(fingerprint)
+    setSelected(null)
+  }
+
+  // Sujarrafia pedidu tuir device_fingerprint — atu hatudu hira ida pedidu
+  // husi device hanesan, no badge "🔁 Nx" iha tabela.
+  const fingerprintCounts = useMemo(() => {
+    const map = {}
+    for (const o of orders) {
+      if (!o.device_fingerprint) continue
+      if (!map[o.device_fingerprint]) map[o.device_fingerprint] = { total: 0, pending: 0, cancelled: 0 }
+      map[o.device_fingerprint].total += 1
+      if (o.status === 'menunggu_verifikasi') map[o.device_fingerprint].pending += 1
+      if (o.status === 'dibatalkan') map[o.device_fingerprint].cancelled += 1
+    }
+    return map
+  }, [orders])
+
   const loadOrders = async () => {
     const { data, error } = await supabase
       .from('orders')
@@ -251,6 +335,7 @@ function Dashboard() {
 
   useEffect(() => {
     loadOrders()
+    loadBlockedDevices()
     const channel = supabase
       .channel(`orders-changes-${Date.now()}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, (payload) => {
@@ -283,7 +368,7 @@ function Dashboard() {
     const q = search.trim().toLowerCase()
     if (q) {
       list = list.filter((o) =>
-        [o.id, o.game_id, o.zone_id, o.ign]
+        [o.id, o.game_id, o.zone_id, o.ign, o.device_fingerprint]
           .filter(Boolean)
           .some((field) => field.toLowerCase().includes(q))
       )
@@ -376,6 +461,7 @@ function Dashboard() {
               {filtered.map((o) => {
                 const isUnread = !seenIds.has(o.id)
                 const currency = currencyOf(o.game)
+                const deviceTotal = o.device_fingerprint ? (fingerprintCounts[o.device_fingerprint]?.total || 0) : 0
                 return (
                   <tr
                     key={o.id}
@@ -386,6 +472,9 @@ function Dashboard() {
                     <td className="oid-cell">
                       {isUnread && <span className="unread-dot" title="Pedidu foun"></span>}
                       {o.id}
+                      {deviceTotal > 1 && (
+                        <span className="repeat-device-badge" title={`Device ne'e halo ona ${deviceTotal} pedidu`}>🔁 {deviceTotal}x</span>
+                      )}
                     </td>
                     <td>
                       <span className="game-tag" style={{ '--tag-color': gameColorOf(o.game) }}>{gameNameOf(o.game)}</span>
@@ -421,6 +510,10 @@ function Dashboard() {
           onClose={() => setSelected(null)}
           onStatusSaved={(id, status, adminComment) => setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status, admin_comment: adminComment } : o)))}
           onDeleted={(id) => setOrders((prev) => prev.filter((o) => o.id !== id))}
+          deviceStats={fingerprintCounts[selected.device_fingerprint] || { total: 0, pending: 0, cancelled: 0 }}
+          isBlocked={blockedFingerprints.has(selected.device_fingerprint)}
+          onBlockToggle={handleBlockToggle}
+          onFilterByDevice={handleFilterByDevice}
         />
       )}
 

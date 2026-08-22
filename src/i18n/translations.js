@@ -131,6 +131,10 @@ export const TRANSLATIONS = {
     pubg_name_row_label: "Nickname",
     date_row_label: "Data",
     seller_note_label: "Nota husi seller",
+    security_pending_limit: "Aktualmente iha ita boot nia pedidu 3 seidauk prosesu (Hein Verifikasaun). Favor hein to'o pedidu sira ne'e prosesu ona, hafoin bele halo pedidu foun.",
+    security_cancelled_limit: "Ohin loron ita boot nia pedidu 5 ona kanseladu. Ita boot bele halo pedidu foun aban, ka kontaktu admin ba informasaun liu tan.",
+    security_blocked: "Ita boot nia dispositivu seidauk bele halo pedidu foun. Favor kontaktu admin liu husi WhatsApp ba informasaun liu tan.",
+    proof_duplicate_error: (orderId, wa) => `Bukti transferénsia ne'e ona uza ba pedidu ${orderId} ne'ebe seidauk kanselamentu. Se ita boot iha problema, favor kontaktu admin liu husi WhatsApp ${wa}.`,
     refresh_status_label: "Atualiza status",
 
     status: {
@@ -265,6 +269,10 @@ export const TRANSLATIONS = {
     pubg_name_row_label: "Nickname",
     date_row_label: "Date",
     seller_note_label: "Note from seller",
+    security_pending_limit: "You currently have 3 orders still awaiting verification. Please wait until they are processed before placing a new order.",
+    security_cancelled_limit: "You have had 5 cancelled orders today. You can order again tomorrow, or contact admin for more information.",
+    security_blocked: "Your device is currently unable to place new orders. Please contact admin via WhatsApp for more information.",
+    proof_duplicate_error: (orderId, wa) => `This proof of transfer has already been used for order ${orderId}, which has not been cancelled. If there is an issue, please contact admin via WhatsApp ${wa}.`,
     refresh_status_label: "Refresh status",
 
     status: {
@@ -399,6 +407,10 @@ export const TRANSLATIONS = {
     pubg_name_row_label: "Nickname",
     date_row_label: "Tanggal",
     seller_note_label: "Catatan dari penjual",
+    security_pending_limit: "Saat ini ada 3 pesanan Anda yang belum diproses (Menunggu Verifikasi). Mohon tunggu hingga diproses, baru bisa order lagi.",
+    security_cancelled_limit: "Hari ini ada 5 pesanan Anda yang Dibatalkan. Anda bisa order lagi besok, atau hubungi admin untuk informasi lebih lanjut.",
+    security_blocked: "Perangkat Anda saat ini tidak bisa melakukan pesanan baru. Silakan hubungi admin lewat WhatsApp untuk informasi lebih lanjut.",
+    proof_duplicate_error: (orderId, wa) => `Bukti transfer ini sudah dipakai untuk pesanan ${orderId} yang belum dibatalkan. Kalau ada masalah, silakan hubungi admin lewat WhatsApp ${wa}.`,
     refresh_status_label: "Segarkan status",
 
     status: {

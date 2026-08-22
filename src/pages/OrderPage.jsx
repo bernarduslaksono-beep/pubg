@@ -6,6 +6,8 @@ import { getGame } from '../data/games.js'
 import DenomIcon from '../components/DenomIcon.jsx'
 import { useLanguage } from '../i18n/LanguageContext.jsx'
 import { saveNewOrder } from '../lib/orderHistory.js'
+import { getDeviceFingerprint } from '../lib/deviceFingerprint.js'
+import { sha256HexFromBuffer } from '../lib/hash.js'
 
 function genOrderId(prefix) {
   return (
@@ -44,6 +46,9 @@ export default function OrderPage() {
   const [flowStage, setFlowStage] = useState(1)
   const userIdRef = useRef(null)
   const stepIndicatorRef = useRef(null)
+  const checkoutNameRef = useRef(null)
+  const [securityMsg, setSecurityMsg] = useState(null)
+  const [checkingEligibility, setCheckingEligibility] = useState(false)
 
   const isPubg = game?.key === 'pubg'
   const noUserInfo = Boolean(game?.noUserInfo)
@@ -81,9 +86,18 @@ export default function OrderPage() {
 
   // Set-focus: bainhira cliente hili denom no kolona User ID sei mamuk,
   // foka automátikamente ba kolona User ID, ho movimentu scroll neneik (la'os lalais/diretu).
+  // Ba jogu ne'ebe la presiza User ID (ezemplu Robux Roblox), foka ba tulisan
+  // "{Jogu} — Timor Leste" iha checkout header.
   useEffect(() => {
-    if (noUserInfo) return
-    if (selectedPkg && form.gameId.length === 0 && userIdRef.current) {
+    if (!selectedPkg) return
+    if (noUserInfo) {
+      if (checkoutNameRef.current) {
+        checkoutNameRef.current.focus({ preventScroll: true })
+        checkoutNameRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }
+      return
+    }
+    if (form.gameId.length === 0 && userIdRef.current) {
       userIdRef.current.focus({ preventScroll: true })
       userIdRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
     }
@@ -112,6 +126,37 @@ export default function OrderPage() {
     setFlowStage(1)
   }
 
+  // Verifika limite anti-spam antes tuir ba pasu 2 (pagamentu) — atu hases
+  // pedidu fiktivu/spam husi dispositivu hanesan.
+  const handleSosaClick = async () => {
+    if (!step1Valid || checkingEligibility) return
+    setSecurityMsg(null)
+    setCheckingEligibility(true)
+    try {
+      const fingerprint = await getDeviceFingerprint()
+      const { data, error } = await supabase.rpc('check_order_eligibility', {
+        p_fingerprint: fingerprint,
+      })
+      if (!error && data && data.length > 0 && !data[0].allowed) {
+        const reason = data[0].reason
+        setSecurityMsg(
+          reason === 'blocked' ? t('security_blocked')
+          : reason === 'cancelled_limit' ? t('security_cancelled_limit')
+          : t('security_pending_limit')
+        )
+        setCheckingEligibility(false)
+        return
+      }
+    } catch (err) {
+      // Fail-open: se verifikasaun falha (ezemplu problema rede), la bloke
+      // cliente ne'ebe honestu — admin sei verifika manual hotu-hotu pedidu.
+      console.error(err)
+    }
+    setCheckingEligibility(false)
+    setStep(2)
+    setFlowStage((s) => Math.max(s, 2))
+  }
+
   const handleSubmit = async () => {
     if (!step1Valid || !step2Valid) return
     setSubmitting(true)
@@ -131,6 +176,20 @@ export default function OrderPage() {
       // hotu-hotu browser.
       const fileBuffer = await proofFile.arrayBuffer()
 
+      // Verifika se prova transferénsia ne'e ona uza ba pedidu seluk ne'ebe
+      // SEIDAUK kanselamentu — se ona, hases duplikadu/spam. Se pedidu tuan
+      // ona kanselamentu, prova hanesan bele uza fila fali (ezemplu: cliente
+      // sala iha ID/naran, hafoin order fila fali ho prova hanesan).
+      const proofHash = await sha256HexFromBuffer(fileBuffer)
+      const { data: dupData, error: dupError } = await supabase.rpc('check_proof_duplicate', {
+        p_proof_hash: proofHash,
+      })
+      if (!dupError && dupData && dupData.length > 0) {
+        setMsg({ type: 'error', text: t('proof_duplicate_error', dupData[0].order_id, WHATSAPP_NUMBER) })
+        setSubmitting(false)
+        return
+      }
+
       const { error: uploadError } = await supabase.storage
         .from('proofs')
         .upload(filePath, fileBuffer, {
@@ -142,6 +201,8 @@ export default function OrderPage() {
       const { data: urlData } = supabase.storage.from('proofs').getPublicUrl(filePath)
       const proofUrl = urlData.publicUrl
 
+      const deviceFingerprint = await getDeviceFingerprint()
+
       const { error: insertError } = await supabase.from('orders').insert({
         id: orderId,
         game: game.key,
@@ -150,12 +211,14 @@ export default function OrderPage() {
         ign: noUserInfo ? null : form.ign.trim(),
         note: form.note.trim(),
         payment_method: PAYMENT_METHOD_STORAGE_LABEL[selectedPayment.id],
+        proof_hash: proofHash,
         pkg_uc: selectedPkg.amount * qty,
         pkg_unit_uc: selectedPkg.amount,
         qty: qty,
         pkg_price: subtotal,
         proof_url: proofUrl,
         status: 'menunggu_verifikasi',
+        device_fingerprint: deviceFingerprint,
       })
       if (insertError) throw insertError
 
@@ -251,7 +314,7 @@ export default function OrderPage() {
             <div className="checkout-header">
               <div className="avatar"><DenomIcon game={game} size={20} /></div>
               <div>
-                <div className="name">{game.name} — Timor Leste</div>
+                <div className="name" ref={checkoutNameRef} tabIndex={-1} style={{ outline: 'none' }}>{game.name} — Timor Leste</div>
                 <div className="sub">{t('checkout_process_time')}</div>
               </div>
             </div>
@@ -357,15 +420,13 @@ export default function OrderPage() {
               <div className="cart-btn">🛒</div>
               <button
                 className="btn btn-primary"
-                disabled={!step1Valid}
-                onClick={() => {
-                  setStep(2)
-                  setFlowStage((s) => Math.max(s, 2))
-                }}
+                disabled={!step1Valid || checkingEligibility}
+                onClick={handleSosaClick}
               >
-                {t('buy_btn')}
+                {checkingEligibility ? '...' : t('buy_btn')}
               </button>
             </div>
+            {securityMsg && <div className="msg error show">{securityMsg}</div>}
           </div>
         </div>
       )}

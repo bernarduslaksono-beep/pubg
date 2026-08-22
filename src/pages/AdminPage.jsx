@@ -2,9 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../supabase.js'
 import { STATUS_LABELS } from '../data/packages.js'
 import { GAMES } from '../data/games.js'
-import NotificationSetup from '../components/NotificationSetup.jsx'
-import StoreHoursControl from '../components/StoreHoursControl.jsx'
-import StockControl from '../components/StockControl.jsx'
+import AdminMenu from '../components/AdminMenu.jsx'
 import OrderToast from '../components/OrderToast.jsx'
 
 const FILTERS = [
@@ -399,13 +397,9 @@ function Dashboard() {
         <div className="eyebrow"><span className="dot"></span> Dashboard</div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 12 }}>
           <h1>Tracking & Laporan Fatin</h1>
-          <button className="btn btn-ghost btn-small" onClick={() => supabase.auth.signOut()}>Sai</button>
+          <AdminMenu />
         </div>
       </div>
-
-      <NotificationSetup />
-      <StoreHoursControl />
-      <StockControl />
 
       <div className="stat-grid">
         <div className="stat-card red"><div className="lbl">Total Pedidu</div><div className="num">{stats.total}</div></div>

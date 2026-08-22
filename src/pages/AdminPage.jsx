@@ -4,6 +4,7 @@ import { STATUS_LABELS } from '../data/packages.js'
 import { GAMES } from '../data/games.js'
 import NotificationSetup from '../components/NotificationSetup.jsx'
 import StoreHoursControl from '../components/StoreHoursControl.jsx'
+import StockControl from '../components/StockControl.jsx'
 import OrderToast from '../components/OrderToast.jsx'
 
 const FILTERS = [
@@ -404,6 +405,7 @@ function Dashboard() {
 
       <NotificationSetup />
       <StoreHoursControl />
+      <StockControl />
 
       <div className="stat-grid">
         <div className="stat-card red"><div className="lbl">Total Pedidu</div><div className="num">{stats.total}</div></div>

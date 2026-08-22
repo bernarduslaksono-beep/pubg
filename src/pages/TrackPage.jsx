@@ -3,7 +3,7 @@ import { useParams, Navigate } from 'react-router-dom'
 import { supabase } from '../supabase.js'
 import { getGame } from '../data/games.js'
 import { useLanguage } from '../i18n/LanguageContext.jsx'
-import { loadHistoryIds, pruneAndSync, markAsRead } from '../lib/orderHistory.js'
+import { refreshHistoryStatuses, markAsRead } from '../lib/orderHistory.js'
 
 export default function TrackPage() {
   const { gameKey } = useParams()
@@ -23,27 +23,9 @@ export default function TrackPage() {
 
     async function loadHistory() {
       setHistoryLoading(true)
-      const localEntries = loadHistoryIds(game.key)
-      if (localEntries.length === 0) {
-        setHistory([])
-        setHistoryLoading(false)
-        return
-      }
-      const results = await Promise.all(
-        localEntries.map(async (h) => {
-          const { data, error } = await supabase.rpc('track_orders', {
-            p_order_id: h.id,
-            p_whatsapp: null,
-            p_game: game.key,
-          })
-          if (error || !data || data.length === 0) return null
-          return { ...data[0], unread: Boolean(h.unread) }
-        })
-      )
+      const result = await refreshHistoryStatuses(game.key)
       if (cancelled) return
-      const stillValid = results.filter(Boolean)
-      pruneAndSync(game.key, stillValid.map((o) => ({ id: o.id, unread: o.unread })))
-      setHistory(stillValid)
+      setHistory(result)
       setHistoryLoading(false)
     }
     loadHistory()

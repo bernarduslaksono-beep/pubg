@@ -50,6 +50,17 @@ export default function OrderPage() {
   const [securityMsg, setSecurityMsg] = useState(null)
   const [checkingEligibility, setCheckingEligibility] = useState(false)
   const [storeStatus, setStoreStatus] = useState(null) // { isOpen, openTime, closeTime }
+  const [showRedeemHelp, setShowRedeemHelp] = useState(false)
+  const [disabledAmounts, setDisabledAmounts] = useState(new Set())
+
+  useEffect(() => {
+    if (!game) return
+    let cancelled = false
+    supabase.from('disabled_packages').select('amount').eq('game', game.key).then(({ data, error }) => {
+      if (!error && data && !cancelled) setDisabledAmounts(new Set(data.map((d) => d.amount)))
+    })
+    return () => { cancelled = true }
+  }, [game])
 
   useEffect(() => {
     let cancelled = false
@@ -328,19 +339,23 @@ export default function OrderPage() {
                 </div>
                 {openTiers[group.tierKey] && (
                   <div className="pkg-grid">
-                    {group.items.map((item) => (
-                      <div
-                        key={item.amount}
-                        className={`pkg-card${selectedPkg?.amount === item.amount ? ' selected' : ''}`}
-                        onClick={() => setSelectedPkg(item)}
-                      >
-                        <div className="pkg-card-top">
-                          <DenomIcon game={game} size={28} />
-                          <div className="pkg-uc-big">{item.amount.toLocaleString()}<span className="pkg-uc-label">{game.currencyLabel}</span></div>
+                    {group.items.map((item) => {
+                      const outOfStock = disabledAmounts.has(item.amount)
+                      return (
+                        <div
+                          key={item.amount}
+                          className={`pkg-card${selectedPkg?.amount === item.amount ? ' selected' : ''}${outOfStock ? ' out-of-stock' : ''}`}
+                          onClick={() => !outOfStock && setSelectedPkg(item)}
+                        >
+                          {outOfStock && <span className="stock-badge">{t('out_of_stock_label')}</span>}
+                          <div className="pkg-card-top">
+                            <DenomIcon game={game} size={28} />
+                            <div className="pkg-uc-big">{item.amount.toLocaleString()}<span className="pkg-uc-label">{game.currencyLabel}</span></div>
+                          </div>
+                          <div className="price">${item.price.toFixed(2)}</div>
                         </div>
-                        <div className="price">${item.price.toFixed(2)}</div>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 )}
               </div>
@@ -353,6 +368,11 @@ export default function OrderPage() {
               <div>
                 <div className="name" ref={checkoutNameRef} tabIndex={-1} style={{ outline: 'none' }}>{game.name} — Timor Leste</div>
                 <div className="sub">{t('checkout_process_time')}</div>
+                {game.key === 'roblox' && (
+                  <button type="button" className="note-toggle" onClick={() => setShowRedeemHelp(true)}>
+                    {t('redeem_howto_title')}
+                  </button>
+                )}
               </div>
             </div>
 
@@ -608,6 +628,25 @@ export default function OrderPage() {
           <button className="btn btn-primary" onClick={() => setShowSuccessModal(false)}>{t('ok_btn')}</button>
         </div>
       </div>
+
+      {game.key === 'roblox' && (
+        <div className={`modal-overlay${showRedeemHelp ? ' show' : ''}`} onClick={(e) => e.target.classList.contains('modal-overlay') && setShowRedeemHelp(false)}>
+          <div className="modal" style={{ maxWidth: 440 }}>
+            <div className="modal-head">
+              <h3>{t('redeem_howto_title')}</h3>
+              <button onClick={() => setShowRedeemHelp(false)} aria-label={t('ok_btn')}>✕</button>
+            </div>
+            <ol className="redeem-howto-steps">
+              <li>{t('redeem_step1')}</li>
+              <li>{t('redeem_step2')}</li>
+              <li>{t('redeem_step3')}</li>
+              <li>{t('redeem_step4')}</li>
+              <li>{t('redeem_step5')}</li>
+              <li>{t('redeem_step6')}</li>
+            </ol>
+          </div>
+        </div>
+      )}
     </>
   )
 }

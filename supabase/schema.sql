@@ -410,3 +410,30 @@ $$;
 
 grant execute on function public.get_store_status() to anon, authenticated;
 
+-- =====================================================================
+-- 11) Kontrola stock — admin bele marka denom espesifiku "Stok Hotu" (la
+-- disponivel ona) direta husi dashboard, la presiza troka kódigu/redeploy.
+-- Públiku bele haree (atu hatudu kartu redu iha loja), de'it admin bele troka.
+-- =====================================================================
+create table if not exists public.disabled_packages (
+  game text not null,
+  amount integer not null,
+  disabled_at timestamptz not null default now(),
+  primary key (game, amount)
+);
+
+alter table public.disabled_packages enable row level security;
+
+drop policy if exists "public_can_read_disabled_packages" on public.disabled_packages;
+create policy "public_can_read_disabled_packages"
+  on public.disabled_packages for select
+  to public
+  using (true);
+
+drop policy if exists "admin_can_manage_disabled_packages" on public.disabled_packages;
+create policy "admin_can_manage_disabled_packages"
+  on public.disabled_packages for all
+  to authenticated
+  using (true)
+  with check (true);
+

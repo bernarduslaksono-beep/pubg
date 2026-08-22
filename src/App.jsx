@@ -10,7 +10,7 @@ import ThemeToggle from './components/ThemeToggle.jsx'
 import ScrollToTopButton from './components/ScrollToTopButton.jsx'
 import { useLanguage } from './i18n/LanguageContext.jsx'
 import { GAMES } from './data/games.js'
-import { hasUnread, subscribeHistoryChanges } from './lib/orderHistory.js'
+import { hasUnread, subscribeHistoryChanges, refreshHistoryStatuses } from './lib/orderHistory.js'
 import logo from './assets/logo-lojagame.png'
 
 // Rota admin "sekretu" — la aparese iha menu públiku.
@@ -27,6 +27,9 @@ function TopBar({ gameKey, showAdminTheme, linkBrand = true }) {
     if (!gameKey) return
     const check = () => setUnread(hasUnread(gameKey))
     check()
+    // Buka fila fali status husi database iha background — atu badge "foun"
+    // aparese maski cliente seidauk vizita pajina Cek Status.
+    refreshHistoryStatuses(gameKey).then(check)
     const unsubscribe = subscribeHistoryChanges(check)
     return unsubscribe
   }, [gameKey, location.pathname])

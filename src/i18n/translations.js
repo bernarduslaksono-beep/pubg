@@ -48,12 +48,20 @@ export const TRANSLATIONS = {
     order_history_empty: "Seidauk iha pedidu iha device ne'e.",
     select_product_label: "Hili Produtu",
     pkg_count_suffix: "pakote",
+    out_of_stock_label: "Stok Hotu",
 
     tier_kiik: "Pakote Ki'ik",
     tier_medium: "Pakote Medium",
     tier_boot: "Pakote Bo'ot",
 
     checkout_process_time: "Prosesu haruka: ±15 menit",
+    redeem_howto_title: "Oinsa redeem code Roblox?",
+    redeem_step1: "Loke aplikasu Roblox ka website roblox.com, hafoin tama ho ita boot nia konta.",
+    redeem_step2: "Iha parte leten, klik ikon kaixa/prezente 📦 ka menu (☰).",
+    redeem_step3: "Hili opsaun \"Redeem Roblox Codes\" — ka bele diretamente ba website: roblox.com/redeem",
+    redeem_step4: "Hatama kódigu ne'ebe admin fo iha kotak \"Code\".",
+    redeem_step5: "Klik butaun \"Redeem\".",
+    redeem_step6: "Robux sei tama automátikamente ba balansu ita boot nia konta.",
 
     selected_pkg_label: "Pakote hili",
     price_per_unit_label: "Osan / unidade",
@@ -188,12 +196,20 @@ export const TRANSLATIONS = {
     order_history_empty: "No orders on this device yet.",
     select_product_label: "Select Product",
     pkg_count_suffix: "packages",
+    out_of_stock_label: "Out of Stock",
 
     tier_kiik: "Small Packages",
     tier_medium: "Medium Packages",
     tier_boot: "Large Packages",
 
     checkout_process_time: "Delivery time: ±15 minutes",
+    redeem_howto_title: "How to redeem a Roblox code?",
+    redeem_step1: "Open the Roblox app or roblox.com, then log in to your account.",
+    redeem_step2: "At the top, click the gift/box icon 📦 or the menu (☰).",
+    redeem_step3: "Select \"Redeem Roblox Codes\" — or go directly to: roblox.com/redeem",
+    redeem_step4: "Enter the code admin sent you in the \"Code\" box.",
+    redeem_step5: "Click the \"Redeem\" button.",
+    redeem_step6: "Robux will be added to your account balance automatically.",
 
     selected_pkg_label: "Selected package",
     price_per_unit_label: "Price / unit",
@@ -328,12 +344,20 @@ export const TRANSLATIONS = {
     order_history_empty: "Belum ada pesanan di perangkat ini.",
     select_product_label: "Pilih Produk",
     pkg_count_suffix: "paket",
+    out_of_stock_label: "Stok Habis",
 
     tier_kiik: "Paket Kecil",
     tier_medium: "Paket Menengah",
     tier_boot: "Paket Besar",
 
     checkout_process_time: "Waktu proses: ±15 menit",
+    redeem_howto_title: "Cara redeem code Roblox?",
+    redeem_step1: "Buka aplikasi Roblox atau roblox.com, lalu login ke akun Anda.",
+    redeem_step2: "Di bagian atas, klik ikon kotak/hadiah 📦 atau menu (☰).",
+    redeem_step3: "Pilih \"Redeem Roblox Codes\" — atau langsung buka: roblox.com/redeem",
+    redeem_step4: "Masukkan kode yang diberikan admin ke kotak \"Code\".",
+    redeem_step5: "Klik tombol \"Redeem\".",
+    redeem_step6: "Robux akan otomatis masuk ke saldo akun Anda.",
 
     selected_pkg_label: "Paket dipilih",
     price_per_unit_label: "Harga / unit",

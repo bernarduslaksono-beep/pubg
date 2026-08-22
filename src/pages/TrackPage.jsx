@@ -199,7 +199,7 @@ export default function TrackPage() {
             <div className="result-row"><span className="k">{t('date_row_label')}</span><span className="v">{formatDate(selectedOrder.created_at)}</span></div>
 
             {(selectedOrder.status === 'dibatalkan' || selectedOrder.status === 'terkirim') && selectedOrder.admin_comment && (
-              <div className="admin-comment-box">
+              <div className={`admin-comment-box${selectedOrder.status === 'terkirim' ? ' success' : ''}`}>
                 <div className="admin-comment-label">{t('seller_note_label')}</div>
                 <div className="admin-comment-text">{selectedOrder.admin_comment}</div>
               </div>

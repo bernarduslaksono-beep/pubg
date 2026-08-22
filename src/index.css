@@ -405,6 +405,8 @@ main{max-width:1100px; margin:0 auto; padding:36px 24px 80px;}
 }
 .admin-comment-label{font-size:11px; font-weight:700; color:var(--danger); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;}
 .admin-comment-text{font-size:13px; color:var(--text);}
+.admin-comment-box.success{background:rgba(22,163,74,0.06); border-color:rgba(22,163,74,0.25);}
+.admin-comment-box.success .admin-comment-label{color:var(--success);}
 .status-badge{
   display:inline-flex; align-items:center; gap:7px; font-family:'Rajdhani',sans-serif; font-weight:700;
   font-size:14px; padding:6px 14px; border-radius:20px; letter-spacing:0.02em;

@@ -197,7 +197,7 @@ export default function OrderPage() {
           <span className="flow-line"></span>
           <span className="flow-flag" aria-hidden="true">🏁</span>
         </div>
-        <p>{t('hero_desc')}</p>
+        <p>{game.key === 'roblox' ? t('hero_desc_roblox') : t('hero_desc')}</p>
       </div>
 
       <div className="step-indicator" ref={stepIndicatorRef} tabIndex={-1} style={{ outline: 'none' }}>

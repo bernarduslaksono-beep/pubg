@@ -30,6 +30,7 @@ export const TRANSLATIONS = {
     step3: "Upload prova transferénsia",
     step4: "Kria pedidu",
     hero_desc: "Ami sei verifika no haruka pakote ba game ID ita boot nian (Prosesu ±15 menit).",
+    hero_desc_roblox: "Ami sei verifika no haruka Redeem Code iha itaboot nia pedidu ne, favor cek iha menu Hare status. (Prosesu ±15 menit).",
     whatsapp_confirm: "WhatsApp Konfirmasaun",
 
     step_indicator_pick: "Hili Pakote",
@@ -163,6 +164,7 @@ export const TRANSLATIONS = {
     step3: "Upload proof of transfer",
     step4: "Submit the order",
     hero_desc: "We'll verify payment and send your package to your game ID (Processing time ±15 minutes).",
+    hero_desc_roblox: "We will verify payment and send the Redeem Code to your order, please check the Check Status menu. (Processing time ±15 minutes).",
     whatsapp_confirm: "WhatsApp Confirmation",
 
     step_indicator_pick: "Choose Package",
@@ -296,6 +298,7 @@ export const TRANSLATIONS = {
     step3: "Upload bukti transfer",
     step4: "Buat pesanan",
     hero_desc: "Kami akan verifikasi pembayaran dan kirim paket ke game ID Anda (Proses ±15 menit).",
+    hero_desc_roblox: "Kami akan verifikasi pembayaran dan mengirim Kode Redeem ke pesanan Anda, silakan cek di menu Cek Status. (Proses ±15 menit).",
     whatsapp_confirm: "Konfirmasi WhatsApp",
 
     step_indicator_pick: "Pilih Paket",

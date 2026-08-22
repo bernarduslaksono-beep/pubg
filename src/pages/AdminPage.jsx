@@ -394,11 +394,11 @@ function Dashboard() {
   return (
     <>
       <div className="hero" style={{ marginBottom: 24 }}>
-        <div className="eyebrow"><span className="dot"></span> Dashboard</div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 12 }}>
-          <h1>Tracking & Laporan Fatin</h1>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 14 }}>
           <AdminMenu />
         </div>
+        <div className="eyebrow"><span className="dot"></span> Dashboard</div>
+        <h1>Tracking & Laporan Fatin</h1>
       </div>
 
       <div className="stat-grid">

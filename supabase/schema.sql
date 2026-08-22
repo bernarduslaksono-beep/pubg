@@ -345,3 +345,68 @@ $$;
 
 grant execute on function public.check_proof_duplicate(text) to anon, authenticated;
 
+-- =====================================================================
+-- 10) Jam operasional loja — jadwal automátiku + override manual admin.
+-- Cliente bele haree website (pakote, presu) bainhira taka, maibe la bele
+-- halo pedidu to'o loja loke fila fali (tuir jadwal ka admin loke manual).
+-- =====================================================================
+create table if not exists public.store_settings (
+  id smallint primary key default 1,
+  open_time time not null default '08:00',
+  close_time time not null default '23:00',
+  manual_override text check (manual_override in ('open', 'closed')),
+  constraint single_row_settings check (id = 1)
+);
+insert into public.store_settings (id, open_time, close_time, manual_override)
+values (1, '08:00', '23:00', null)
+on conflict (id) do nothing;
+
+alter table public.store_settings enable row level security;
+
+-- De'it admin (authenticated) bele haree/troka konfigurasaun — cliente (anon)
+-- de'it liu husi funsaun get_store_status() (security definer) kraik.
+drop policy if exists "admin_can_manage_store_settings" on public.store_settings;
+create policy "admin_can_manage_store_settings"
+  on public.store_settings for all
+  to authenticated
+  using (true)
+  with check (true);
+
+create or replace function public.get_store_status()
+returns table (is_open boolean, open_time time, close_time time, manual_override text)
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_open_time time;
+  v_close_time time;
+  v_override text;
+  v_now time;
+  v_is_open boolean;
+begin
+  select s.open_time, s.close_time, s.manual_override
+  into v_open_time, v_close_time, v_override
+  from public.store_settings s
+  where s.id = 1;
+
+  if v_override = 'open' then
+    v_is_open := true;
+  elsif v_override = 'closed' then
+    v_is_open := false;
+  else
+    v_now := (now() at time zone 'Asia/Dili')::time;
+    if v_open_time <= v_close_time then
+      v_is_open := v_now >= v_open_time and v_now < v_close_time;
+    else
+      -- kobre kazu jadwal ne'ebe "taka liu tenki-meia-noite" (ezemplu 22:00–06:00)
+      v_is_open := v_now >= v_open_time or v_now < v_close_time;
+    end if;
+  end if;
+
+  return query select v_is_open, v_open_time, v_close_time, v_override;
+end;
+$$;
+
+grant execute on function public.get_store_status() to anon, authenticated;
+

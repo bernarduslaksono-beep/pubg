@@ -49,6 +49,21 @@ export default function OrderPage() {
   const checkoutNameRef = useRef(null)
   const [securityMsg, setSecurityMsg] = useState(null)
   const [checkingEligibility, setCheckingEligibility] = useState(false)
+  const [storeStatus, setStoreStatus] = useState(null) // { isOpen, openTime, closeTime }
+
+  useEffect(() => {
+    let cancelled = false
+    supabase.rpc('get_store_status').then(({ data, error }) => {
+      if (!error && data && data.length > 0 && !cancelled) {
+        setStoreStatus({
+          isOpen: data[0].is_open,
+          openTime: (data[0].open_time || '').slice(0, 5),
+          closeTime: (data[0].close_time || '').slice(0, 5),
+        })
+      }
+    })
+    return () => { cancelled = true }
+  }, [])
 
   const isPubg = game?.key === 'pubg'
   const noUserInfo = Boolean(game?.noUserInfo)
@@ -133,6 +148,23 @@ export default function OrderPage() {
     setSecurityMsg(null)
     setCheckingEligibility(true)
     try {
+      // Verifika fila fali status loja (la konfia de'it iha estadu iha loading pajina,
+      // tanba cliente bele hein iha pajina to'o liu ona oras taka).
+      const { data: statusData, error: statusError } = await supabase.rpc('get_store_status')
+      if (!statusError && statusData && statusData.length > 0) {
+        const openTime = (statusData[0].open_time || '').slice(0, 5)
+        setStoreStatus({
+          isOpen: statusData[0].is_open,
+          openTime,
+          closeTime: (statusData[0].close_time || '').slice(0, 5),
+        })
+        if (!statusData[0].is_open) {
+          setSecurityMsg(t('store_closed_error', openTime))
+          setCheckingEligibility(false)
+          return
+        }
+      }
+
       const fingerprint = await getDeviceFingerprint()
       const { data, error } = await supabase.rpc('check_order_eligibility', {
         p_fingerprint: fingerprint,
@@ -261,6 +293,11 @@ export default function OrderPage() {
           <span className="flow-flag" aria-hidden="true">🏁</span>
         </div>
         <p>{game.key === 'roblox' ? t('hero_desc_roblox') : t('hero_desc')}</p>
+        {storeStatus && !storeStatus.isOpen && (
+          <div className="store-closed-banner">
+            🌙 {t('store_closed_banner', storeStatus.openTime)}
+          </div>
+        )}
       </div>
 
       <div className="step-indicator" ref={stepIndicatorRef} tabIndex={-1} style={{ outline: 'none' }}>
@@ -420,7 +457,7 @@ export default function OrderPage() {
               <div className="cart-btn">🛒</div>
               <button
                 className="btn btn-primary"
-                disabled={!step1Valid || checkingEligibility}
+                disabled={!step1Valid || checkingEligibility || storeStatus?.isOpen === false}
                 onClick={handleSosaClick}
               >
                 {checkingEligibility ? '...' : t('buy_btn')}

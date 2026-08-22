@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { supabase } from '../supabase.js'
 import { isNotificationActive } from '../lib/notificationStatus.js'
-import StoreStatusBadge from './StoreStatusBadge.jsx'
 import StoreHoursControl from './StoreHoursControl.jsx'
 import StockControl from './StockControl.jsx'
 import NotificationSetup from './NotificationSetup.jsx'
@@ -35,25 +34,22 @@ export default function AdminMenu() {
 
   return (
     <>
-      <div className="admin-menu-row">
-        <StoreStatusBadge />
-        <div className="admin-menu-wrap" ref={wrapRef}>
-          <button className="admin-hamburger-btn" onClick={() => setOpen((o) => !o)} aria-label="Menu">
-            ☰
-            {!notifActive && <span className="admin-menu-dot"></span>}
-          </button>
-          {open && (
-            <div className="admin-menu-dropdown">
-              <button onClick={() => openModal('hours')}>Oras Operasaun Loja</button>
-              <button onClick={() => openModal('stock')}>Kontrola Stock</button>
-              <button onClick={() => openModal('notif')}>
-                Notifikasaun Ativu
-                {!notifActive && <span className="admin-menu-dot inline"></span>}
-              </button>
-              <button className="danger" onClick={() => supabase.auth.signOut()}>Sai</button>
-            </div>
-          )}
-        </div>
+      <div className="admin-menu-wrap" ref={wrapRef}>
+        <button className="admin-hamburger-btn" onClick={() => setOpen((o) => !o)} aria-label="Menu">
+          ☰
+          {!notifActive && <span className="admin-menu-dot"></span>}
+        </button>
+        {open && (
+          <div className="admin-menu-dropdown">
+            <button onClick={() => openModal('hours')}>Oras Operasaun Loja</button>
+            <button onClick={() => openModal('stock')}>Kontrola Stock</button>
+            <button onClick={() => openModal('notif')}>
+              Notifikasaun Ativu
+              {!notifActive && <span className="admin-menu-dot inline"></span>}
+            </button>
+            <button className="danger" onClick={() => supabase.auth.signOut()}>Sai</button>
+          </div>
+        )}
       </div>
 
       <div className={`modal-overlay${activeModal === 'hours' ? ' show' : ''}`} onClick={(e) => e.target.classList.contains('modal-overlay') && setActiveModal(null)}>

@@ -653,7 +653,9 @@ select.status-select{
 .override-btn.danger.active{color:var(--danger); box-shadow:0 0 0 1.5px var(--danger);}
 
 /* Admin hamburger menu (kanan leten, hela iha ei-ei header) */
-.admin-menu-row{display:flex; align-items:center; gap:12px; margin-left:auto;}
+.admin-top-row{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:12px;}
+.admin-top-row .eyebrow{margin-bottom:0;}
+.admin-top-row .store-status-pill{font-size:11px; padding:3px 10px;}
 .admin-menu-wrap{position:relative;}
 .admin-hamburger-btn{
   position:relative; background:var(--surface); border:1px solid var(--border); color:var(--text);

@@ -3,6 +3,7 @@ import { supabase } from '../supabase.js'
 import { STATUS_LABELS } from '../data/packages.js'
 import { GAMES } from '../data/games.js'
 import AdminMenu from '../components/AdminMenu.jsx'
+import StoreStatusBadge from '../components/StoreStatusBadge.jsx'
 import OrderToast from '../components/OrderToast.jsx'
 
 const FILTERS = [
@@ -394,10 +395,10 @@ function Dashboard() {
   return (
     <>
       <div className="hero" style={{ marginBottom: 24 }}>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 14 }}>
+        <div className="admin-top-row">
+          <div className="eyebrow"><span className="dot"></span> Dashboard <StoreStatusBadge /></div>
           <AdminMenu />
         </div>
-        <div className="eyebrow"><span className="dot"></span> Dashboard</div>
         <h1>Tracking & Laporan Fatin</h1>
       </div>
 

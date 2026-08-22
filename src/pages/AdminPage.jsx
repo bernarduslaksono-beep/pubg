@@ -409,24 +409,17 @@ function Dashboard() {
         <div className="stat-card"><div className="lbl">Rendimentu Totál</div><div className="num">${stats.revenue.toFixed(2)}</div></div>
       </div>
 
-      <div className="toolbar">
-        <div className="filter-tabs">
+      <div className="toolbar admin-filter-row">
+        <select className="filter-select" value={gameFilter} onChange={(e) => setGameFilter(e.target.value)}>
           {GAME_FILTERS.map((f) => (
-            <button key={f.key} className={gameFilter === f.key ? 'active' : ''} onClick={() => setGameFilter(f.key)}>
-              {f.label}
-            </button>
+            <option key={f.key} value={f.key}>{f.label}</option>
           ))}
-        </div>
-      </div>
-
-      <div className="toolbar">
-        <div className="filter-tabs">
+        </select>
+        <select className="filter-select" value={filter} onChange={(e) => setFilter(e.target.value)}>
           {FILTERS.map((f) => (
-            <button key={f.key} className={filter === f.key ? 'active' : ''} onClick={() => setFilter(f.key)}>
-              {f.label}
-            </button>
+            <option key={f.key} value={f.key}>{f.label}</option>
           ))}
-        </div>
+        </select>
         <input
           className="admin-search"
           placeholder="Buka Order ID, User ID, Zone ID, Nickname..."

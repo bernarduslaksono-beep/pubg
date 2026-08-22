@@ -8,6 +8,7 @@ import InstallPrompt from './components/InstallPrompt.jsx'
 import Footer from './components/Footer.jsx'
 import ThemeToggle from './components/ThemeToggle.jsx'
 import ScrollToTopButton from './components/ScrollToTopButton.jsx'
+import LoadingScreen from './components/LoadingScreen.jsx'
 import { useLanguage } from './i18n/LanguageContext.jsx'
 import { GAMES } from './data/games.js'
 import { hasUnread, subscribeHistoryChanges, refreshHistoryStatuses } from './lib/orderHistory.js'
@@ -86,6 +87,7 @@ export default function App() {
   const location = useLocation()
   const isAdminRoute = location.pathname === ADMIN_PATH
   const isPortalRoute = location.pathname === '/'
+  const [loading, setLoading] = useState(true)
 
   // Troka manifest PWA (no titulu) tuir pajina ne'ebe ita boot iha —
   // atu install ba HP husi pajina admin loke direta ba admin, la'os ba pajina cliente.
@@ -104,8 +106,9 @@ export default function App() {
     }
   }, [isAdminRoute])
 
+  let content
   if (isAdminRoute) {
-    return (
+    content = (
       <>
         <TopBar gameKey={null} showAdminTheme linkBrand={false} />
         <main>
@@ -114,10 +117,8 @@ export default function App() {
         <ScrollToTopButton />
       </>
     )
-  }
-
-  if (isPortalRoute) {
-    return (
+  } else if (isPortalRoute) {
+    content = (
       <>
         <TopBar gameKey={null} />
         <main>
@@ -128,12 +129,19 @@ export default function App() {
         <ScrollToTopButton />
       </>
     )
+  } else {
+    content = (
+      <Routes>
+        <Route path="/:gameKey" element={<GameRouteShell><OrderPage /></GameRouteShell>} />
+        <Route path="/:gameKey/track" element={<GameRouteShell><TrackPage /></GameRouteShell>} />
+      </Routes>
+    )
   }
 
   return (
-    <Routes>
-      <Route path="/:gameKey" element={<GameRouteShell><OrderPage /></GameRouteShell>} />
-      <Route path="/:gameKey/track" element={<GameRouteShell><TrackPage /></GameRouteShell>} />
-    </Routes>
+    <>
+      {content}
+      {loading && <LoadingScreen onDone={() => setLoading(false)} />}
+    </>
   )
 }

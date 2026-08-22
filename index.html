@@ -9,8 +9,11 @@
     <meta name="theme-color" content="#E7343F" />
     <script>
       (function () {
+        var userSet = localStorage.getItem('theme_user_set') === '1';
         var saved = localStorage.getItem('theme');
-        if (saved !== 'light') document.documentElement.setAttribute('data-theme', 'dark');
+        if (!(userSet && saved === 'light')) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
       })();
     </script>
     <link rel="icon" href="/icons/icon-192.png" type="image/png" />

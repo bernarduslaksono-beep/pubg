@@ -40,17 +40,27 @@ export function loadHistoryIds(gameKey) {
 
 // Hasi entry ne'ebe la iha ona iha database (admin ona apaga), no guarda de'it
 // entry ne'ebe seidauk loke (unread)/status atual ne'ebe hatudu iha listajen atual.
-export function pruneAndSync(gameKey, survivors) {
+// IMPORTANTE: de'it aplika ba entry ne'ebe ita boot loloos VERIFIKA iha "checkedResults"
+// — entry seluk (ezemplu pedidu foun ne'ebe cliente submete durante refresh ne'e
+// hela halo) NUNCA toka/hasai, atu hases "race condition" ne'ebe bele hamoos
+// pedidu foun husi riwayat lokal.
+function syncCheckedResults(gameKey, checkedResults) {
   const list = readRaw()
-  const others = list.filter((o) => o.game !== gameKey)
-  const survivorIds = new Set(survivors.map((s) => s.id))
-  const kept = list
-    .filter((o) => o.game === gameKey && survivorIds.has(o.id))
-    .map((o) => {
-      const match = survivors.find((s) => s.id === o.id)
-      return match ? { ...o, unread: match.unread, lastKnownStatus: match.lastKnownStatus } : o
+  const resultMap = new Map(checkedResults.map((r) => [r.id, r]))
+  const next = list
+    .filter((o) => {
+      if (o.game !== gameKey) return true
+      const r = resultMap.get(o.id)
+      if (!r) return true // la verifika iha loop ida ne'e — keep, la toka
+      return r.found // apaga de'it se ita boot loloos verifika no la hetan ona
     })
-  writeRaw([...others, ...kept])
+    .map((o) => {
+      if (o.game !== gameKey) return o
+      const r = resultMap.get(o.id)
+      if (!r || !r.found) return o
+      return { ...o, unread: r.unread, lastKnownStatus: r.lastKnownStatus }
+    })
+  writeRaw(next)
 }
 
 // Marka Order ID espesifiku hanesan "ona loke" (la iha ona indikador "foun").
@@ -80,30 +90,33 @@ export async function refreshHistoryStatuses(gameKey) {
   const entries = loadHistoryIds(gameKey)
   if (entries.length === 0) return []
 
-  const results = await Promise.all(
+  const checkedResults = await Promise.all(
     entries.map(async (h) => {
       const { data, error } = await supabase.rpc('track_orders', {
         p_order_id: h.id,
         p_whatsapp: null,
         p_game: gameKey,
       })
-      if (error || !data || data.length === 0) return null
+      if (error || !data || data.length === 0) return { id: h.id, found: false }
       const fresh = data[0]
       const statusChanged = h.lastKnownStatus && h.lastKnownStatus !== fresh.status
       return {
-        ...fresh,
+        id: h.id,
+        found: true,
+        data: fresh,
         unread: statusChanged ? true : Boolean(h.unread),
         lastKnownStatus: fresh.status,
       }
     })
   )
 
-  const survivors = results.filter(Boolean)
-  pruneAndSync(
-    gameKey,
-    survivors.map((o) => ({ id: o.id, unread: o.unread, lastKnownStatus: o.lastKnownStatus }))
-  )
-  return survivors
+  // Sinkroniza de'it entry ne'ebe ita boot verifika iha loop ida ne'e (la afeta
+  // entry seluk ne'ebe konkorrente hamutuk).
+  syncCheckedResults(gameKey, checkedResults)
+
+  return checkedResults
+    .filter((r) => r.found)
+    .map((r) => ({ ...r.data, unread: r.unread }))
 }
 
 // Subscribe ba mudansa iha riwayat (mesmo tab ka tab seluk).

@@ -18,6 +18,21 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => {})
+    navigator.serviceWorker.register('/sw.js').then((registration) => {
+      // Verifika update kada 60 segundu — atu detekta bailu foun maski cliente
+      // hela loke app ne'e ba tempu naruk (la taka/loke fila fali).
+      setInterval(() => registration.update().catch(() => {}), 60000)
+
+      registration.addEventListener('updatefound', () => {
+        const newWorker = registration.installing
+        if (!newWorker) return
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            // Iha versaun foun disponivel — hatudu banner ba user atu update.
+            window.dispatchEvent(new Event('app-update-available'))
+          }
+        })
+      })
+    }).catch(() => {})
   })
 }

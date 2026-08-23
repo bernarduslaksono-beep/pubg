@@ -116,7 +116,8 @@ export const TRANSLATIONS = {
     submit_error: "Falha atu haruka pedidu. Favor tenta fila fali.",
 
     success_title: "Pedidu Submete!",
-    success_desc: (wa) => `Ami sei verifika pagamentu no haruka UC ba game ID ita boot. Guarda Order ID ne'e atu haree status, no konfirma liu husi WhatsApp ${wa}.`,
+    success_desc: (currency, wa) => `Ami sei verifika pagamentu no haruka ${currency} ba game ID ita boot nian. Guarda Order ID ne'e atu haree status, no konfirma liu husi WhatsApp ${wa}.`,
+    success_desc_roblox: (wa) => `Ami sei verifika pagamentu no haruka kódigu redeem ba ita boot. Guarda Order ID ne'e, hafoin cek iha menu Hare Status atu simu kódigu redeem, ka konfirma liu husi WhatsApp ${wa}.`,
     copy_btn: "Copy",
     copied_btn: "Tersalin",
     ok_btn: "Diak",
@@ -264,7 +265,8 @@ export const TRANSLATIONS = {
     submit_error: "Failed to submit order. Please try again.",
 
     success_title: "Order Submitted!",
-    success_desc: (wa) => `We'll verify your payment and send UC to your game ID. Save this Order ID to check status, and confirm via WhatsApp ${wa}.`,
+    success_desc: (currency, wa) => `We'll verify your payment and send ${currency} to your game ID. Save this Order ID to check status, and confirm via WhatsApp ${wa}.`,
+    success_desc_roblox: (wa) => `We'll verify your payment and send you a redeem code. Save this Order ID, then check the Check Status menu to receive your redeem code, or confirm via WhatsApp ${wa}.`,
     copy_btn: "Copy",
     copied_btn: "Copied",
     ok_btn: "OK",
@@ -412,7 +414,8 @@ export const TRANSLATIONS = {
     submit_error: "Gagal mengirim pesanan. Silakan coba lagi.",
 
     success_title: "Pesanan Terkirim!",
-    success_desc: (wa) => `Kami akan verifikasi pembayaran dan kirim UC ke game ID Anda. Simpan Order ID ini untuk cek status, dan konfirmasi lewat WhatsApp ${wa}.`,
+    success_desc: (currency, wa) => `Kami akan verifikasi pembayaran dan mengirim ${currency} ke game ID Anda. Simpan Order ID ini untuk cek status, dan konfirmasi lewat WhatsApp ${wa}.`,
+    success_desc_roblox: (wa) => `Kami akan verifikasi pembayaran dan mengirimkan kode redeem untuk Anda. Simpan Order ID ini, lalu cek di menu Cek Status untuk menerima kode redeem, atau konfirmasi lewat WhatsApp ${wa}.`,
     copy_btn: "Salin",
     copied_btn: "Tersalin",
     ok_btn: "Oke",

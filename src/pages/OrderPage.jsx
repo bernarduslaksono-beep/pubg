@@ -8,6 +8,7 @@ import { useLanguage } from '../i18n/LanguageContext.jsx'
 import { saveNewOrder } from '../lib/orderHistory.js'
 import { getDeviceFingerprint } from '../lib/deviceFingerprint.js'
 import { sha256HexFromBuffer } from '../lib/hash.js'
+import { resizeImageToBlob } from '../lib/imageResize.js'
 
 function genOrderId(prefix) {
   return (
@@ -206,24 +207,21 @@ export default function OrderPage() {
     setMsg(null)
     try {
       const orderId = genOrderId(game.orderPrefix)
-      const rawExt = proofFile.name.includes('.') ? proofFile.name.split('.').pop() : ''
-      const fileExt = (rawExt || (proofFile.type ? proofFile.type.split('/').pop() : '') || 'jpg')
-        .toLowerCase()
-        .replace(/[^a-z0-9]/g, '')
-        .slice(0, 5) || 'jpg'
-      const filePath = `${orderId}.${fileExt}`
 
       // Nota: la haruka objetu File diretamente — Safari/WebKit (iPhone) iha bug
       // konhesidu ne'ebe kadaan haruka konteudu mamuk ("No content provided").
       // Lee file ba ArrayBuffer lai antes upload, ne'e funsiona ho fiar iha
       // hotu-hotu browser.
-      const fileBuffer = await proofFile.arrayBuffer()
+      const originalBuffer = await proofFile.arrayBuffer()
 
       // Verifika se prova transferénsia ne'e ona uza ba pedidu seluk ne'ebe
       // SEIDAUK kanselamentu — se ona, hases duplikadu/spam. Se pedidu tuan
       // ona kanselamentu, prova hanesan bele uza fila fali (ezemplu: cliente
       // sala iha ID/naran, hafoin order fila fali ho prova hanesan).
-      const proofHash = await sha256HexFromBuffer(fileBuffer)
+      // Nota: hash ne'e kalkula husi imajen ORIJINAL (la'os versaun komprimidu),
+      // tanba kompresaun bele hasai rezultadu bytes ne'ebe la hanesan liu-liu
+      // entre browser oioin — hash husi orijinal mantein fiar/konsistente.
+      const proofHash = await sha256HexFromBuffer(originalBuffer)
       const { data: dupData, error: dupError } = await supabase.rpc('check_proof_duplicate', {
         p_proof_hash: proofHash,
       })
@@ -233,11 +231,31 @@ export default function OrderPage() {
         return
       }
 
+      // Komprimí imajen antes upload — hases storage enxi lalais. Se kompresaun
+      // falha (ezemplu formatu la suporta), uza file orijinal hanesan fallback
+      // atu la bloke pedidu ne'ebe honestu.
+      let uploadBuffer = originalBuffer
+      let uploadExt = 'jpg'
+      let uploadContentType = 'image/jpeg'
+      try {
+        const resizedBlob = await resizeImageToBlob(proofFile, 1280, 0.78)
+        uploadBuffer = await resizedBlob.arrayBuffer()
+      } catch (resizeErr) {
+        console.error('resize falha, uza file orijinal', resizeErr)
+        const rawExt = proofFile.name.includes('.') ? proofFile.name.split('.').pop() : ''
+        uploadExt = (rawExt || (proofFile.type ? proofFile.type.split('/').pop() : '') || 'jpg')
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, '')
+          .slice(0, 5) || 'jpg'
+        uploadContentType = proofFile.type || 'image/jpeg'
+      }
+      const filePath = `${orderId}.${uploadExt}`
+
       const { error: uploadError } = await supabase.storage
         .from('proofs')
-        .upload(filePath, fileBuffer, {
+        .upload(filePath, uploadBuffer, {
           upsert: false,
-          contentType: proofFile.type || 'image/jpeg',
+          contentType: uploadContentType,
         })
       if (uploadError) throw uploadError
 
@@ -611,7 +629,7 @@ export default function OrderPage() {
         <div className="modal success-modal">
           <div className="icon-circle">✓</div>
           <h3>{t('success_title')}</h3>
-          <p>{t('success_desc', WHATSAPP_NUMBER)}</p>
+          <p>{game.key === 'roblox' ? t('success_desc_roblox', WHATSAPP_NUMBER) : t('success_desc', game.currencyLabel, WHATSAPP_NUMBER)}</p>
           <div className="oid-copy-row">
             <span className="oid-text mono">{lastOrderId}</span>
             <button

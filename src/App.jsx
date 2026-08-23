@@ -9,6 +9,7 @@ import Footer from './components/Footer.jsx'
 import ThemeToggle from './components/ThemeToggle.jsx'
 import ScrollToTopButton from './components/ScrollToTopButton.jsx'
 import LoadingScreen from './components/LoadingScreen.jsx'
+import UpdateBanner from './components/UpdateBanner.jsx'
 import { useLanguage } from './i18n/LanguageContext.jsx'
 import { GAMES } from './data/games.js'
 import { hasUnread, subscribeHistoryChanges, refreshHistoryStatuses } from './lib/orderHistory.js'
@@ -142,6 +143,7 @@ export default function App() {
     <>
       {content}
       {loading && <LoadingScreen onDone={() => setLoading(false)} />}
+      <UpdateBanner />
     </>
   )
 }

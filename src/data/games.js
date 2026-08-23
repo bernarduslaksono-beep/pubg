@@ -25,12 +25,12 @@ export const GAMES = {
         items: [
           { amount: 1860, price: 27 }, { amount: 2125, price: 31 }, { amount: 2520, price: 37 }, { amount: 2845, price: 44 },
           { amount: 3850, price: 52 }, { amount: 4510, price: 63 }, { amount: 5650, price: 79 }, { amount: 6035, price: 84 },
-          { amount: 8160, price: 105 }, { amount: 9085, price: 120 },
         ],
       },
       {
         tierKey: 'boot',
         items: [
+          { amount: 8160, price: 105 }, { amount: 9085, price: 120 },
           { amount: 10225, price: 135 }, { amount: 12010, price: 160 }, { amount: 14075, price: 185 }, { amount: 17520, price: 225 },
         ],
       },

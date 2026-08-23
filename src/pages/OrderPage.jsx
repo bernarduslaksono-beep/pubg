@@ -351,7 +351,10 @@ export default function OrderPage() {
             {game.tiers.map((group) => (
               <div className="tier-block" key={group.tierKey}>
                 <div className="tier-head tier-head-toggle" onClick={() => toggleTier(group.tierKey)}>
-                  <h3>{t(`tier_${group.tierKey}`)}</h3>
+                  <h3>
+                    {t(`tier_${group.tierKey}`)}
+                    {group.tierKey === 'boot' && <span className="tier-note"> {t('tier_boot_note')}</span>}
+                  </h3>
                   <span className="count">{group.items.length} {t('pkg_count_suffix')}</span>
                   <span className={`tier-chevron${openTiers[group.tierKey] ? ' open' : ''}`}>▾</span>
                 </div>

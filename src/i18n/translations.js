@@ -53,6 +53,7 @@ export const TRANSLATIONS = {
     tier_kiik: "Pakote Ki'ik",
     tier_medium: "Pakote Medium",
     tier_boot: "Pakote Bo'ot",
+    tier_boot_note: "(Prosesu ±30 menit)",
 
     checkout_process_time: "Prosesu haruka: ±15 menit",
     redeem_howto_title: "Oinsa redeem code Roblox?",
@@ -202,6 +203,7 @@ export const TRANSLATIONS = {
     tier_kiik: "Small Packages",
     tier_medium: "Medium Packages",
     tier_boot: "Large Packages",
+    tier_boot_note: "(Processing ±30 minutes)",
 
     checkout_process_time: "Delivery time: ±15 minutes",
     redeem_howto_title: "How to redeem a Roblox code?",
@@ -351,6 +353,7 @@ export const TRANSLATIONS = {
     tier_kiik: "Paket Kecil",
     tier_medium: "Paket Menengah",
     tier_boot: "Paket Besar",
+    tier_boot_note: "(Proses ±30 menit)",
 
     checkout_process_time: "Waktu proses: ±15 menit",
     redeem_howto_title: "Cara redeem code Roblox?",

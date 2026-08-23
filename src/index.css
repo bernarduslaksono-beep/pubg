@@ -171,6 +171,7 @@ main{max-width:1100px; margin:0 auto; padding:36px 24px 80px;}
 .tier-block{margin-bottom:32px;}
 .tier-head{display:flex; align-items:center; gap:10px; margin-bottom:14px;}
 .tier-head h3{font-size:19px; color:var(--text);}
+.tier-note{font-size:12px; font-weight:500; color:var(--muted);}
 .tier-head .count{font-size:12px; color:var(--muted); font-family:'JetBrains Mono',monospace;}
 .tier-head-toggle{cursor:pointer; user-select:none;}
 .tier-chevron{margin-left:auto; color:var(--muted); font-size:14px; transition:transform .15s ease;}

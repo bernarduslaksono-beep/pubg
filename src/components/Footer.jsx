@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { supabase } from '../supabase.js'
 import { WHATSAPP_NUMBER } from '../data/packages.js'
 import ThemeToggle from './ThemeToggle.jsx'
@@ -29,6 +30,8 @@ export default function Footer() {
           >
             {t('footer_whatsapp_prefix')}: <b>+670{WHATSAPP_NUMBER}</b>
           </a>
+          <br />
+          <Link className="footer-about-link" to="/kona-ba-ami">{t('footer_about_label')}</Link>
         </div>
 
         <div className="footer-col footer-col-end">

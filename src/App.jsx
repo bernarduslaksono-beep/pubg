@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Routes, Route, Link, useLocation, useParams } from 'react-router-dom'
 import PortalPage from './pages/PortalPage.jsx'
+import AboutPage from './pages/AboutPage.jsx'
 import OrderPage from './pages/OrderPage.jsx'
 import TrackPage from './pages/TrackPage.jsx'
 import AdminPage from './pages/AdminPage.jsx'
@@ -19,6 +20,7 @@ import logo from './assets/logo-lojagame.png'
 // Rota admin "sekretu" — la aparese iha menu públiku.
 // Troka slug ne'e ba naran seluk se hakarak (dala ida de'it, hafoin fahe link ba ita boot rasik).
 const ADMIN_PATH = '/painel-admin-x29k7'
+const ABOUT_PATH = '/kona-ba-ami'
 
 function TopBar({ gameKey, showAdminTheme, linkBrand = true }) {
   const location = useLocation()
@@ -90,6 +92,7 @@ export default function App() {
   const location = useLocation()
   const isAdminRoute = location.pathname === ADMIN_PATH
   const isPortalRoute = location.pathname === '/'
+  const isAboutRoute = location.pathname === ABOUT_PATH
   const [loading, setLoading] = useState(true)
 
   // Troka manifest PWA (no titulu) tuir pajina ne'ebe ita boot iha —
@@ -126,6 +129,19 @@ export default function App() {
         <TopBar gameKey={null} />
         <main>
           <PortalPage />
+        </main>
+        <Footer />
+        <InstallPrompt />
+        <ScrollToTopButton />
+        <PresenceTracker />
+      </>
+    )
+  } else if (isAboutRoute) {
+    content = (
+      <>
+        <TopBar gameKey={null} />
+        <main>
+          <AboutPage />
         </main>
         <Footer />
         <InstallPrompt />

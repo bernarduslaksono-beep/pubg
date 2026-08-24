@@ -900,3 +900,17 @@ select.status-select{
 }
 .portal-bell-dropdown button:hover{background:var(--surface-2);}
 
+/* Kona ba Ami (About) page */
+.about-content{max-width:720px; margin:0 auto; padding-bottom:20px;}
+.about-content p{font-size:15px; line-height:1.75; color:var(--text); margin-bottom:20px;}
+.about-facebook-link{
+  display:inline-block; margin-top:8px; color:var(--red); font-weight:700; font-size:14px;
+  text-decoration:none;
+}
+.about-facebook-link:hover{text-decoration:underline;}
+
+.footer-about-link{
+  display:inline-block; margin-top:8px; font-size:12.5px; color:var(--muted); text-decoration:none;
+}
+.footer-about-link:hover{text-decoration:underline; color:var(--text);}
+

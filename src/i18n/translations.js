@@ -56,6 +56,17 @@ export const TRANSLATIONS = {
     tier_boot_note: "(Prosesu ±30 menit)",
 
     checkout_process_time: "Prosesu haruka: ±15 menit",
+    about_title: "Kona ba Ami",
+    about_facebook_label: "Haree lista-lista presu ami nian husi tinan-tinan liu ba →",
+    footer_about_label: "Kona ba Ami",
+    about_paragraphs: [
+      "Dezde tinan 2018, ami hah\u00fa fa'an UC PUBG liu husi entrega diretu ba uma kliente sira nian iha Dili. Iha tempu ne'eb\u00e1, ami seidauk iha website \u2014 ami uza de'it banner no lista presu ne'ebe ami troka beibeik tuir Royale Pass Season foun-foun, hafoin haruka liu husi WhatsApp no lori diretu ba kliente nia liman rasik.",
+      "Razaun forte husi primeiru ami hah\u00fa fa'an UC mak tanba ami hakarak ajuda gamer sira Timor oan atu bele hetan fasilidade lalais atu hadi'a Royale Pass, hanesan mos nasaun sira seluk.",
+      "Iha tinan 2020, durante pandemia COVID-19, ami tenki para servisu ne'e durante tinan ida \u2014 hanesan barak seluk iha Timor-Leste. Maibe hafoin situasaun hadi'a, ami hakarak fila fali no kontinua servisu ne'e, tanba ami hatene ita boot sira mos sei hein hela ami.",
+      "Durante tinan hira ne'e, ami hadia lista presu no deze\u00f1u ami nian dala barak \u2014 komesa husi Season 4 to'o Season 11 \u2014 atu sempre f\u00f3 presu justu no informasaun klaru ba kliente. Ida ne'e la'os neg\u00f3siu foun ka konfiansa ne'ebe ami hetan lais de'it; ida ne'e resultadu husi tinan-tinan servisu konsistente ba komunidade Dili.",
+      "Agora, ami lori servisu ne'e ba online \u2014 la'os atu muda buat ida, maibe atu halo prosesu sai fasil liu tan ba ita boot no presu sai barato liu. Ema ne'ebe verifika pedidu ita boot nian hanesan ema ne'ebe lori UC ba uma kliente sira durante tinan hira ne'e.",
+      "Iha website ida ne'e, ami mos ona hatama pakote ba Mobile Legends, Free Fire, no Robux Roblox \u2014 no ami sei kontinua hatama game foun sira seluk iha futuru, atu bele responde ba nesesidade komunidade gamer Timor oan nian ne'ebe sempre aumenta."
+    ],
     redeem_howto_title: "Oinsa redeem code Roblox?",
     redeem_step1: "Loke aplikasu Roblox ka website roblox.com, hafoin tama ho ita boot nia konta.",
     redeem_step2: "Iha parte leten, klik ikon kaixa/prezente 📦 ka menu (☰).",
@@ -208,6 +219,17 @@ export const TRANSLATIONS = {
     tier_boot_note: "(Processing ±30 minutes)",
 
     checkout_process_time: "Delivery time: ±15 minutes",
+    about_title: "About Us",
+    about_facebook_label: "See our price lists from over the years →",
+    footer_about_label: "About Us",
+    about_paragraphs: [
+      "Since 2018, we started selling PUBG UC through direct delivery to clients' homes in Dili. Back then, we didn't have a website yet \u2014 we just used banners and price lists that we updated regularly following each new Royale Pass Season, then sent them via WhatsApp and delivered them directly into the client's hands.",
+      "The strong reason we first started selling UC was because we wanted to help young Timorese gamers get quick access to upgrade their Royale Pass, just like players in other countries.",
+      "In 2020, during the COVID-19 pandemic, we had to pause this service for a year \u2014 like many others in Timor-Leste. But once things improved, we wanted to come back and continue, because we knew you were still waiting for us.",
+      "Over the years, we've refined our price lists and designs many times \u2014 from Season 4 all the way to Season 11 \u2014 always aiming to give fair prices and clear information to customers. This isn't a new business or trust we gained overnight; it's the result of years of consistent service to the Dili community.",
+      "Now, we've brought this service online \u2014 not to change anything, but to make the process easier for you and the prices even more affordable. The person verifying your order is the same person who delivered UC to customers' homes all these years.",
+      "On this website, we've also added packages for Mobile Legends, Free Fire, and Robux Roblox \u2014 and we'll keep adding more games in the future, to keep up with the growing needs of the Timorese gaming community."
+    ],
     redeem_howto_title: "How to redeem a Roblox code?",
     redeem_step1: "Open the Roblox app or roblox.com, then log in to your account.",
     redeem_step2: "At the top, click the gift/box icon 📦 or the menu (☰).",
@@ -360,6 +382,17 @@ export const TRANSLATIONS = {
     tier_boot_note: "(Proses ±30 menit)",
 
     checkout_process_time: "Waktu proses: ±15 menit",
+    about_title: "Tentang Kami",
+    about_facebook_label: "Lihat daftar harga kami dari tahun ke tahun →",
+    footer_about_label: "Tentang Kami",
+    about_paragraphs: [
+      "Sejak tahun 2018, kami mulai berjualan UC PUBG dengan cara mengantar langsung ke rumah klien di Dili. Waktu itu, kami belum punya website \u2014 kami hanya menggunakan banner dan daftar harga yang kami perbarui secara berkala mengikuti setiap Royale Pass Season baru, lalu mengirimkannya lewat WhatsApp dan mengantarkan langsung ke tangan klien.",
+      "Alasan kuat kami pertama kali berjualan UC adalah karena kami ingin membantu para gamer muda Timor mendapatkan kemudahan cepat untuk upgrade Royale Pass, sama seperti negara-negara lain.",
+      "Pada tahun 2020, selama pandemi COVID-19, kami terpaksa menghentikan layanan ini selama satu tahun \u2014 seperti banyak orang lain di Timor-Leste. Tapi setelah keadaan membaik, kami ingin kembali dan melanjutkan layanan ini, karena kami tahu Anda semua masih menunggu kami.",
+      "Selama bertahun-tahun ini, kami telah memperbarui daftar harga dan desain kami berkali-kali \u2014 mulai dari Season 4 hingga Season 11 \u2014 selalu berusaha memberikan harga yang adil dan informasi yang jelas kepada pelanggan. Ini bukan bisnis baru atau kepercayaan yang kami dapatkan secara instan; ini adalah hasil dari bertahun-tahun pelayanan konsisten kepada komunitas Dili.",
+      "Sekarang, kami membawa layanan ini ke online \u2014 bukan untuk mengubah apa pun, tapi untuk membuat prosesnya lebih mudah bagi Anda dan harganya menjadi lebih terjangkau. Orang yang memverifikasi pesanan Anda adalah orang yang sama yang mengantarkan UC ke rumah-rumah pelanggan selama bertahun-tahun ini.",
+      "Di website ini, kami juga telah menambahkan paket untuk Mobile Legends, Free Fire, dan Robux Roblox \u2014 dan kami akan terus menambahkan game-game lain ke depannya, untuk mengikuti kebutuhan komunitas gamer Timor yang terus bertambah."
+    ],
     redeem_howto_title: "Cara redeem code Roblox?",
     redeem_step1: "Buka aplikasi Roblox atau roblox.com, lalu login ke akun Anda.",
     redeem_step2: "Di bagian atas, klik ikon kotak/hadiah 📦 atau menu (☰).",

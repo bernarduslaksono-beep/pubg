@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabase.js'
 import { useLanguage } from '../i18n/LanguageContext.jsx'
+import PortalNotificationBell from '../components/PortalNotificationBell.jsx'
 
 function HelmetIcon() {
   return (
@@ -133,6 +134,9 @@ export default function PortalPage() {
 
   return (
     <>
+      <div className="portal-bell-row">
+        <PortalNotificationBell />
+      </div>
       <div className="game-grid">
         {GAMES.map((game) => (
           <div

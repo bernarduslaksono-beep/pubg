@@ -82,6 +82,20 @@ export function hasUnread(gameKey) {
   return readRaw().some((o) => o.game === gameKey && o.unread)
 }
 
+// Foti lista jogu (game key) sira ne'ebe iha pedidu "unread" — uza ba icon
+// lonceng iha Portal, atu hatudu resumu husi hotu-hotu jogu hamutuk.
+export function getUnreadGames() {
+  const set = new Set(readRaw().filter((o) => o.unread).map((o) => o.game))
+  return Array.from(set)
+}
+
+// Foti lista jogu (game key) sira ne'ebe iha ona pedidu iha riwayat lokal —
+// uza atu sabe jogu sira ne'ebe presiza "refresh" husi database.
+export function getGamesWithHistory() {
+  const set = new Set(readRaw().map((o) => o.game))
+  return Array.from(set)
+}
+
 // Buka fila fali status atual (husi database) ba hotu-hotu Order ID iha riwayat
 // jogu ne'e. Se status muda husi ne'ebe ita guarda ikus liu (ezemplu admin verifika
 // ka kanselamentu), marka entry ne'e "unread" fila fali — maski ita ona loke antes.

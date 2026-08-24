@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
-import { useParams, Navigate } from 'react-router-dom'
+import { useParams, Navigate, useNavigate } from 'react-router-dom'
 import { supabase } from '../supabase.js'
 import { PAYMENT_METHODS, PAYMENT_METHOD_STORAGE_LABEL, WHATSAPP_NUMBER } from '../data/packages.js'
 import { getGame } from '../data/games.js'
@@ -22,6 +22,7 @@ export default function OrderPage() {
   const { gameKey } = useParams()
   const game = getGame(gameKey)
   const { t } = useLanguage()
+  const navigate = useNavigate()
 
   const [step, setStep] = useState(1) // 1 = hili pakote, 2 = pagamentu
   const [selectedPkg, setSelectedPkg] = useState(null)
@@ -646,7 +647,7 @@ export default function OrderPage() {
               {copied ? `✓ ${t('copied_btn')}` : `⧉ ${t('copy_btn')}`}
             </button>
           </div>
-          <button className="btn btn-primary" onClick={() => setShowSuccessModal(false)}>{t('ok_btn')}</button>
+          <button className="btn btn-primary" onClick={() => navigate(`/${game.key}/track`)}>{t('nav_track')}</button>
         </div>
       </div>
 

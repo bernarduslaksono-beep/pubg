@@ -867,3 +867,36 @@ select.status-select{
 }
 .online-count-badge b{color:var(--text); font-family:'JetBrains Mono',monospace;}
 .online-dot{width:7px; height:7px; border-radius:50%; background:var(--success); box-shadow:0 0 6px var(--success);}
+
+/* Tulisan kurtu ba ekrã HP — "Aberta"→"Loke", "Online Agora"→"Online" */
+.label-short{display:none;}
+@media(max-width:760px){
+  .label-full{display:none;}
+  .label-short{display:inline;}
+}
+
+/* Portal notification bell */
+.portal-bell-row{display:flex; justify-content:flex-end; margin-bottom:14px;}
+.portal-bell-wrap{position:relative;}
+.portal-bell-btn{
+  position:relative; background:var(--surface); border:1px solid var(--border); color:var(--text);
+  width:42px; height:42px; border-radius:50%; font-size:19px; cursor:pointer; display:flex;
+  align-items:center; justify-content:center; transition:all .15s ease;
+}
+.portal-bell-btn:hover{border-color:var(--gold);}
+.portal-bell-dot{
+  position:absolute; top:6px; right:6px; width:9px; height:9px; border-radius:50%;
+  background:var(--red); box-shadow:0 0 0 2px var(--surface);
+  animation:unread-pulse 1.8s ease-in-out infinite;
+}
+.portal-bell-dropdown{
+  position:absolute; top:calc(100% + 8px); right:0; background:var(--surface); border:1px solid var(--border);
+  border-radius:10px; box-shadow:var(--shadow); min-width:200px; max-width:calc(100vw - 24px); z-index:60; overflow:hidden;
+}
+.portal-bell-dropdown-title{padding:10px 16px; font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; border-bottom:1px solid var(--border);}
+.portal-bell-dropdown button{
+  display:block; width:100%; background:none; border:none; color:var(--text); font-size:13.5px;
+  font-weight:500; padding:11px 16px; cursor:pointer; text-align:left; transition:background .1s ease;
+}
+.portal-bell-dropdown button:hover{background:var(--surface-2);}
+

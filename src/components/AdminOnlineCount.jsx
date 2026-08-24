@@ -22,7 +22,8 @@ export default function AdminOnlineCount() {
   return (
     <div className="online-count-badge">
       <span className="online-dot"></span>
-      Online Agora: <b>{count}</b>
+      <span className="label-full">Online Agora:</span>
+      <span className="label-short">Online:</span> <b>{count}</b>
     </div>
   )
 }

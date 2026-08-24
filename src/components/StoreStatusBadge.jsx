@@ -16,7 +16,15 @@ export default function StoreStatusBadge() {
 
   return (
     <div className={`store-status-pill${isOpen ? ' open' : ' closed'}`}>
-      <span className="dot"></span>{isOpen ? 'Aberta' : 'Taka'}
+      <span className="dot"></span>
+      {isOpen ? (
+        <>
+          <span className="label-full">Aberta</span>
+          <span className="label-short">Loke</span>
+        </>
+      ) : (
+        'Taka'
+      )}
     </div>
   )
 }

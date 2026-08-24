@@ -3,6 +3,7 @@ import { supabase } from '../supabase.js'
 import { STATUS_LABELS } from '../data/packages.js'
 import { GAMES } from '../data/games.js'
 import AdminMenu from '../components/AdminMenu.jsx'
+import AdminOnlineCount from '../components/AdminOnlineCount.jsx'
 import StoreStatusBadge from '../components/StoreStatusBadge.jsx'
 import OrderToast from '../components/OrderToast.jsx'
 
@@ -269,6 +270,7 @@ function Dashboard() {
   const [toastOrder, setToastOrder] = useState(null)
   const [seenIds, setSeenIds] = useState(loadSeenIds)
   const [blockedFingerprints, setBlockedFingerprints] = useState(new Set())
+  const [statsCollapsed, setStatsCollapsed] = useState(true)
 
   const markSeen = (orderId) => {
     setSeenIds((prev) => {
@@ -334,9 +336,16 @@ function Dashboard() {
     if (!error) setOrders(data)
   }
 
+  const [ratings, setRatings] = useState([])
+  const loadRatings = async () => {
+    const { data, error } = await supabase.from('order_feedback').select('rating')
+    if (!error && data) setRatings(data)
+  }
+
   useEffect(() => {
     loadOrders()
     loadBlockedDevices()
+    loadRatings()
     const channel = supabase
       .channel(`orders-changes-${Date.now()}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, (payload) => {
@@ -349,6 +358,9 @@ function Dashboard() {
       .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'orders' }, () => {
         loadOrders()
       })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'order_feedback' }, () => {
+        loadRatings()
+      })
       .subscribe()
     return () => supabase.removeChannel(channel)
   }, [])
@@ -360,8 +372,12 @@ function Dashboard() {
     const revenue = orders
       .filter((o) => o.status !== 'dibatalkan')
       .reduce((sum, o) => sum + Number(o.pkg_price || 0), 0)
-    return { total, pending, sent, revenue }
-  }, [orders])
+    // Konverte média rating (1-3) ba persentu (1=0%, 2=50%, 3=100%)
+    const satisfaction = ratings.length > 0
+      ? Math.round(((ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length) - 1) / 2 * 100)
+      : null
+    return { total, pending, sent, revenue, satisfaction, satisfactionCount: ratings.length }
+  }, [orders, ratings])
 
   const filtered = useMemo(() => {
     let list = filter === 'all' ? orders : orders.filter((o) => o.status === filter)
@@ -396,18 +412,31 @@ function Dashboard() {
     <>
       <div className="hero" style={{ marginBottom: 24 }}>
         <div className="admin-top-row">
-          <div className="eyebrow"><span className="dot"></span> Dashboard <StoreStatusBadge /></div>
+          <div className="eyebrow"><span className="dot"></span> Dashboard <StoreStatusBadge /> <AdminOnlineCount /></div>
           <AdminMenu />
         </div>
         <h1>Tracking & Laporan Fatin</h1>
       </div>
 
-      <div className="stat-grid">
-        <div className="stat-card red"><div className="lbl">Total Pedidu</div><div className="num">{stats.total}</div></div>
-        <div className="stat-card gold"><div className="lbl">Hein Verifikasaun</div><div className="num">{stats.pending}</div></div>
-        <div className="stat-card green"><div className="lbl">Haruka Ona</div><div className="num">{stats.sent}</div></div>
-        <div className="stat-card"><div className="lbl">Rendimentu Totál</div><div className="num">${stats.revenue.toFixed(2)}</div></div>
+      <div className="tier-head tier-head-toggle" onClick={() => setStatsCollapsed((c) => !c)} style={{ marginBottom: statsCollapsed ? 24 : 14 }}>
+        <h3>Estatístika</h3>
+        <span className={`tier-chevron${statsCollapsed ? '' : ' open'}`}>▾</span>
       </div>
+      {!statsCollapsed && (
+        <div className="stat-grid">
+          <div className="stat-card red"><div className="lbl">Total Pedidu</div><div className="num">{stats.total}</div></div>
+          <div className="stat-card gold"><div className="lbl">Hein Verifikasaun</div><div className="num">{stats.pending}</div></div>
+          <div className="stat-card green"><div className="lbl">Haruka Ona</div><div className="num">{stats.sent}</div></div>
+          <div className="stat-card"><div className="lbl">Rendimentu Totál</div><div className="num">${stats.revenue.toFixed(2)}</div></div>
+          <div className="stat-card green">
+            <div className="lbl">Kepuasan Rata-rata</div>
+            <div className="num">{stats.satisfaction !== null ? `${stats.satisfaction}%` : '—'}</div>
+            {stats.satisfactionCount > 0 && (
+              <div className="stat-sub">{stats.satisfactionCount} avaliasaun</div>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="toolbar admin-filter-row">
         <select className="filter-select" value={gameFilter} onChange={(e) => setGameFilter(e.target.value)}>

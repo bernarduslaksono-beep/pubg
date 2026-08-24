@@ -4,6 +4,7 @@ import { supabase } from '../supabase.js'
 import { getGame } from '../data/games.js'
 import { useLanguage } from '../i18n/LanguageContext.jsx'
 import { refreshHistoryStatuses, markAsRead } from '../lib/orderHistory.js'
+import OrderRating from '../components/OrderRating.jsx'
 
 export default function TrackPage() {
   const { gameKey } = useParams()
@@ -186,6 +187,8 @@ export default function TrackPage() {
                 <div className="admin-comment-text">{selectedOrder.admin_comment}</div>
               </div>
             )}
+
+            {selectedOrder.status === 'terkirim' && <OrderRating orderId={selectedOrder.id} />}
           </div>
         )}
       </div>

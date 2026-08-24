@@ -10,6 +10,7 @@ import ThemeToggle from './components/ThemeToggle.jsx'
 import ScrollToTopButton from './components/ScrollToTopButton.jsx'
 import LoadingScreen from './components/LoadingScreen.jsx'
 import UpdateBanner from './components/UpdateBanner.jsx'
+import PresenceTracker from './components/PresenceTracker.jsx'
 import { useLanguage } from './i18n/LanguageContext.jsx'
 import { GAMES } from './data/games.js'
 import { hasUnread, subscribeHistoryChanges, refreshHistoryStatuses } from './lib/orderHistory.js'
@@ -80,6 +81,7 @@ function GameRouteShell({ children }) {
       <Footer />
       <InstallPrompt />
       <ScrollToTopButton />
+      <PresenceTracker />
     </>
   )
 }
@@ -128,6 +130,7 @@ export default function App() {
         <Footer />
         <InstallPrompt />
         <ScrollToTopButton />
+        <PresenceTracker />
       </>
     )
   } else {

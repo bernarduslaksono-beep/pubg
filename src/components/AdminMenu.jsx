@@ -2,8 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { supabase } from '../supabase.js'
 import { isNotificationActive } from '../lib/notificationStatus.js'
 import StoreHoursControl from './StoreHoursControl.jsx'
-import StockControl from './StockControl.jsx'
-import PriceControl from './PriceControl.jsx'
+import PriceStockControl from './PriceStockControl.jsx'
 import NotificationSetup from './NotificationSetup.jsx'
 import VisualContentControl from './VisualContentControl.jsx'
 
@@ -44,8 +43,7 @@ export default function AdminMenu() {
         {open && (
           <div className="admin-menu-dropdown">
             <button onClick={() => openModal('hours')}>Oras Operasaun Loja</button>
-            <button onClick={() => openModal('stock')}>Kontrola Stock</button>
-            <button onClick={() => openModal('price')}>Kontrola Presu</button>
+            <button onClick={() => openModal('price')}>Kontrola Presu & Stok</button>
             <button onClick={() => openModal('visual')}>Kontrola Konteúdu Visual</button>
             <button onClick={() => openModal('notif')}>
               Notifikasaun Ativu
@@ -68,26 +66,14 @@ export default function AdminMenu() {
         )}
       </div>
 
-      <div className={`modal-overlay${activeModal === 'stock' ? ' show' : ''}`} onClick={(e) => e.target.classList.contains('modal-overlay') && setActiveModal(null)}>
-        {activeModal === 'stock' && (
-          <div className="modal" style={{ maxWidth: 480 }}>
-            <div className="modal-head">
-              <h3>Kontrola Stock</h3>
-              <button onClick={() => setActiveModal(null)}>✕</button>
-            </div>
-            <StockControl />
-          </div>
-        )}
-      </div>
-
       <div className={`modal-overlay${activeModal === 'price' ? ' show' : ''}`} onClick={(e) => e.target.classList.contains('modal-overlay') && setActiveModal(null)}>
         {activeModal === 'price' && (
           <div className="modal" style={{ maxWidth: 520 }}>
             <div className="modal-head">
-              <h3>Kontrola Presu</h3>
+              <h3>Kontrola Presu & Stok</h3>
               <button onClick={() => setActiveModal(null)}>✕</button>
             </div>
-            <PriceControl />
+            <PriceStockControl />
           </div>
         )}
       </div>

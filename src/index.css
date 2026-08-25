@@ -720,6 +720,23 @@ select.status-select{
 .stock-toggle-btn.available{background:rgba(22,163,74,0.12); color:var(--success); border-color:rgba(22,163,74,0.3);}
 .stock-toggle-btn.disabled{background:rgba(220,38,38,0.12); color:var(--danger); border-color:rgba(220,38,38,0.3);}
 
+/* Admin price control */
+.price-item-list{display:flex; flex-direction:column; gap:8px;}
+.price-item-row{
+  display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; background:var(--surface-2);
+  border:1px solid var(--border); border-radius:8px; padding:10px 12px;
+}
+.price-item-label{font-size:13px; font-weight:700; color:var(--text); font-family:'JetBrains Mono',monospace; display:flex; align-items:center; gap:6px;}
+.price-override-tag{font-size:9.5px; font-weight:700; color:var(--gold-text); background:var(--gold-dim); padding:2px 7px; border-radius:8px;}
+.price-item-default{font-size:11px; color:var(--muted); margin-left:auto;}
+.price-item-edit{display:flex; align-items:center; gap:6px; width:100%;}
+.price-item-dollar{color:var(--muted); font-size:13px;}
+.price-item-edit input{
+  width:80px; background:var(--surface); border:1px solid var(--border); border-radius:6px;
+  padding:6px 8px; color:var(--text); font-size:13px; font-family:'JetBrains Mono',monospace;
+}
+.price-item-edit input:focus{outline:none; border-color:var(--red);}
+
 /* In-app order toast */
 .order-toast{
   position:fixed; top:20px; right:20px; z-index:300; max-width:360px;

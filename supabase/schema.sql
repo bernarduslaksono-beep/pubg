@@ -543,3 +543,33 @@ create policy "admin_can_delete_media"
   to authenticated
   using (bucket_id = 'media');
 
+-- =====================================================================
+-- 13) Override presu denom — admin bele muda presu direta husi dashboard,
+-- la presiza troka kódigu/redeploy. Denom (amount) rasik hela iha kódigu
+-- (games.js), maibe presu bele "timpa" husi tabela ida ne'e bainhira iha.
+-- Se iha linha ne'e, presu husi ne'e uza; se lae, presu default husi
+-- kódigu ne'ebe uza.
+-- =====================================================================
+create table if not exists public.package_prices (
+  game text not null,
+  amount integer not null,
+  price numeric not null,
+  updated_at timestamptz not null default now(),
+  primary key (game, amount)
+);
+
+alter table public.package_prices enable row level security;
+
+drop policy if exists "public_can_read_package_prices" on public.package_prices;
+create policy "public_can_read_package_prices"
+  on public.package_prices for select
+  to public
+  using (true);
+
+drop policy if exists "admin_can_write_package_prices" on public.package_prices;
+create policy "admin_can_write_package_prices"
+  on public.package_prices for all
+  to authenticated
+  using (true)
+  with check (true);
+

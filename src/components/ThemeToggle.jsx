@@ -1,15 +1,13 @@
 import { useEffect, useState } from 'react'
 
-// Nota: la konfia de'it iha localStorage['theme'] — tanba versaun kódigu tuan
-// automátikamente guarda "light" ba kada vizitante (efeitu la intensaun, la'os
-// eskolla konsiente user nian). Ida ne'e halo user "tuan" hotu-hotu hein iha
-// light mode maski Dark ona sai default agora. Tenki verifika mos flag
-// 'theme_user_set' — de'it kuandu ida ne'e '1' ita konfia ba estadu ne'ebe guarda.
+// Nota: la konfia de'it iha localStorage['theme'] — ida ne'e de'it guarda
+// bainhira user beibeik klik tombu (haree flag 'theme_user_set'). Se la iha
+// eskolla konsiente, default sai Light.
 function getInitialTheme() {
   const userSet = localStorage.getItem('theme_user_set') === '1'
   const saved = localStorage.getItem('theme')
   if (userSet && (saved === 'light' || saved === 'dark')) return saved
-  return 'dark'
+  return 'light'
 }
 
 export default function ThemeToggle() {

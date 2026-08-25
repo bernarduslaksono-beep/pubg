@@ -4,6 +4,7 @@ import { isNotificationActive } from '../lib/notificationStatus.js'
 import StoreHoursControl from './StoreHoursControl.jsx'
 import StockControl from './StockControl.jsx'
 import NotificationSetup from './NotificationSetup.jsx'
+import VisualContentControl from './VisualContentControl.jsx'
 
 export default function AdminMenu() {
   const [open, setOpen] = useState(false)
@@ -43,6 +44,7 @@ export default function AdminMenu() {
           <div className="admin-menu-dropdown">
             <button onClick={() => openModal('hours')}>Oras Operasaun Loja</button>
             <button onClick={() => openModal('stock')}>Kontrola Stock</button>
+            <button onClick={() => openModal('visual')}>Kontrola Konteúdu Visual</button>
             <button onClick={() => openModal('notif')}>
               Notifikasaun Ativu
               {!notifActive && <span className="admin-menu-dot inline"></span>}
@@ -72,6 +74,18 @@ export default function AdminMenu() {
               <button onClick={() => setActiveModal(null)}>✕</button>
             </div>
             <StockControl />
+          </div>
+        )}
+      </div>
+
+      <div className={`modal-overlay${activeModal === 'visual' ? ' show' : ''}`} onClick={(e) => e.target.classList.contains('modal-overlay') && setActiveModal(null)}>
+        {activeModal === 'visual' && (
+          <div className="modal" style={{ maxWidth: 480 }}>
+            <div className="modal-head">
+              <h3>Kontrola Konteúdu Visual</h3>
+              <button onClick={() => setActiveModal(null)}>✕</button>
+            </div>
+            <VisualContentControl />
           </div>
         )}
       </div>

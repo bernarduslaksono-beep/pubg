@@ -12,6 +12,7 @@ import ScrollToTopButton from './components/ScrollToTopButton.jsx'
 import LoadingScreen from './components/LoadingScreen.jsx'
 import UpdateBanner from './components/UpdateBanner.jsx'
 import PresenceTracker from './components/PresenceTracker.jsx'
+import PortalNotificationBell from './components/PortalNotificationBell.jsx'
 import { useLanguage } from './i18n/LanguageContext.jsx'
 import { GAMES } from './data/games.js'
 import { hasUnread, subscribeHistoryChanges, refreshHistoryStatuses } from './lib/orderHistory.js'
@@ -67,6 +68,11 @@ function TopBar({ gameKey, showAdminTheme, linkBrand = true }) {
       {showAdminTheme && (
         <div className="topbar-controls">
           <ThemeToggle />
+        </div>
+      )}
+      {!gameKey && !showAdminTheme && (
+        <div className="topbar-controls">
+          <PortalNotificationBell />
         </div>
       )}
     </div>

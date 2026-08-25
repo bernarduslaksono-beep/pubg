@@ -462,3 +462,84 @@ create policy "admin_can_read_feedback"
   to authenticated
   using (true);
 
+-- =====================================================================
+-- 12) Konteúdu visual jerídu husi admin — banner iklan (4 slot, gira
+-- automátiku iha Portal) no imajen kartaun jogu (1 ba kada jogu).
+-- Públiku de'it haree, admin de'it troka.
+-- =====================================================================
+create table if not exists public.portal_banners (
+  slot smallint primary key check (slot between 1 and 4),
+  image_url text,
+  updated_at timestamptz not null default now()
+);
+insert into public.portal_banners (slot) values (1), (2), (3), (4)
+on conflict (slot) do nothing;
+
+alter table public.portal_banners enable row level security;
+
+drop policy if exists "public_can_read_banners" on public.portal_banners;
+create policy "public_can_read_banners"
+  on public.portal_banners for select
+  to public
+  using (true);
+
+drop policy if exists "admin_can_write_banners" on public.portal_banners;
+create policy "admin_can_write_banners"
+  on public.portal_banners for all
+  to authenticated
+  using (true)
+  with check (true);
+
+create table if not exists public.game_images (
+  game text primary key check (game in ('pubg','ml','ff','roblox')),
+  image_url text,
+  updated_at timestamptz not null default now()
+);
+insert into public.game_images (game) values ('pubg'), ('ml'), ('ff'), ('roblox')
+on conflict (game) do nothing;
+
+alter table public.game_images enable row level security;
+
+drop policy if exists "public_can_read_game_images" on public.game_images;
+create policy "public_can_read_game_images"
+  on public.game_images for select
+  to public
+  using (true);
+
+drop policy if exists "admin_can_write_game_images" on public.game_images;
+create policy "admin_can_write_game_images"
+  on public.game_images for all
+  to authenticated
+  using (true)
+  with check (true);
+
+-- Storage bucket hamutuk ba banner no imajen kartaun jogu — de'it admin
+-- (authenticated) bele upload/apaga, públiku de'it haree.
+insert into storage.buckets (id, name, public)
+values ('media', 'media', true)
+on conflict (id) do nothing;
+
+drop policy if exists "public_can_read_media" on storage.objects;
+create policy "public_can_read_media"
+  on storage.objects for select
+  to public
+  using (bucket_id = 'media');
+
+drop policy if exists "admin_can_upload_media" on storage.objects;
+create policy "admin_can_upload_media"
+  on storage.objects for insert
+  to authenticated
+  with check (bucket_id = 'media');
+
+drop policy if exists "admin_can_update_media" on storage.objects;
+create policy "admin_can_update_media"
+  on storage.objects for update
+  to authenticated
+  using (bucket_id = 'media');
+
+drop policy if exists "admin_can_delete_media" on storage.objects;
+create policy "admin_can_delete_media"
+  on storage.objects for delete
+  to authenticated
+  using (bucket_id = 'media');
+

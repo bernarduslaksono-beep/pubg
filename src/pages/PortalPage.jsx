@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabase.js'
 import { useLanguage } from '../i18n/LanguageContext.jsx'
-import PortalNotificationBell from '../components/PortalNotificationBell.jsx'
+import BannerCarousel from '../components/BannerCarousel.jsx'
 
 function HelmetIcon() {
   return (
@@ -74,7 +74,7 @@ const GAMES = [
   {
     id: 'pubg',
     name: 'PUBG Mobile',
-    tagline: 'UC — Unknown Cash',
+    cardLabel: 'PUBG Mobile UC',
     color: '#E7343F',
     colorDim: 'rgba(231,52,63,0.10)',
     Icon: HelmetIcon,
@@ -84,7 +84,7 @@ const GAMES = [
   {
     id: 'ml',
     name: 'Mobile Legends',
-    tagline: 'Diamonds',
+    cardLabel: 'Mobile Legend Diamonds',
     color: '#2563EB',
     colorDim: 'rgba(37,99,235,0.10)',
     Icon: DiamondIcon,
@@ -94,7 +94,7 @@ const GAMES = [
   {
     id: 'ff',
     name: 'Free Fire',
-    tagline: 'Diamonds',
+    cardLabel: 'Free Fire Diamonds',
     color: '#F97316',
     colorDim: 'rgba(249,115,22,0.10)',
     Icon: FlameIcon,
@@ -104,7 +104,7 @@ const GAMES = [
   {
     id: 'roblox',
     name: 'Robux Roblox',
-    tagline: 'Robux',
+    cardLabel: 'Robux Roblox',
     color: '#00A651',
     colorDim: 'rgba(0,166,81,0.10)',
     Icon: RobuxIcon,
@@ -116,6 +116,7 @@ const GAMES = [
 export default function PortalPage() {
   const { t } = useLanguage()
   const navigate = useNavigate()
+  const [gameImages, setGameImages] = useState({})
 
   useEffect(() => {
     // Konta vizita ba portal ida-ida (de'it dala ida ba kada sesaun browser).
@@ -127,6 +128,18 @@ export default function PortalPage() {
     }
   }, [])
 
+  useEffect(() => {
+    let cancelled = false
+    supabase.from('game_images').select('game, image_url').then(({ data, error }) => {
+      if (!error && data && !cancelled) {
+        const map = {}
+        data.forEach((row) => { if (row.image_url) map[row.game] = row.image_url })
+        setGameImages(map)
+      }
+    })
+    return () => { cancelled = true }
+  }, [])
+
   const handleSelect = (game) => {
     if (!game.available) return
     navigate(game.path)
@@ -134,9 +147,13 @@ export default function PortalPage() {
 
   return (
     <>
-      <div className="portal-bell-row">
-        <PortalNotificationBell />
+      <BannerCarousel />
+
+      <div className="portal-heading-row">
+        <h2 className="portal-heading">TOP UP GAME</h2>
+        <span className="portal-heading-line"></span>
       </div>
+
       <div className="game-grid">
         {GAMES.map((game) => (
           <div
@@ -146,10 +163,14 @@ export default function PortalPage() {
             style={{ '--game-color': game.color, '--game-color-dim': game.colorDim }}
           >
             {!game.available && <span className="game-soon-badge">{t('coming_soon')}</span>}
-            <div className="game-badge-icon"><game.Icon /></div>
-            <div className="game-name">{game.name}</div>
-            <div className="game-tagline">{game.tagline}</div>
-            {game.available && <div className="game-cta">{t('portal_topup_btn')} →</div>}
+            <div className="game-card-image">
+              {gameImages[game.id] ? (
+                <img src={gameImages[game.id]} alt={game.name} />
+              ) : (
+                <div className="game-badge-icon"><game.Icon /></div>
+              )}
+            </div>
+            <div className="game-card-label">{game.cardLabel}</div>
           </div>
         ))}
       </div>

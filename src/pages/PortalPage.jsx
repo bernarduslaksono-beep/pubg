@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabase.js'
 import { useLanguage } from '../i18n/LanguageContext.jsx'
 import BannerCarousel from '../components/BannerCarousel.jsx'
+import TrustStatsBanner from '../components/TrustStatsBanner.jsx'
 
 function HelmetIcon() {
   return (
@@ -148,6 +149,8 @@ export default function PortalPage() {
   return (
     <>
       <BannerCarousel />
+
+      <TrustStatsBanner />
 
       <div className="portal-heading-row">
         <h2 className="portal-heading">TOP UP GAME</h2>

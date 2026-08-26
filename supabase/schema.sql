@@ -573,3 +573,22 @@ create policy "admin_can_write_package_prices"
   using (true)
   with check (true);
 
+-- =====================================================================
+-- 14) Estatístika públiku ba Portal (kepuasan/kepercayaan) — de'it fó
+-- número agregadu (total, persentajen), la fó dadus pedidu individual
+-- ida-ida ka informasaun kliente. Seguru atu públiku (anon) haree.
+-- =====================================================================
+create or replace function public.get_public_trust_stats()
+returns table (completed_orders bigint, satisfaction_percent int, rating_count bigint)
+language sql
+security definer
+set search_path = public
+as $$
+  select
+    (select count(*) from public.orders where status = 'terkirim'),
+    (select case when count(*) > 0 then round(((avg(rating) - 1) / 2.0) * 100) else null end from public.order_feedback),
+    (select count(*) from public.order_feedback);
+$$;
+
+grant execute on function public.get_public_trust_stats() to anon, authenticated;
+

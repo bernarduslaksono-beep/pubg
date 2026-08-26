@@ -559,6 +559,12 @@ function Dashboard() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
+        {!isMobile && (
+          <>
+            <button className="export-btn" onClick={handleExportExcel} title="Exporta ba Excel">📊 Excel</button>
+            <button className="export-btn" onClick={handleExportPDF} title="Exporta ba PDF">📄 PDF</button>
+          </>
+        )}
       </div>
 
       {filtered.length === 0 ? (
@@ -659,11 +665,6 @@ function Dashboard() {
           </div>
         </div>
       )}
-
-      <div className="export-row">
-        <button className="export-btn" onClick={handleExportExcel} title="Exporta ba Excel">📊 Excel</button>
-        <button className="export-btn" onClick={handleExportPDF} title="Exporta ba PDF">📄 PDF</button>
-      </div>
 
       {selected && (
         <OrderDetailModal

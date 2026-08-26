@@ -1039,7 +1039,6 @@ select.status-select{
   transition:all .15s ease;
 }
 .export-btn:hover{border-color:var(--gold);}
-.export-row{display:flex; justify-content:center; gap:10px; margin-top:20px; padding-top:16px; border-top:1px solid var(--border);}
 
 /* Pagination */
 .pagination-row{

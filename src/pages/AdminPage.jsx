@@ -418,21 +418,6 @@ function Dashboard() {
     return list
   }, [orders, filter, gameFilter, search])
 
-  const handleQuickDelete = async (order, e) => {
-    e.stopPropagation()
-    if (!confirm(`Apaga pedidu ${order.id}? Asaun ne'e la bele fila fali.`)) return
-    try {
-      const path = storagePathFromUrl(order.proof_url)
-      if (path) await supabase.storage.from('proofs').remove([path])
-      const { error } = await supabase.from('orders').delete().eq('id', order.id)
-      if (error) throw error
-      setOrders((prev) => prev.filter((o) => o.id !== order.id))
-    } catch (err) {
-      console.error(err)
-      alert('Falha atu apaga pedidu.')
-    }
-  }
-
   return (
     <>
       <div className="hero" style={{ marginBottom: 24 }}>
@@ -516,7 +501,6 @@ function Dashboard() {
                 <th>Pagamentu</th>
                 <th>Data</th>
                 <th>Status</th>
-                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -554,9 +538,6 @@ function Dashboard() {
                     <td style={{ fontSize: 12, color: 'var(--muted)' }}>{formatDate(o.created_at)}</td>
                     <td>
                       <span className={`status-badge status-${o.status}`}><span className="dot"></span>{STATUS_LABELS[o.status]}</span>
-                    </td>
-                    <td>
-                      <button className="link-btn" style={{ color: 'var(--danger)' }} onClick={(e) => handleQuickDelete(o, e)}>Apaga</button>
                     </td>
                   </tr>
                 )

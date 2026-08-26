@@ -422,6 +422,14 @@ function Dashboard() {
   }, [orders, filter, gameFilter, search])
 
   const [pageSize, setPageSize] = useState(10)
+  const [isMobile, setIsMobile] = useState(() => window.matchMedia('(max-width: 760px)').matches)
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 760px)')
+    const handler = (e) => setIsMobile(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
   const [currentPage, setCurrentPage] = useState(1)
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
 
@@ -551,8 +559,6 @@ function Dashboard() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        <button className="export-btn" onClick={handleExportExcel} title="Exporta ba Excel">📊 Excel</button>
-        <button className="export-btn" onClick={handleExportPDF} title="Exporta ba PDF">📄 PDF</button>
       </div>
 
       {filtered.length === 0 ? (
@@ -622,33 +628,42 @@ function Dashboard() {
       {filtered.length > 0 && (
         <div className="pagination-row">
           <div className="pagination-info">
-            {(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, filtered.length)} husi {filtered.length} pedidu
+            {isMobile
+              ? `${(currentPage - 1) * pageSize + 1}-${Math.min(currentPage * pageSize, filtered.length)}/${filtered.length}`
+              : `${(currentPage - 1) * pageSize + 1}–${Math.min(currentPage * pageSize, filtered.length)} husi ${filtered.length} pedidu`}
           </div>
           <div className="pagination-controls">
             <select className="filter-select" value={pageSize} onChange={(e) => setPageSize(Number(e.target.value))}>
-              <option value={10}>10 / pajina</option>
-              <option value={25}>25 / pajina</option>
-              <option value={50}>50 / pajina</option>
-              <option value={100}>100 / pajina</option>
+              <option value={10}>{isMobile ? '10' : '10 / pajina'}</option>
+              <option value={25}>{isMobile ? '25' : '25 / pajina'}</option>
+              <option value={50}>{isMobile ? '50' : '50 / pajina'}</option>
+              <option value={100}>{isMobile ? '100' : '100 / pajina'}</option>
             </select>
             <button
               className="btn btn-ghost btn-small"
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage <= 1}
             >
-              ‹ Antes
+              {isMobile ? '<' : '‹ Antes'}
             </button>
-            <span className="pagination-page-label">Pajina {currentPage} husi {totalPages}</span>
+            <span className="pagination-page-label">
+              {isMobile ? `${currentPage}/${totalPages}` : `Pajina ${currentPage} husi ${totalPages}`}
+            </span>
             <button
               className="btn btn-ghost btn-small"
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage >= totalPages}
             >
-              Tuir mai ›
+              {isMobile ? '>' : 'Tuir mai ›'}
             </button>
           </div>
         </div>
       )}
+
+      <div className="export-row">
+        <button className="export-btn" onClick={handleExportExcel} title="Exporta ba Excel">📊 Excel</button>
+        <button className="export-btn" onClick={handleExportPDF} title="Exporta ba PDF">📄 PDF</button>
+      </div>
 
       {selected && (
         <OrderDetailModal

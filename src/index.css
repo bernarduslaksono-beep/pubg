@@ -705,6 +705,13 @@ select.status-select{
   font-weight:600; padding:7px 14px; border-radius:8px; cursor:pointer; transition:all .15s ease;
 }
 .stock-game-tabs button.active{background:var(--surface); color:var(--red); box-shadow:0 0 0 1.5px var(--border);}
+
+.stats-period-tabs{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px;}
+.stats-period-tabs button{
+  background:var(--surface-2); border:1px solid var(--border); color:var(--muted); font-size:12.5px;
+  font-weight:600; padding:7px 14px; border-radius:16px; cursor:pointer; transition:all .15s ease;
+}
+.stats-period-tabs button.active{background:var(--gold-dim); color:var(--gold-text); box-shadow:0 0 0 1.5px var(--gold);}
 .stock-tier-block{margin-bottom:16px;}
 .stock-tier-title{font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px;}
 .stock-item-list{display:flex; flex-direction:column; gap:6px;}

@@ -377,11 +377,33 @@ function Dashboard() {
     return () => supabase.removeChannel(channel)
   }, [])
 
+  const [period, setPeriod] = useState('all') // 'all' | 'week' | 'month' | 'year'
+
+  // Kalkula loron primeiru ba periodu ne'ebe hili (tuir horário lokal browser).
+  const getPeriodStart = (p) => {
+    const now = new Date()
+    if (p === 'week') {
+      const d = new Date(now)
+      const day = d.getDay() // 0=Domingu, 1=Segunda, ...
+      const diffToMonday = day === 0 ? 6 : day - 1
+      d.setDate(d.getDate() - diffToMonday)
+      d.setHours(0, 0, 0, 0)
+      return d
+    }
+    if (p === 'month') return new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0)
+    if (p === 'year') return new Date(now.getFullYear(), 0, 1, 0, 0, 0, 0)
+    return null
+  }
+
   const stats = useMemo(() => {
-    const total = orders.length
-    const pending = orders.filter((o) => o.status === 'menunggu_verifikasi').length
-    const sent = orders.filter((o) => o.status === 'terkirim').length
-    const revenue = orders
+    const periodStart = getPeriodStart(period)
+    const inPeriod = (o) => !periodStart || new Date(o.created_at) >= periodStart
+    const periodOrders = orders.filter(inPeriod)
+
+    const total = periodOrders.length
+    const pending = orders.filter((o) => o.status === 'menunggu_verifikasi').length // sempre atual, la tuir periodu
+    const sent = periodOrders.filter((o) => o.status === 'terkirim').length
+    const revenue = periodOrders
       .filter((o) => o.status !== 'dibatalkan')
       .reduce((sum, o) => sum + Number(o.pkg_price || 0), 0)
     // Konverte média rating (1-3) ba persentu (1=0%, 2=50%, 3=100%)
@@ -389,7 +411,7 @@ function Dashboard() {
       ? Math.round(((ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length) - 1) / 2 * 100)
       : null
     return { total, pending, sent, revenue, satisfaction, satisfactionCount: ratings.length }
-  }, [orders, ratings])
+  }, [orders, ratings, period])
 
   const filtered = useMemo(() => {
     let list = filter === 'all' ? orders : orders.filter((o) => o.status === filter)
@@ -435,19 +457,37 @@ function Dashboard() {
         <span className={`tier-chevron${statsCollapsed ? '' : ' open'}`}>▾</span>
       </div>
       {!statsCollapsed && (
-        <div className="stat-grid">
-          <div className="stat-card red"><div className="lbl">Total Pedidu</div><div className="num">{stats.total}</div></div>
-          <div className="stat-card gold"><div className="lbl">Hein Verifikasaun</div><div className="num">{stats.pending}</div></div>
-          <div className="stat-card green"><div className="lbl">Haruka Ona</div><div className="num">{stats.sent}</div></div>
-          <div className="stat-card"><div className="lbl">Rendimentu Totál</div><div className="num">${stats.revenue.toFixed(2)}</div></div>
-          <div className="stat-card green">
-            <div className="lbl">Kepuasan Rata-rata</div>
-            <div className="num">{stats.satisfaction !== null ? `${stats.satisfaction}%` : '—'}</div>
-            {stats.satisfactionCount > 0 && (
-              <div className="stat-sub">{stats.satisfactionCount} avaliasaun</div>
-            )}
+        <>
+          <div className="stats-period-tabs" onClick={(e) => e.stopPropagation()}>
+            {[
+              { key: 'all', label: 'Hotu-hotu' },
+              { key: 'week', label: 'Semana Ne\'e' },
+              { key: 'month', label: 'Fulan Ne\'e' },
+              { key: 'year', label: 'Tinan Ne\'e' },
+            ].map((p) => (
+              <button key={p.key} className={period === p.key ? 'active' : ''} onClick={() => setPeriod(p.key)}>
+                {p.label}
+              </button>
+            ))}
           </div>
-        </div>
+          <div className="stat-grid">
+            <div className="stat-card red"><div className="lbl">Total Pedidu</div><div className="num">{stats.total}</div></div>
+            <div className="stat-card gold">
+              <div className="lbl">Hein Verifikasaun</div>
+              <div className="num">{stats.pending}</div>
+              <div className="stat-sub">Status atual</div>
+            </div>
+            <div className="stat-card green"><div className="lbl">Haruka Ona</div><div className="num">{stats.sent}</div></div>
+            <div className="stat-card"><div className="lbl">Rendimentu</div><div className="num">${stats.revenue.toFixed(2)}</div></div>
+            <div className="stat-card green">
+              <div className="lbl">Kepuasan Rata-rata</div>
+              <div className="num">{stats.satisfaction !== null ? `${stats.satisfaction}%` : '—'}</div>
+              {stats.satisfactionCount > 0 && (
+                <div className="stat-sub">{stats.satisfactionCount} avaliasaun</div>
+              )}
+            </div>
+          </div>
+        </>
       )}
 
       <div className="toolbar admin-filter-row">

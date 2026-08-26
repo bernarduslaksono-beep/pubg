@@ -377,27 +377,18 @@ function Dashboard() {
     return () => supabase.removeChannel(channel)
   }, [])
 
-  const [period, setPeriod] = useState('all') // 'all' | 'week' | 'month' | 'year'
-
-  // Kalkula loron primeiru ba periodu ne'ebe hili (tuir horário lokal browser).
-  const getPeriodStart = (p) => {
-    const now = new Date()
-    if (p === 'week') {
-      const d = new Date(now)
-      const day = d.getDay() // 0=Domingu, 1=Segunda, ...
-      const diffToMonday = day === 0 ? 6 : day - 1
-      d.setDate(d.getDate() - diffToMonday)
-      d.setHours(0, 0, 0, 0)
-      return d
-    }
-    if (p === 'month') return new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0)
-    if (p === 'year') return new Date(now.getFullYear(), 0, 1, 0, 0, 0, 0)
-    return null
-  }
+  const [customStart, setCustomStart] = useState('')
+  const [customEnd, setCustomEnd] = useState('')
 
   const stats = useMemo(() => {
-    const periodStart = getPeriodStart(period)
-    const inPeriod = (o) => !periodStart || new Date(o.created_at) >= periodStart
+    const start = customStart ? new Date(`${customStart}T00:00:00`) : null
+    const end = customEnd ? new Date(`${customEnd}T23:59:59.999`) : null
+    const inPeriod = (o) => {
+      const t = new Date(o.created_at)
+      if (start && t < start) return false
+      if (end && t > end) return false
+      return true
+    }
     const periodOrders = orders.filter(inPeriod)
 
     const total = periodOrders.length
@@ -411,7 +402,7 @@ function Dashboard() {
       ? Math.round(((ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length) - 1) / 2 * 100)
       : null
     return { total, pending, sent, revenue, satisfaction, satisfactionCount: ratings.length }
-  }, [orders, ratings, period])
+  }, [orders, ratings, customStart, customEnd])
 
   const filtered = useMemo(() => {
     let list = filter === 'all' ? orders : orders.filter((o) => o.status === filter)
@@ -458,17 +449,15 @@ function Dashboard() {
       </div>
       {!statsCollapsed && (
         <>
-          <div className="stats-period-tabs" onClick={(e) => e.stopPropagation()}>
-            {[
-              { key: 'all', label: 'Hotu-hotu' },
-              { key: 'week', label: 'Semana Ne\'e' },
-              { key: 'month', label: 'Fulan Ne\'e' },
-              { key: 'year', label: 'Tinan Ne\'e' },
-            ].map((p) => (
-              <button key={p.key} className={period === p.key ? 'active' : ''} onClick={() => setPeriod(p.key)}>
-                {p.label}
-              </button>
-            ))}
+          <div className="stats-custom-range" onClick={(e) => e.stopPropagation()}>
+            <div className="field">
+              <label>Husi</label>
+              <input type="date" value={customStart} onChange={(e) => setCustomStart(e.target.value)} />
+            </div>
+            <div className="field">
+              <label>To'o</label>
+              <input type="date" value={customEnd} onChange={(e) => setCustomEnd(e.target.value)} />
+            </div>
           </div>
           <div className="stat-grid">
             <div className="stat-card red"><div className="lbl">Total Pedidu</div><div className="num">{stats.total}</div></div>

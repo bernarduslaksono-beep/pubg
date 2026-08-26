@@ -157,7 +157,7 @@ export const TRANSLATIONS = {
     rating_question: "Satisfeitu ho servisu ida-ne'e?",
     rating_thanks: "Obrigadu ba ita boot nia feedback!",
     rating_comment_prompt: "Bele fó hatene ami se iha buat ne'ebe la diak? (opsional)",
-    rating_comment_placeholder: "Hakerek dikit iha ne'e...",
+    rating_comment_placeholder: "Hakerek ituan iha ne'e...",
     rating_skip_btn: "La iha",
     rating_send_btn: "Haruka",
     security_pending_limit: "Aktualmente iha ita boot nia pedidu 3 seidauk prosesu (Hein Verifikasaun). Favor hein to'o pedidu sira ne'e prosesu ona, hafoin bele halo pedidu foun.",

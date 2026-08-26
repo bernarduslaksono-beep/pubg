@@ -6,6 +6,9 @@ import AdminMenu from '../components/AdminMenu.jsx'
 import AdminOnlineCount from '../components/AdminOnlineCount.jsx'
 import StoreStatusBadge from '../components/StoreStatusBadge.jsx'
 import OrderToast from '../components/OrderToast.jsx'
+import * as XLSX from 'xlsx'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 
 const FILTERS = [
   { key: 'all', label: 'Hotu' },
@@ -418,6 +421,73 @@ function Dashboard() {
     return list
   }, [orders, filter, gameFilter, search])
 
+  const [pageSize, setPageSize] = useState(10)
+  const [currentPage, setCurrentPage] = useState(1)
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [filter, gameFilter, search, pageSize])
+
+  const paginated = useMemo(() => {
+    const start = (currentPage - 1) * pageSize
+    return filtered.slice(start, start + pageSize)
+  }, [filtered, currentPage, pageSize])
+
+  const exportRows = () => filtered.map((o) => ({
+    'Order ID': o.id,
+    'Jogu': gameNameOf(o.game),
+    'User ID': o.game_id || '-',
+    'Zone ID': o.zone_id || '-',
+    'Nickname': o.ign || '-',
+    'Pakote': o.pkg_unit_uc ? `${o.pkg_unit_uc.toLocaleString()} ${currencyOf(o.game)} x ${o.qty}` : `${o.pkg_uc.toLocaleString()} ${currencyOf(o.game)}`,
+    'Osan (USD)': Number(o.pkg_price).toFixed(2),
+    'Metode Pagamentu': o.payment_method || '-',
+    'Status': STATUS_LABELS[o.status] || o.status,
+    'Data': formatDate(o.created_at),
+  }))
+
+  const handleExportExcel = () => {
+    const rows = exportRows()
+    if (rows.length === 0) {
+      alert('La iha dadus atu exporta.')
+      return
+    }
+    const ws = XLSX.utils.json_to_sheet(rows)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, 'Pedidu')
+    const dateStr = new Date().toISOString().slice(0, 10)
+    XLSX.writeFile(wb, `loja-game-pedidu-${dateStr}.xlsx`)
+  }
+
+  const handleExportPDF = () => {
+    const rows = exportRows()
+    if (rows.length === 0) {
+      alert('La iha dadus atu exporta.')
+      return
+    }
+    const doc = new jsPDF({ orientation: 'landscape' })
+    doc.setFontSize(14)
+    doc.text('Loja-Game Timor Leste \u2014 Laporan Pedidu', 14, 15)
+    doc.setFontSize(10)
+    doc.text(`Exportadu iha: ${new Date().toLocaleString('id-ID')}`, 14, 21)
+    doc.text(`Total pedidu: ${rows.length}`, 14, 26)
+
+    autoTable(doc, {
+      startY: 31,
+      head: [['Order ID', 'Jogu', 'User ID', 'Pakote', 'Osan', 'Pagamentu', 'Status', 'Data']],
+      body: rows.map((r) => [
+        r['Order ID'], r['Jogu'], r['User ID'], r['Pakote'],
+        `$${r['Osan (USD)']}`, r['Metode Pagamentu'], r['Status'], r['Data'],
+      ]),
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [231, 52, 63] },
+    })
+
+    const dateStr = new Date().toISOString().slice(0, 10)
+    doc.save(`loja-game-pedidu-${dateStr}.pdf`)
+  }
+
   return (
     <>
       <div className="hero" style={{ marginBottom: 24 }}>
@@ -481,6 +551,8 @@ function Dashboard() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
+        <button className="export-btn" onClick={handleExportExcel} title="Exporta ba Excel">📊 Excel</button>
+        <button className="export-btn" onClick={handleExportPDF} title="Exporta ba PDF">📄 PDF</button>
       </div>
 
       {filtered.length === 0 ? (
@@ -504,7 +576,7 @@ function Dashboard() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((o) => {
+              {paginated.map((o) => {
                 const isUnread = !seenIds.has(o.id)
                 const currency = currencyOf(o.game)
                 const deviceTotal = o.device_fingerprint ? (fingerprintCounts[o.device_fingerprint]?.total || 0) : 0
@@ -544,6 +616,37 @@ function Dashboard() {
               })}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {filtered.length > 0 && (
+        <div className="pagination-row">
+          <div className="pagination-info">
+            {(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, filtered.length)} husi {filtered.length} pedidu
+          </div>
+          <div className="pagination-controls">
+            <select className="filter-select" value={pageSize} onChange={(e) => setPageSize(Number(e.target.value))}>
+              <option value={10}>10 / pajina</option>
+              <option value={25}>25 / pajina</option>
+              <option value={50}>50 / pajina</option>
+              <option value={100}>100 / pajina</option>
+            </select>
+            <button
+              className="btn btn-ghost btn-small"
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage <= 1}
+            >
+              ‹ Antes
+            </button>
+            <span className="pagination-page-label">Pajina {currentPage} husi {totalPages}</span>
+            <button
+              className="btn btn-ghost btn-small"
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage >= totalPages}
+            >
+              Tuir mai ›
+            </button>
+          </div>
         </div>
       )}
 

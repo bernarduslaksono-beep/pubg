@@ -163,7 +163,7 @@ export const TRANSLATIONS = {
     security_pending_limit: "Aktualmente iha ita boot nia pedidu 3 seidauk prosesu (Hein Verifikasaun). Favor hein to'o pedidu sira ne'e prosesu ona, hafoin bele halo pedidu foun.",
     security_cancelled_limit: "Ohin loron ita boot nia pedidu 5 ona kanseladu. Ita boot bele halo pedidu foun aban, ka kontaktu admin ba informasaun liu tan.",
     security_blocked: "Ita boot nia dispositivu seidauk bele halo pedidu foun. Favor kontaktu admin liu husi WhatsApp ba informasaun liu tan.",
-    store_closed_banner: (openTime) => `Loja taka ohin momentu ne'e. Ami sei loke fila fali iha oras ${openTime}. Ita boot bele haree pakote no presu, maibe seidauk bele halo pedidu.`,
+    store_closed_banner: (openTime) => `Agora dadaun loja taka hela, ami sei loke fila fali iha oras tuku ${openTime} dader. Ita boot bele haree pakote no presu, maibe seidauk bele halo pedidu.`,
     store_closed_error: (openTime) => `Loja taka. Ami sei loke fila fali iha oras ${openTime}. Favor tenta fali bainhira loja loke ona.`,
     proof_duplicate_error: (orderId, wa) => `Bukti transferénsia ne'e ona uza ba pedidu ${orderId} ne'ebe seidauk kanselamentu. Se ita boot iha problema, favor kontaktu admin liu husi WhatsApp ${wa}.`,
     refresh_status_label: "Atualiza status",

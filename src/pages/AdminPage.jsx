@@ -282,6 +282,18 @@ function Dashboard() {
     })
   }
 
+  // Uza husi Kontrola Avaliasaun (AdminMenu) — atu klik Order ID iha lista
+  // avaliasaun ne'e loke direta detalha pedidu ne'e nian.
+  const openOrderById = (orderId) => {
+    const order = orders.find((o) => o.id === orderId)
+    if (order) {
+      setSelected(order)
+      markSeen(orderId)
+    } else {
+      alert("Pedidu ne'e la iha ona iha listajen (bele ona apaga).")
+    }
+  }
+
   const loadBlockedDevices = async () => {
     const { data, error } = await supabase.from('blocked_devices').select('device_fingerprint')
     if (!error && data) setBlockedFingerprints(new Set(data.map((d) => d.device_fingerprint)))
@@ -413,7 +425,7 @@ function Dashboard() {
       <div className="hero" style={{ marginBottom: 24 }}>
         <div className="admin-top-row">
           <div className="eyebrow"><span className="dot"></span> Dashboard <StoreStatusBadge /> <AdminOnlineCount /></div>
-          <AdminMenu />
+          <AdminMenu onOpenOrder={openOrderById} />
         </div>
         <h1>Tracking & Laporan Fatin</h1>
       </div>

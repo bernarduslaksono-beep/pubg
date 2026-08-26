@@ -5,10 +5,11 @@ import StoreHoursControl from './StoreHoursControl.jsx'
 import PriceStockControl from './PriceStockControl.jsx'
 import NotificationSetup from './NotificationSetup.jsx'
 import VisualContentControl from './VisualContentControl.jsx'
+import RatingsReview from './RatingsReview.jsx'
 
-export default function AdminMenu() {
+export default function AdminMenu({ onOpenOrder }) {
   const [open, setOpen] = useState(false)
-  const [activeModal, setActiveModal] = useState(null) // 'hours' | 'stock' | 'notif' | null
+  const [activeModal, setActiveModal] = useState(null) // 'hours' | 'stock' | 'notif' | 'ratings' | null
   const [notifActive, setNotifActive] = useState(true) // default true = la hatudu dot to'o verifika
   const wrapRef = useRef(null)
 
@@ -33,6 +34,11 @@ export default function AdminMenu() {
     }
   }
 
+  const handleOpenOrderFromRatings = (orderId) => {
+    setActiveModal(null)
+    onOpenOrder?.(orderId)
+  }
+
   return (
     <>
       <div className="admin-menu-wrap" ref={wrapRef}>
@@ -45,6 +51,7 @@ export default function AdminMenu() {
             <button onClick={() => openModal('hours')}>Oras Operasaun Loja</button>
             <button onClick={() => openModal('price')}>Kontrola Presu & Stok</button>
             <button onClick={() => openModal('visual')}>Kontrola Konteúdu Visual</button>
+            <button onClick={() => openModal('ratings')}>Haree Avaliasaun</button>
             <button onClick={() => openModal('notif')}>
               Notifikasaun Ativu
               {!notifActive && <span className="admin-menu-dot inline"></span>}
@@ -86,6 +93,18 @@ export default function AdminMenu() {
               <button onClick={() => setActiveModal(null)}>✕</button>
             </div>
             <VisualContentControl />
+          </div>
+        )}
+      </div>
+
+      <div className={`modal-overlay${activeModal === 'ratings' ? ' show' : ''}`} onClick={(e) => e.target.classList.contains('modal-overlay') && setActiveModal(null)}>
+        {activeModal === 'ratings' && (
+          <div className="modal" style={{ maxWidth: 520 }}>
+            <div className="modal-head">
+              <h3>Haree Avaliasaun</h3>
+              <button onClick={() => setActiveModal(null)}>✕</button>
+            </div>
+            <RatingsReview onOpenOrder={handleOpenOrderFromRatings} />
           </div>
         )}
       </div>

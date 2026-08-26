@@ -440,13 +440,16 @@ create policy "admin_can_manage_disabled_packages"
 -- =====================================================================
 -- 12) Feedback/rating kliente — 1-klik de'it (👍/😐/👎), aparese bainhira
 -- pedidu ona "Haruka Ona". Primary key iha order_id atu impede duplikadu
--- (cliente cuma bele avalia pedidu ida-ida dala ida).
+-- (cliente cuma bele avalia pedidu ida-ida dala ida). Kolona "comment"
+-- opsional — bainhira rating la diak/neutru, cliente bele fó razaun badak.
 -- =====================================================================
 create table if not exists public.order_feedback (
   order_id text primary key references public.orders(id) on delete cascade,
   rating smallint not null check (rating in (1, 2, 3)), -- 1=la kontente 2=neutru 3=kontente
+  comment text,
   created_at timestamptz not null default now()
 );
+alter table public.order_feedback add column if not exists comment text;
 
 alter table public.order_feedback enable row level security;
 
@@ -454,6 +457,15 @@ drop policy if exists "public_can_insert_feedback" on public.order_feedback;
 create policy "public_can_insert_feedback"
   on public.order_feedback for insert
   to public
+  with check (true);
+
+-- Permite cliente atu hatama komentáriu badak hafoin submete rating (update
+-- de'it linha ne'ebe ita boot rasik ona kria).
+drop policy if exists "public_can_update_feedback" on public.order_feedback;
+create policy "public_can_update_feedback"
+  on public.order_feedback for update
+  to public
+  using (true)
   with check (true);
 
 drop policy if exists "admin_can_read_feedback" on public.order_feedback;

@@ -876,6 +876,12 @@ select.status-select{
 }
 .order-rating-question{font-size:13px; font-weight:600; color:var(--text); margin-bottom:10px;}
 .order-rating-options{display:flex; justify-content:center; gap:14px;}
+.order-rating-comment-input{
+  width:100%; background:var(--surface); border:1px solid var(--border); border-radius:8px;
+  padding:10px 12px; font-size:13px; color:var(--text); resize:none; margin-bottom:10px;
+}
+.order-rating-comment-input:focus{outline:none; border-color:var(--red);}
+.order-rating-comment-actions{display:flex; justify-content:center; align-items:center; gap:14px;}
 .order-rating-btn{
   background:var(--surface); border:1px solid var(--border); border-radius:50%; width:48px; height:48px;
   font-size:22px; cursor:pointer; transition:all .15s ease; display:flex; align-items:center; justify-content:center;
@@ -1003,5 +1009,19 @@ select.status-select{
   .trust-stat-item{padding:8px 12px;}
   .trust-stat-num{font-size:16px;}
   .trust-stat-label{font-size:10.5px;}
+}
+
+/* Admin: Haree Avaliasaun */
+.ratings-review-list{display:flex; flex-direction:column; gap:8px;}
+.rating-review-row{
+  background:var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:10px 12px;
+}
+.rating-review-row.bad{border-color:rgba(220,38,38,0.35); background:rgba(220,38,38,0.06);}
+.rating-review-row.neutral{border-color:rgba(217,119,6,0.35); background:rgba(217,119,6,0.06);}
+.rating-review-top{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+.rating-review-icon{font-size:18px;}
+.rating-review-date{font-size:11px; color:var(--muted); margin-left:auto;}
+.rating-review-comment{
+  margin-top:8px; font-size:12.5px; color:var(--text); font-style:italic; padding-left:26px;
 }
 

@@ -33,6 +33,9 @@ export default function OrderRating({ orderId }) {
   const { t } = useLanguage()
   const [done, setDone] = useState(() => loadRatedIds().has(orderId))
   const [saving, setSaving] = useState(false)
+  // null = seidauk hili; 'comment' = hili ona rating baixu/neutru, hein komentáriu
+  const [stage, setStage] = useState(null)
+  const [comment, setComment] = useState('')
 
   useEffect(() => {
     setDone(loadRatedIds().has(orderId))
@@ -42,15 +45,55 @@ export default function OrderRating({ orderId }) {
     setSaving(true)
     const { error } = await supabase.from('order_feedback').insert({ order_id: orderId, rating: value })
     setSaving(false)
-    // Ignora erru "duplikadu" (ita boot ona avalia pedidu ne'e antes) — hatudu
-    // de'it hanesan "obrigadu" iha rua-rua kazu, la halo cliente hanoin lia.
+    if (error) console.error(error)
+
+    // Rating 3 (kontente) → hotu tiha ona, la presiza komentáriu.
+    // Rating 1/2 (la diak/neutru) → oferese kotak komentáriu opsional.
+    if (value <= 2) {
+      setStage('comment')
+    } else {
+      saveRatedId(orderId)
+      setDone(true)
+    }
+  }
+
+  const submitComment = async () => {
+    if (comment.trim()) {
+      setSaving(true)
+      const { error } = await supabase
+        .from('order_feedback')
+        .update({ comment: comment.trim() })
+        .eq('order_id', orderId)
+      setSaving(false)
+      if (error) console.error(error)
+    }
     saveRatedId(orderId)
     setDone(true)
-    if (error) console.error(error)
   }
 
   if (done) {
     return <div className="order-rating-thanks">✓ {t('rating_thanks')}</div>
+  }
+
+  if (stage === 'comment') {
+    return (
+      <div className="order-rating-box">
+        <div className="order-rating-question">{t('rating_comment_prompt')}</div>
+        <textarea
+          className="order-rating-comment-input"
+          rows={2}
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          placeholder={t('rating_comment_placeholder')}
+        />
+        <div className="order-rating-comment-actions">
+          <button className="link-btn" onClick={submitComment} disabled={saving}>{t('rating_skip_btn')}</button>
+          <button className="btn btn-primary btn-small" onClick={submitComment} disabled={saving}>
+            {saving ? '...' : t('rating_send_btn')}
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (

@@ -57,12 +57,12 @@ export default function InstallPrompt() {
       <div className="install-banner-text">
         {showIosHint ? (
           <>
-            <div className="install-banner-title">Hatama UC-PUBG TL ba Ecrã Inísiu</div>
+            <div className="install-banner-title">Hatama Loja-Game ba Ecrã Inísiu</div>
             <div className="install-banner-sub">Tap ikon Share ⬆️ iha Safari, hafoin hili "Add to Home Screen"</div>
           </>
         ) : (
           <>
-            <div className="install-banner-title">Install UC-PUBG TL</div>
+            <div className="install-banner-title">Install Loja-Game</div>
             <div className="install-banner-sub">Hatama app ne'e ba ecrã inísiu ita boot nian</div>
           </>
         )}

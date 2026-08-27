@@ -1,8 +1,8 @@
 {
   "id": "/painel-admin-x29k7",
-  "name": "UC-PUBG Admin",
-  "short_name": "UC-PUBG Admin",
-  "description": "Dashboard admin — UC-PUBG Timor Leste",
+  "name": "Loja-Game Admin",
+  "short_name": "Loja-Game Admin",
+  "description": "Dashboard admin — Loja-Game Timor Leste",
   "start_url": "/painel-admin-x29k7",
   "display": "standalone",
   "background_color": "#F7F8FB",

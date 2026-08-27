@@ -1,8 +1,8 @@
 {
   "id": "/",
-  "name": "UC-PUBG Timor Leste",
-  "short_name": "UC-PUBG TL",
-  "description": "Top up UC PUBG Mobile ba Timor-Leste",
+  "name": "Loja-Game Timor Leste",
+  "short_name": "Loja-Game",
+  "description": "Top up UC, Diamonds no Robux ba Timor-Leste",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#F7F8FB",

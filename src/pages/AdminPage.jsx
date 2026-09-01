@@ -24,6 +24,7 @@ const GAME_FILTERS = [
   { key: 'ml', label: 'Mobile Legends' },
   { key: 'ff', label: 'Free Fire' },
   { key: 'roblox', label: 'Robux Roblox' },
+  { key: 'bigo', label: 'Bigo Live' },
 ]
 
 function currencyOf(gameKey) {

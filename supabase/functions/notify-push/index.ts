@@ -31,8 +31,8 @@ Deno.serve(async (req) => {
     const { data: subs, error } = await supabase.from("push_subscriptions").select("*");
     if (error) throw error;
 
-    const GAME_NAMES = { pubg: "PUBG Mobile", ml: "Mobile Legends", ff: "Free Fire", roblox: "Robux Roblox" };
-    const CURRENCY = { pubg: "UC", ml: "Diamond", ff: "Diamond", roblox: "Robux" };
+    const GAME_NAMES = { pubg: "PUBG Mobile", ml: "Mobile Legends", ff: "Free Fire", roblox: "Robux Roblox", bigo: "Bigo Live Diamonds" };
+    const CURRENCY = { pubg: "UC", ml: "Diamond", ff: "Diamond", roblox: "Robux", bigo: "Diamond" };
     const gameName = GAME_NAMES[order.game] ?? order.game ?? "";
     const unit = CURRENCY[order.game] ?? "UC";
 

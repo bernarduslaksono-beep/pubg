@@ -24,7 +24,7 @@ create table if not exists public.orders (
   pkg_unit_uc integer,
   qty integer not null default 1,
   admin_comment text default '',
-  game text not null default 'pubg' check (game in ('pubg','ml','ff','roblox')),
+  game text not null default 'pubg' check (game in ('pubg','ml','ff','roblox','bigo')),
   zone_id text
 );
 
@@ -46,7 +46,7 @@ alter table public.orders alter column ign drop not null;
 do $$
 begin
   alter table public.orders drop constraint if exists orders_game_check;
-  alter table public.orders add constraint orders_game_check check (game in ('pubg','ml','ff','roblox'));
+  alter table public.orders add constraint orders_game_check check (game in ('pubg','ml','ff','roblox','bigo'));
 end $$;
 
 -- 2) Hamosu Row Level Security (RLS) — importante atu proteje data cliente
@@ -503,11 +503,19 @@ create policy "admin_can_write_banners"
   with check (true);
 
 create table if not exists public.game_images (
-  game text primary key check (game in ('pubg','ml','ff','roblox')),
+  game text primary key check (game in ('pubg','ml','ff','roblox','bigo')),
   image_url text,
   updated_at timestamptz not null default now()
 );
-insert into public.game_images (game) values ('pubg'), ('ml'), ('ff'), ('roblox')
+-- Se tabela ona iha husi antes (versaun tuan seidauk iha Bigo Live), atualiza
+-- constraint LAI ANTES hatama linha foun (se lae, insert 'bigo' sei falha
+-- tanba constraint tuan seidauk permite 'bigo').
+do $$
+begin
+  alter table public.game_images drop constraint if exists game_images_game_check;
+  alter table public.game_images add constraint game_images_game_check check (game in ('pubg','ml','ff','roblox','bigo'));
+end $$;
+insert into public.game_images (game) values ('pubg'), ('ml'), ('ff'), ('roblox'), ('bigo')
 on conflict (game) do nothing;
 
 alter table public.game_images enable row level security;

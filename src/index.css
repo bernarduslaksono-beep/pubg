@@ -773,7 +773,7 @@ select.status-select{
 .visitor-badge b{color:var(--text); font-family:'JetBrains Mono',monospace;}
 
 .game-grid{
-  display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:14px; margin-top:4px; max-width:640px;
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(108px, 1fr)); gap:14px; margin-top:4px; max-width:640px;
 }
 .game-card{
   position:relative; background:var(--surface); border:1.5px solid var(--border); border-radius:14px;
@@ -805,9 +805,11 @@ select.status-select{
   color:var(--muted); font-size:9px; font-weight:700; padding:3px 8px; border-radius:10px; letter-spacing:0.03em; z-index:2;
 }
 @media(max-width:600px){
-  .game-grid{grid-template-columns:1fr 1fr; gap:10px;}
-  .game-card{padding:10px 8px;}
-  .game-card-label{font-size:11.5px;}
+  .game-grid{grid-template-columns:1fr 1fr 1fr; gap:8px;}
+  .game-card{padding:8px 6px;}
+  .game-card-image{margin-bottom:8px;}
+  .game-card-label{font-size:9.5px;}
+  .game-soon-badge{font-size:7.5px; padding:2px 6px; top:6px; right:6px;}
 }
 
 /* Trust badges */
@@ -957,10 +959,14 @@ select.status-select{
 /* Portal heading "TOP UP GAME" */
 .portal-heading-row{display:flex; align-items:center; gap:14px; margin:18px 0 16px;}
 .portal-heading{
-  font-family:var(--font-display); font-weight:700; font-style:italic; font-size:clamp(20px,4vw,28px);
-  color:var(--text); letter-spacing:0.02em; white-space:nowrap;
+  font-family:var(--font-display); font-weight:700; font-style:italic; font-size:clamp(17px,4.2vw,28px);
+  color:var(--text); letter-spacing:0.01em; white-space:nowrap;
 }
 .portal-heading-line{height:4px; width:60px; background:var(--teal); border-radius:2px; flex-shrink:0;}
+@media(max-width:400px){
+  .portal-heading{font-size:15px;}
+  .portal-heading-line{width:26px;}
+}
 
 /* Banner carousel (iklan, admin bele troka husi dashboard) */
 .banner-carousel{

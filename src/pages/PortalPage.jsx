@@ -71,6 +71,19 @@ function RobuxIcon() {
   )
 }
 
+function LiveStreamIcon() {
+  return (
+    <svg width="32" height="32" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="13" width="27" height="22" rx="5" fill="#fff" opacity="0.95" />
+      <path d="M33 20l9-6v20l-9-6z" fill="#fff" opacity="0.95" />
+      <circle cx="14" cy="10" r="3.4" fill="none" stroke="#fff" strokeWidth="1.6" opacity="0.8" />
+      <path d="M9.5 6.5c-3 3-3 8 0 11" stroke="#fff" strokeWidth="1.4" strokeLinecap="round" opacity="0.6" fill="none" />
+      <path d="M18.5 6.5c3 3 3 8 0 11" stroke="#fff" strokeWidth="1.4" strokeLinecap="round" opacity="0.6" fill="none" />
+      <circle cx="26" cy="24" r="4.2" fill="rgba(147,51,234,0.85)" />
+    </svg>
+  )
+}
+
 const GAMES = [
   {
     id: 'pubg',
@@ -111,6 +124,16 @@ const GAMES = [
     Icon: RobuxIcon,
     available: true,
     path: '/roblox',
+  },
+  {
+    id: 'bigo',
+    name: 'Bigo Live Diamonds',
+    cardLabel: 'Bigo Live Diamonds',
+    color: '#9333EA',
+    colorDim: 'rgba(147,51,234,0.10)',
+    Icon: LiveStreamIcon,
+    available: true,
+    path: '/bigo',
   },
 ]
 
@@ -153,7 +176,7 @@ export default function PortalPage() {
       <TrustStatsBanner />
 
       <div className="portal-heading-row">
-        <h2 className="portal-heading">TOP UP GAME</h2>
+        <h2 className="portal-heading">TOP UP GAME & VOUCHER</h2>
         <span className="portal-heading-line"></span>
       </div>
 

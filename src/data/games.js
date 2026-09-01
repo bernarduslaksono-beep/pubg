@@ -137,6 +137,39 @@ export const GAMES = {
       },
     ],
   },
+
+  bigo: {
+    key: 'bigo',
+    name: 'Bigo Live Diamonds',
+    orderPrefix: 'BGO',
+    currencyLabel: 'Diamond',
+    hasZoneId: false,
+    accentColor: '#9333EA',
+    accentColorDim: 'rgba(147,51,234,0.10)',
+    tiers: [
+      {
+        tierKey: 'kiik',
+        items: [
+          { amount: 100, price: 4 }, { amount: 148, price: 5 }, { amount: 200, price: 6 },
+          { amount: 265, price: 7 }, { amount: 296, price: 8 }, { amount: 344, price: 9 },
+        ],
+      },
+      {
+        tierKey: 'medium',
+        items: [
+          { amount: 500, price: 12 }, { amount: 577, price: 14 }, { amount: 600, price: 15 },
+          { amount: 670, price: 16 }, { amount: 700, price: 17 }, { amount: 741, price: 18 },
+        ],
+      },
+      {
+        tierKey: 'boot',
+        items: [
+          { amount: 866, price: 21 }, { amount: 1000, price: 24 }, { amount: 1201, price: 28 },
+          { amount: 1500, price: 35 }, { amount: 2000, price: 47 }, { amount: 2700, price: 61 },
+        ],
+      },
+    ],
+  },
 }
 
 export function getGame(key) {

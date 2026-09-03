@@ -55,6 +55,7 @@ export default function OrderPage() {
   const [showRedeemHelp, setShowRedeemHelp] = useState(false)
   const [disabledAmounts, setDisabledAmounts] = useState(new Set())
   const [priceOverrides, setPriceOverrides] = useState({})
+  const [amountOverrides, setAmountOverrides] = useState({})
 
   useEffect(() => {
     if (!game) return
@@ -69,12 +70,24 @@ export default function OrderPage() {
         setPriceOverrides(map)
       }
     })
+    supabase.from('package_amount_overrides').select('original_amount, new_amount').eq('game', game.key).then(({ data, error }) => {
+      if (!error && data && !cancelled) {
+        const map = {}
+        data.forEach((row) => { map[row.original_amount] = row.new_amount })
+        setAmountOverrides(map)
+      }
+    })
     return () => { cancelled = true }
   }, [game])
 
   // Presu efetivu ba denom ida — uza override husi database se iha, se lae
   // uza presu default husi games.js.
   const effectivePrice = (item) => (priceOverrides[item.amount] ?? item.price)
+
+  // Númeru denom efetivu — item.amount (husi games.js) hela sai xave interna
+  // atu liga ho override sira (presu/stock), maibe ne'ebe hatudu/uza ba pedidu
+  // mak valor ne'ebe ona "muda" husi database, se iha.
+  const effectiveAmount = (item) => (amountOverrides[item.amount] ?? item.amount)
 
   useEffect(() => {
     let cancelled = false
@@ -376,16 +389,17 @@ export default function OrderPage() {
                     {group.items.map((item) => {
                       const outOfStock = disabledAmounts.has(item.amount)
                       const price = effectivePrice(item)
+                      const displayAmount = effectiveAmount(item)
                       return (
                         <div
                           key={item.amount}
-                          className={`pkg-card${selectedPkg?.amount === item.amount ? ' selected' : ''}${outOfStock ? ' out-of-stock' : ''}`}
-                          onClick={() => !outOfStock && setSelectedPkg({ ...item, price })}
+                          className={`pkg-card${selectedPkg?.originalAmount === item.amount ? ' selected' : ''}${outOfStock ? ' out-of-stock' : ''}`}
+                          onClick={() => !outOfStock && setSelectedPkg({ ...item, price, amount: displayAmount, originalAmount: item.amount })}
                         >
                           {outOfStock && <span className="stock-badge">{t('out_of_stock_label')}</span>}
                           <div className="pkg-card-top">
                             <DenomIcon game={game} size={28} />
-                            <div className="pkg-uc-big">{item.amount.toLocaleString()}<span className="pkg-uc-label">{game.currencyLabel}</span></div>
+                            <div className="pkg-uc-big">{displayAmount.toLocaleString()}<span className="pkg-uc-label">{game.currencyLabel}</span></div>
                           </div>
                           <div className="price">${price.toFixed(2)}</div>
                         </div>

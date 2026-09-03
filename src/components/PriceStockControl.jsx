@@ -9,14 +9,17 @@ export default function PriceStockControl() {
   const [disabledAmounts, setDisabledAmounts] = useState(new Set())
   const [overrides, setOverrides] = useState({})
   const [drafts, setDrafts] = useState({})
+  const [amountOverrides, setAmountOverrides] = useState({})
+  const [amountDrafts, setAmountDrafts] = useState({})
   const [loading, setLoading] = useState(true)
   const [savingAmount, setSavingAmount] = useState(null)
 
   const loadAll = async (gameKey) => {
     setLoading(true)
-    const [stockRes, priceRes] = await Promise.all([
+    const [stockRes, priceRes, amountRes] = await Promise.all([
       supabase.from('disabled_packages').select('amount').eq('game', gameKey),
       supabase.from('package_prices').select('amount, price').eq('game', gameKey),
+      supabase.from('package_amount_overrides').select('original_amount, new_amount').eq('game', gameKey),
     ])
     if (!stockRes.error && stockRes.data) setDisabledAmounts(new Set(stockRes.data.map((d) => d.amount)))
     if (!priceRes.error && priceRes.data) {
@@ -27,6 +30,15 @@ export default function PriceStockControl() {
     } else {
       setOverrides({})
       setDrafts({})
+    }
+    if (!amountRes.error && amountRes.data) {
+      const map = {}
+      amountRes.data.forEach((row) => { map[row.original_amount] = row.new_amount })
+      setAmountOverrides(map)
+      setAmountDrafts(map)
+    } else {
+      setAmountOverrides({})
+      setAmountDrafts({})
     }
     setLoading(false)
   }
@@ -62,6 +74,51 @@ export default function PriceStockControl() {
 
   const handleDraftChange = (amount, value) => {
     setDrafts((prev) => ({ ...prev, [amount]: value }))
+  }
+
+  const handleAmountDraftChange = (originalAmount, value) => {
+    setAmountDrafts((prev) => ({ ...prev, [originalAmount]: value }))
+  }
+
+  const handleSaveAmount = async (originalAmount) => {
+    const raw = amountDrafts[originalAmount]
+    const value = raw === '' || raw === undefined ? null : Number(raw)
+    if (value !== null && (!Number.isInteger(value) || value <= 0)) {
+      alert('Denom tenki númeru inteiru pozitivu.')
+      return
+    }
+    setSavingAmount(`amount-${originalAmount}`)
+    try {
+      if (value === null || value === originalAmount) {
+        const { error } = await supabase.from('package_amount_overrides').delete().eq('game', activeGame).eq('original_amount', originalAmount)
+        if (error) throw error
+      } else {
+        const { error } = await supabase
+          .from('package_amount_overrides')
+          .upsert({ game: activeGame, original_amount: originalAmount, new_amount: value }, { onConflict: 'game,original_amount' })
+        if (error) throw error
+      }
+      loadAll(activeGame)
+    } catch (err) {
+      console.error(err)
+      alert('Falha atu guarda denom.')
+    } finally {
+      setSavingAmount(null)
+    }
+  }
+
+  const handleResetAmount = async (originalAmount) => {
+    setSavingAmount(`amount-${originalAmount}`)
+    try {
+      const { error } = await supabase.from('package_amount_overrides').delete().eq('game', activeGame).eq('original_amount', originalAmount)
+      if (error) throw error
+      loadAll(activeGame)
+    } catch (err) {
+      console.error(err)
+      alert('Falha atu hasai override.')
+    } finally {
+      setSavingAmount(null)
+    }
   }
 
   const handleSavePrice = async (amount, defaultPrice) => {
@@ -127,15 +184,20 @@ export default function PriceStockControl() {
               {tier.items.map((item) => {
                 const isDisabled = disabledAmounts.has(item.amount)
                 const isOverridden = overrides[item.amount] !== undefined
+                const isAmountOverridden = amountOverrides[item.amount] !== undefined
+                const effectiveAmount = amountOverrides[item.amount] ?? item.amount
                 const savingStock = savingAmount === `stock-${item.amount}`
                 const savingPrice = savingAmount === `price-${item.amount}`
+                const savingAmt = savingAmount === `amount-${item.amount}`
                 const draftValue = drafts[item.amount] ?? ''
+                const amountDraftValue = amountDrafts[item.amount] ?? ''
                 return (
                   <div className="price-item-row" key={item.amount}>
                     <div className="price-item-top">
                       <span className="price-item-label">
-                        {item.amount.toLocaleString()} {activeGameConfig.currencyLabel}
-                        {isOverridden && <span className="price-override-tag">Muda</span>}
+                        {effectiveAmount.toLocaleString()} {activeGameConfig.currencyLabel}
+                        {isOverridden && <span className="price-override-tag">Presu Muda</span>}
+                        {isAmountOverridden && <span className="price-override-tag">Denom Muda</span>}
                       </span>
                       <button
                         className={`stock-toggle-btn${isDisabled ? ' disabled' : ' available'}`}
@@ -144,6 +206,29 @@ export default function PriceStockControl() {
                       >
                         {savingStock ? '...' : isDisabled ? 'Stok Hotu' : 'Tersedia'}
                       </button>
+                    </div>
+                    <div className="price-item-edit">
+                      <span className="price-item-default">Denom default: {item.amount.toLocaleString()}</span>
+                      <input
+                        type="number"
+                        min="1"
+                        step="1"
+                        placeholder={String(item.amount)}
+                        value={amountDraftValue}
+                        onChange={(e) => handleAmountDraftChange(item.amount, e.target.value)}
+                      />
+                      <button
+                        className="btn btn-ghost btn-small"
+                        onClick={() => handleSaveAmount(item.amount)}
+                        disabled={savingAmt}
+                      >
+                        {savingAmt ? '...' : 'Guarda'}
+                      </button>
+                      {isAmountOverridden && (
+                        <button className="link-btn danger" onClick={() => handleResetAmount(item.amount)} disabled={savingAmt}>
+                          Reset
+                        </button>
+                      )}
                     </div>
                     <div className="price-item-edit">
                       <span className="price-item-default">Default: ${item.price.toFixed(2)}</span>

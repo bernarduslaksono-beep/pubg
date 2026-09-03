@@ -612,3 +612,33 @@ $$;
 
 grant execute on function public.get_public_trust_stats() to anon, authenticated;
 
+-- =====================================================================
+-- 15) Override nilai denom — admin bele muda NÚMERU denom (ezemplu "325 UC"
+-- sai "350 UC") direta husi dashboard, la presiza troka kódigu/redeploy.
+-- "original_amount" (husi games.js) hela sai xave interna atu liga ho presu/
+-- stock override; "new_amount" mak valor ne'ebe hatudu ba públiku no uza
+-- iha pedidu foun.
+-- =====================================================================
+create table if not exists public.package_amount_overrides (
+  game text not null,
+  original_amount integer not null,
+  new_amount integer not null,
+  updated_at timestamptz not null default now(),
+  primary key (game, original_amount)
+);
+
+alter table public.package_amount_overrides enable row level security;
+
+drop policy if exists "public_can_read_amount_overrides" on public.package_amount_overrides;
+create policy "public_can_read_amount_overrides"
+  on public.package_amount_overrides for select
+  to public
+  using (true);
+
+drop policy if exists "admin_can_write_amount_overrides" on public.package_amount_overrides;
+create policy "admin_can_write_amount_overrides"
+  on public.package_amount_overrides for all
+  to authenticated
+  using (true)
+  with check (true);
+

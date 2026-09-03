@@ -49,19 +49,22 @@ export const GAMES = {
       {
         tierKey: 'kiik',
         items: [
-          { amount: 170, price: 5 }, { amount: 222, price: 6 }, { amount: 240, price: 7 }, { amount: 296, price: 8 },
+          { amount: 257, price: 5 }, { amount: 275, price: 6 }, { amount: 343, price: 7 },
+          { amount: 361, price: 8 }, { amount: 440, price: 9 },
         ],
       },
       {
         tierKey: 'medium',
         items: [
-          { amount: 370, price: 10 }, { amount: 408, price: 11 }, { amount: 568, price: 13 }, { amount: 875, price: 19 },
+          { amount: 565, price: 10 }, { amount: 733, price: 12 }, { amount: 822, price: 15 },
+          { amount: 1130, price: 20 }, { amount: 1466, price: 24 },
         ],
       },
       {
         tierKey: 'boot',
         items: [
-          { amount: 966, price: 21 }, { amount: 2010, price: 41 }, { amount: 4830, price: 98 },
+          { amount: 2195, price: 33 }, { amount: 3688, price: 55 }, { amount: 5532, price: 80 },
+          { amount: 9288, price: 130 },
         ],
       },
     ],

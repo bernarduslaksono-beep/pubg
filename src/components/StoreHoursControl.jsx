@@ -62,12 +62,12 @@ export default function StoreHoursControl() {
 
       <div className="store-hours-fields">
         <div className="field">
-          <label>Oras Loke</label>
-          <input type="time" value={openTime} onChange={(e) => setOpenTime(e.target.value)} />
+          <label htmlFor="store-hours-open">Oras Loke</label>
+          <input id="store-hours-open" type="time" value={openTime} onChange={(e) => setOpenTime(e.target.value)} />
         </div>
         <div className="field">
-          <label>Oras Taka</label>
-          <input type="time" value={closeTime} onChange={(e) => setCloseTime(e.target.value)} />
+          <label htmlFor="store-hours-close">Oras Taka</label>
+          <input id="store-hours-close" type="time" value={closeTime} onChange={(e) => setCloseTime(e.target.value)} />
         </div>
         <button className="btn btn-ghost btn-small" onClick={saveSchedule} disabled={saving}>
           {saving ? 'Haruka...' : 'Guarda Horáriu'}

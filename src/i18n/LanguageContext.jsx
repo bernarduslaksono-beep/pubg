@@ -14,6 +14,12 @@ export function LanguageProvider({ children }) {
 
   useEffect(() => {
     localStorage.setItem('language', language)
+    // Keep the document's declared language in sync with the selected UI
+    // language (Phase 2G) — index.html hardcodes lang="id" as a static
+    // fallback for the very first paint, but it never updated after that,
+    // so screen readers and browser translate/SEO tooling always saw the
+    // page as Indonesian even when it was showing Tetum or English content.
+    document.documentElement.lang = language
   }, [language])
 
   const t = (key, ...args) => {

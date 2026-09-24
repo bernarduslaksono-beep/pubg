@@ -6,6 +6,8 @@ import AdminMenu from '../components/AdminMenu.jsx'
 import AdminOnlineCount from '../components/AdminOnlineCount.jsx'
 import StoreStatusBadge from '../components/StoreStatusBadge.jsx'
 import OrderToast from '../components/OrderToast.jsx'
+import Modal from '../components/Modal.jsx'
+import ConfirmDialog from '../components/ConfirmDialog.jsx'
 import * as XLSX from 'xlsx'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
@@ -67,24 +69,39 @@ function AdminLogin() {
 
   return (
     <div className="login-box">
-      <h3>Admin Login</h3>
+      <h1>Admin Login</h1>
       <p>Hatama email no password atu asesu dashboard.</p>
       <div className="field">
-        <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+        <label htmlFor="admin-login-email">Email</label>
+        <input
+          id="admin-login-email"
+          type="email"
+          autoComplete="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? 'admin-login-error' : undefined}
+        />
       </div>
       <div className="field">
+        <label htmlFor="admin-login-password">Password</label>
         <input
+          id="admin-login-password"
           type="password"
+          autoComplete="current-password"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? 'admin-login-error' : undefined}
         />
       </div>
       <button className="btn btn-primary" onClick={handleLogin} disabled={loading}>
         {loading ? 'Tama...' : 'Tama'}
       </button>
-      {error && <div className="msg error show">{error}</div>}
+      {error && <div id="admin-login-error" className="msg error show" role="alert">{error}</div>}
     </div>
   )
 }
@@ -95,25 +112,31 @@ function OrderDetailModal({ order, onClose, onStatusSaved, onDeleted, deviceStat
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [blocking, setBlocking] = useState(false)
+  const [saveError, setSaveError] = useState(null)
+  const [copiedOid, setCopiedOid] = useState(false)
+  // 'delete' | 'block' | null — which confirmation dialog is open. Replaces
+  // the native confirm() popups with the app's own accessible ConfirmDialog
+  // (Phase 2A foundation), same action/payload/callback underneath.
+  const [confirmAction, setConfirmAction] = useState(null)
   const currency = currencyOf(order.game)
 
   const handleSave = async () => {
     setSaving(true)
+    setSaveError(null)
     const { error } = await supabase
       .from('orders')
       .update({ status, admin_comment: adminComment.trim() })
       .eq('id', order.id)
     setSaving(false)
     if (error) {
-      alert('Falha atu update status.')
+      setSaveError('Falha atu update status. Favor tenta fila fali.')
       return
     }
     onStatusSaved(order.id, status, adminComment.trim())
     onClose()
   }
 
-  const handleDelete = async () => {
-    if (!confirm(`Apaga pedidu ${order.id}? Asaun ne'e la bele fila fali.`)) return
+  const performDelete = async () => {
     setDeleting(true)
     try {
       const path = storagePathFromUrl(order.proof_url)
@@ -126,36 +149,50 @@ function OrderDetailModal({ order, onClose, onStatusSaved, onDeleted, deviceStat
       onClose()
     } catch (err) {
       console.error(err)
-      alert('Falha atu apaga pedidu.')
+      setSaveError('Falha atu apaga pedidu. Favor tenta fila fali.')
+      setConfirmAction(null)
     } finally {
       setDeleting(false)
     }
   }
 
-  const handleBlock = async () => {
+  const performBlock = async () => {
     if (!order.device_fingerprint) return
-    const confirmMsg = isBlocked
-      ? 'Buka blokir device ne\'e? Nia sei bele halo pedidu fila fali.'
-      : 'Blokeia device ne\'e? Nia sei la bele halo pedidu foun to\'o ita boot buka blokir fila fali.'
-    if (!confirm(confirmMsg)) return
     setBlocking(true)
     await onBlockToggle(order.device_fingerprint, isBlocked)
     setBlocking(false)
+    setConfirmAction(null)
+  }
+
+  const copyOrderId = () => {
+    navigator.clipboard.writeText(order.id)
+    setCopiedOid(true)
+    setTimeout(() => setCopiedOid(false), 1800)
   }
 
   return (
-    <div className="modal-overlay show" onClick={(e) => e.target.classList.contains('modal-overlay') && onClose()}>
-      <div className="modal" style={{ maxWidth: 460 }}>
-        <div className="modal-head">
-          <h3>Detalha Pedidu</h3>
-          <button onClick={onClose}>✕</button>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-          <span className="mono" style={{ fontSize: 13, color: 'var(--muted)' }}>{order.id}</span>
+    <>
+      <Modal open onClose={onClose} title="Detalha Pedidu" maxWidth={460}>
+        <div className="admin-oid-row">
+          <span className="mono admin-oid-value">{order.id}</span>
+          <button
+            type="button"
+            className={`copy-btn${copiedOid ? ' copied' : ''}`}
+            onClick={copyOrderId}
+            aria-label="Copy Order ID"
+          >
+            {copiedOid ? '✓ Tersalin' : '⧉ Copy'}
+          </button>
           <span className="game-tag" style={{ '--tag-color': gameColorOf(order.game) }}>{gameNameOf(order.game)}</span>
         </div>
 
+        {/* Status atual — badge separadu husi kontrola <select> iha kraik, atu
+            admin bele lee status agora ne'e lalais liu, la presiza lee kontrola forms. */}
+        <div className={`status-badge status-${order.status}`} style={{ marginBottom: 16 }}>
+          <span className="dot"></span>{STATUS_LABELS[order.status]}
+        </div>
+
+        <div className="admin-section-title">Detallu Pedidu</div>
         {order.game_id && <div className="result-row"><span className="k">User ID</span><span className="v">{order.game_id}</span></div>}
         {order.zone_id && <div className="result-row"><span className="k">Zone ID</span><span className="v">{order.zone_id}</span></div>}
         {order.ign && <div className="result-row"><span className="k">Nickname</span><span className="v">{order.ign}</span></div>}
@@ -167,43 +204,56 @@ function OrderDetailModal({ order, onClose, onStatusSaved, onDeleted, deviceStat
         </div>
         <div className="result-row"><span className="k">Total {currency}</span><span className="v">{order.pkg_uc.toLocaleString()} {currency}</span></div>
         <div className="result-row"><span className="k">Osan</span><span className="v">${Number(order.pkg_price).toFixed(2)}</span></div>
-        <div className="result-row"><span className="k">Metode Pagamentu</span><span className="v">{order.payment_method}</span></div>
         <div className="result-row"><span className="k">Data</span><span className="v">{formatDate(order.created_at)}</span></div>
         {order.note && <div className="result-row"><span className="k">Nota</span><span className="v">{order.note}</span></div>}
 
-        {order.device_fingerprint && (
-          <div className={`device-info-box${isBlocked ? ' blocked' : ''}`}>
-            <div className="device-info-row">
-              <span className="mono">{order.device_fingerprint.slice(0, 10)}…</span>
-              {isBlocked && <span className="device-blocked-tag">BLOKEADU</span>}
-            </div>
-            <div className="device-info-stats">
-              {deviceStats.total} pedidu hotu-hotu ({deviceStats.pending} hein verifikasaun, {deviceStats.cancelled} kanseladu)
-            </div>
-            <div className="device-info-actions">
-              <button type="button" className="link-btn" onClick={() => onFilterByDevice(order.device_fingerprint)}>
-                Haree Hotu-hotu Pedidu Husi Device Ne'e
-              </button>
-              <button
-                type="button"
-                className={`link-btn${isBlocked ? '' : ' danger'}`}
-                onClick={handleBlock}
-                disabled={blocking}
-              >
-                {blocking ? '...' : isBlocked ? 'Buka Blokir' : 'Blokeia Device Ne\'e'}
-              </button>
-            </div>
-          </div>
-        )}
-
-        <div style={{ margin: '16px 0' }}>
+        <div className="admin-section-title" style={{ marginTop: 16 }}>Detalhus Pagamentu</div>
+        <div className="result-row"><span className="k">Metode Pagamentu</span><span className="v">{order.payment_method}</span></div>
+        <div style={{ margin: '12px 0 4px' }}>
           <div className="field-hint" style={{ marginBottom: 8 }}>Prova Transferénsia</div>
-          <img src={order.proof_url} alt="prova transferénsia" style={{ width: '100%', borderRadius: 8, border: '1px solid var(--border)' }} />
+          <a
+            href={order.proof_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="admin-proof-link"
+            aria-label="Haree prova transferénsia iha tamanho boot (loke iha tab foun)"
+          >
+            <img src={order.proof_url} alt="Prova transferénsia pagamentu" loading="lazy" />
+          </a>
         </div>
 
+        {order.device_fingerprint && (
+          <>
+            <div className="admin-section-title" style={{ marginTop: 16 }}>Device / Anti-Spam</div>
+            <div className={`device-info-box${isBlocked ? ' blocked' : ''}`}>
+              <div className="device-info-row">
+                <span className="mono">{order.device_fingerprint.slice(0, 10)}…</span>
+                {isBlocked && <span className="device-blocked-tag">BLOKEADU</span>}
+              </div>
+              <div className="device-info-stats">
+                {deviceStats.total} pedidu hotu-hotu ({deviceStats.pending} hein verifikasaun, {deviceStats.cancelled} kanseladu)
+              </div>
+              <div className="device-info-actions">
+                <button type="button" className="link-btn" onClick={() => onFilterByDevice(order.device_fingerprint)}>
+                  Haree Hotu-hotu Pedidu Husi Device Ne'e
+                </button>
+                <button
+                  type="button"
+                  className={`link-btn${isBlocked ? '' : ' danger'}`}
+                  onClick={() => setConfirmAction('block')}
+                  disabled={blocking}
+                >
+                  {blocking ? '...' : isBlocked ? 'Buka Blokir' : 'Blokeia Device Ne\'e'}
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+
+        <div className="admin-section-title" style={{ marginTop: 16 }}>Aksaun</div>
         <div className="field">
-          <label>Status</label>
-          <select className="status-select" style={{ width: '100%' }} value={status} onChange={(e) => setStatus(e.target.value)}>
+          <label htmlFor="admin-status-select">Status</label>
+          <select id="admin-status-select" className="status-select" style={{ width: '100%' }} value={status} onChange={(e) => setStatus(e.target.value)}>
             {Object.entries(STATUS_LABELS).map(([k, v]) => (
               <option key={k} value={k}>{v}</option>
             ))}
@@ -212,12 +262,13 @@ function OrderDetailModal({ order, onClose, onStatusSaved, onDeleted, deviceStat
 
         {(status === 'dibatalkan' || status === 'terkirim') && (
           <div className="field">
-            <label>
+            <label htmlFor="admin-comment-field">
               {status === 'terkirim'
                 ? 'Mensajen ba cliente (opsional)'
                 : 'Komentariu ba cliente (razaun kanselamentu)'}
             </label>
             <textarea
+              id="admin-comment-field"
               rows={3}
               value={adminComment}
               onChange={(e) => setAdminComment(e.target.value)}
@@ -230,19 +281,46 @@ function OrderDetailModal({ order, onClose, onStatusSaved, onDeleted, deviceStat
           </div>
         )}
 
+        {saveError && <div className="msg error show" role="alert">{saveError}</div>}
+
         <button className="btn btn-primary" style={{ marginTop: 6 }} onClick={handleSave} disabled={saving || deleting}>
           {saving ? 'Haruka...' : 'Verifika / Update Status'}
         </button>
         <button
-          className="btn btn-ghost"
-          style={{ marginTop: 10, color: 'var(--danger)', borderColor: 'var(--danger)' }}
-          onClick={handleDelete}
+          className="btn btn-outline admin-delete-btn"
+          style={{ marginTop: 10 }}
+          onClick={() => setConfirmAction('delete')}
           disabled={saving || deleting}
         >
           {deleting ? 'Apaga...' : 'Apaga Pedidu Ne\'e'}
         </button>
-      </div>
-    </div>
+      </Modal>
+
+      <ConfirmDialog
+        open={confirmAction === 'delete'}
+        title="Apaga Pedidu?"
+        description={`Pedidu ${order.id} sei apaga permanente, hamutuk ho prova transferénsia iha storage. Asaun ne'e la bele fila fali.`}
+        confirmLabel="Apaga"
+        variant="danger"
+        loading={deleting}
+        onConfirm={performDelete}
+        onCancel={() => setConfirmAction(null)}
+      />
+      <ConfirmDialog
+        open={confirmAction === 'block'}
+        title={isBlocked ? 'Buka Blokir Device?' : 'Blokeia Device?'}
+        description={
+          isBlocked
+            ? "Device ne'e sei bele halo pedidu fila fali."
+            : "Device ne'e la bele halo pedidu foun to'o ita boot buka blokir fila fali."
+        }
+        confirmLabel={isBlocked ? 'Buka Blokir' : 'Blokeia'}
+        variant={isBlocked ? 'primary' : 'danger'}
+        loading={blocking}
+        onConfirm={performBlock}
+        onCancel={() => setConfirmAction(null)}
+      />
+    </>
   )
 }
 
@@ -275,6 +353,13 @@ function Dashboard() {
   const [seenIds, setSeenIds] = useState(loadSeenIds)
   const [blockedFingerprints, setBlockedFingerprints] = useState(new Set())
   const [statsCollapsed, setStatsCollapsed] = useState(true)
+
+  const hasActiveFilters = filter !== 'all' || gameFilter !== 'all' || search.trim() !== ''
+  const clearFilters = () => {
+    setFilter('all')
+    setGameFilter('all')
+    setSearch('')
+  }
 
   const markSeen = (orderId) => {
     setSeenIds((prev) => {
@@ -344,12 +429,22 @@ function Dashboard() {
     return map
   }, [orders])
 
+  const [ordersLoading, setOrdersLoading] = useState(true)
+  const [ordersError, setOrdersError] = useState(false)
+
   const loadOrders = async () => {
+    setOrdersError(false)
     const { data, error } = await supabase
       .from('orders')
       .select('*')
       .order('created_at', { ascending: false })
-    if (!error) setOrders(data)
+    if (!error) {
+      setOrders(data)
+    } else {
+      console.error(error)
+      setOrdersError(true)
+    }
+    setOrdersLoading(false)
   }
 
   const [ratings, setRatings] = useState([])
@@ -507,20 +602,34 @@ function Dashboard() {
         <h1>Tracking & Laporan Fatin</h1>
       </div>
 
-      <div className="tier-head tier-head-toggle" onClick={() => setStatsCollapsed((c) => !c)} style={{ marginBottom: statsCollapsed ? 24 : 14 }}>
-        <h3>Estatístika</h3>
-        <span className={`tier-chevron${statsCollapsed ? '' : ' open'}`}>▾</span>
+      <div
+        className="tier-head tier-head-toggle"
+        role="button"
+        tabIndex={0}
+        aria-expanded={!statsCollapsed}
+        aria-controls="admin-stats-panel"
+        onClick={() => setStatsCollapsed((c) => !c)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            setStatsCollapsed((c) => !c)
+          }
+        }}
+        style={{ marginBottom: statsCollapsed ? 24 : 14 }}
+      >
+        <h2>Estatístika</h2>
+        <span className={`tier-chevron${statsCollapsed ? '' : ' open'}`} aria-hidden="true">▾</span>
       </div>
       {!statsCollapsed && (
-        <>
+        <div id="admin-stats-panel">
           <div className="stats-custom-range" onClick={(e) => e.stopPropagation()}>
             <div className="field">
-              <label>Husi</label>
-              <input type="date" value={customStart} onChange={(e) => setCustomStart(e.target.value)} />
+              <label htmlFor="admin-stats-start">Husi</label>
+              <input id="admin-stats-start" type="date" value={customStart} onChange={(e) => setCustomStart(e.target.value)} />
             </div>
             <div className="field">
-              <label>To'o</label>
-              <input type="date" value={customEnd} onChange={(e) => setCustomEnd(e.target.value)} />
+              <label htmlFor="admin-stats-end">To'o</label>
+              <input id="admin-stats-end" type="date" value={customEnd} onChange={(e) => setCustomEnd(e.target.value)} />
             </div>
           </div>
           <div className="stat-grid">
@@ -540,38 +649,79 @@ function Dashboard() {
               )}
             </div>
           </div>
-        </>
+        </div>
       )}
 
       <div className="toolbar admin-filter-row">
-        <select className="filter-select" value={gameFilter} onChange={(e) => setGameFilter(e.target.value)}>
+        <select className="filter-select" value={gameFilter} onChange={(e) => setGameFilter(e.target.value)} aria-label="Filtru tuir jogu">
           {GAME_FILTERS.map((f) => (
             <option key={f.key} value={f.key}>{f.label}</option>
           ))}
         </select>
-        <select className="filter-select" value={filter} onChange={(e) => setFilter(e.target.value)}>
+        <select className="filter-select" value={filter} onChange={(e) => setFilter(e.target.value)} aria-label="Filtru tuir status">
           {FILTERS.map((f) => (
             <option key={f.key} value={f.key}>{f.label}</option>
           ))}
         </select>
-        <input
-          className="admin-search"
-          placeholder="Buka Order ID, User ID, Zone ID, Nickname..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+        <div className="admin-search-wrap">
+          <input
+            className="admin-search"
+            placeholder="Buka Order ID, User ID, Zone ID, Nickname..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            aria-label="Buka pedidu"
+          />
+          {search && (
+            <button
+              type="button"
+              className="admin-search-clear"
+              onClick={() => setSearch('')}
+              aria-label="Hamoos buka"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+        {hasActiveFilters && (
+          <button type="button" className="link-btn admin-clear-filters" onClick={clearFilters}>
+            Hamoos Filtru
+          </button>
+        )}
         {!isMobile && (
           <>
-            <button className="export-btn" onClick={handleExportExcel} title="Exporta ba Excel">📊 Excel</button>
-            <button className="export-btn" onClick={handleExportPDF} title="Exporta ba PDF">📄 PDF</button>
+            <button className="export-btn" onClick={handleExportExcel} title="Exporta ba Excel"><span aria-hidden="true">📊</span> Excel</button>
+            <button className="export-btn" onClick={handleExportPDF} title="Exporta ba PDF"><span aria-hidden="true">📄</span> PDF</button>
           </>
         )}
       </div>
 
-      {filtered.length === 0 ? (
+      {ordersLoading ? (
+        <div className="empty-state">
+          <div className="loading-dots" style={{ justifyContent: 'center', marginBottom: 10 }}>
+            <span></span><span></span><span></span>
+          </div>
+          Buka pedidu...
+        </div>
+      ) : ordersError ? (
+        <div className="empty-state">
+          <div className="big">⚠️</div>
+          Falha atu buka pedidu husi database.
+          <div style={{ marginTop: 14 }}>
+            <button type="button" className="btn btn-ghost btn-small" onClick={loadOrders}>Tenta Fila Fali</button>
+          </div>
+        </div>
+      ) : orders.length === 0 ? (
         <div className="empty-state">
           <div className="big">📭</div>
-          Seidauk iha pedidu.
+          Seidauk iha pedidu tama.
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="empty-state">
+          <div className="big">🔍</div>
+          Laiha pedidu ne'ebe kombina ho filtru/buka ne'e.
+          <div style={{ marginTop: 14 }}>
+            <button type="button" className="btn btn-ghost btn-small" onClick={clearFilters}>Hamoos Filtru</button>
+          </div>
         </div>
       ) : (
         <div style={{ overflowX: 'auto' }}>
@@ -597,7 +747,17 @@ function Dashboard() {
                   <tr
                     key={o.id}
                     className={isUnread ? 'unread-row' : ''}
+                    tabIndex={0}
+                    role="button"
+                    aria-label={`Detalha pedidu ${o.id} — ${STATUS_LABELS[o.status]}`}
                     onClick={() => { setSelected(o); markSeen(o.id) }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        setSelected(o)
+                        markSeen(o.id)
+                      }
+                    }}
                     style={{ cursor: 'pointer' }}
                   >
                     <td className="oid-cell">
@@ -669,6 +829,7 @@ function Dashboard() {
 
       {selected && (
         <OrderDetailModal
+          key={selected.id}
           order={selected}
           onClose={() => setSelected(null)}
           onStatusSaved={(id, status, adminComment) => setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status, admin_comment: adminComment } : o)))}

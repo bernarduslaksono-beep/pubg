@@ -24,9 +24,9 @@ function saveRatedId(orderId) {
 }
 
 const OPTIONS = [
-  { value: 1, icon: '😞' },
-  { value: 2, icon: '😐' },
-  { value: 3, icon: '😊' },
+  { value: 1, icon: '😞', labelKey: 'rating_option_bad' },
+  { value: 2, icon: '😐', labelKey: 'rating_option_neutral' },
+  { value: 3, icon: '😊', labelKey: 'rating_option_good' },
 ]
 
 export default function OrderRating({ orderId }) {
@@ -85,6 +85,7 @@ export default function OrderRating({ orderId }) {
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           placeholder={t('rating_comment_placeholder')}
+          aria-label={t('rating_comment_prompt')}
         />
         <div className="order-rating-comment-actions">
           <button className="link-btn" onClick={submitComment} disabled={saving}>{t('rating_skip_btn')}</button>
@@ -106,7 +107,7 @@ export default function OrderRating({ orderId }) {
             className="order-rating-btn"
             onClick={() => submitRating(opt.value)}
             disabled={saving}
-            aria-label={`rating-${opt.value}`}
+            aria-label={t(opt.labelKey)}
           >
             {opt.icon}
           </button>

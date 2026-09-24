@@ -11,6 +11,7 @@ export default function LanguageToggle() {
           key={l.code}
           className={language === l.code ? 'active' : ''}
           onClick={() => setLanguage(l.code)}
+          aria-pressed={language === l.code}
         >
           {l.label}
         </button>

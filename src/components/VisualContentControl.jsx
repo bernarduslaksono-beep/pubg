@@ -150,7 +150,7 @@ export default function VisualContentControl() {
             return (
               <div className="visual-item-row" key={slot}>
                 <div className="visual-item-preview">
-                  {banner?.image_url ? <img src={banner.image_url} alt={`Banner ${slot}`} /> : <span className="visual-item-empty">Vazia</span>}
+                  {banner?.image_url ? <img src={banner.image_url} alt={`Banner ${slot}`} loading="lazy" /> : <span className="visual-item-empty">Vazia</span>}
                 </div>
                 <div className="visual-item-meta">
                   <div className="visual-item-title">Banner {slot}</div>
@@ -179,7 +179,7 @@ export default function VisualContentControl() {
             return (
               <div className="visual-item-row" key={g.key}>
                 <div className="visual-item-preview">
-                  {imageUrl ? <img src={imageUrl} alt={g.name} /> : <span className="visual-item-empty">Vazia</span>}
+                  {imageUrl ? <img src={imageUrl} alt={g.name} loading="lazy" /> : <span className="visual-item-empty">Vazia</span>}
                 </div>
                 <div className="visual-item-meta">
                   <div className="visual-item-title">{g.name}</div>

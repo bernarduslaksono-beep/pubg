@@ -4,6 +4,9 @@ import { supabase } from '../supabase.js'
 import { PAYMENT_METHODS, PAYMENT_METHOD_STORAGE_LABEL, WHATSAPP_NUMBER } from '../data/packages.js'
 import { getGame } from '../data/games.js'
 import DenomIcon from '../components/DenomIcon.jsx'
+import InteractiveCard from '../components/InteractiveCard.jsx'
+import Modal from '../components/Modal.jsx'
+import { motionSafeScrollBehavior } from '../lib/motion.js'
 import { useLanguage } from '../i18n/LanguageContext.jsx'
 import { saveNewOrder } from '../lib/orderHistory.js'
 import { getDeviceFingerprint } from '../lib/deviceFingerprint.js'
@@ -146,13 +149,13 @@ export default function OrderPage() {
     if (noUserInfo) {
       if (checkoutNameRef.current) {
         checkoutNameRef.current.focus({ preventScroll: true })
-        checkoutNameRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        checkoutNameRef.current.scrollIntoView({ behavior: motionSafeScrollBehavior(), block: 'center' })
       }
       return
     }
     if (form.gameId.length === 0 && userIdRef.current) {
       userIdRef.current.focus({ preventScroll: true })
-      userIdRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      userIdRef.current.scrollIntoView({ behavior: motionSafeScrollBehavior(), block: 'center' })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedPkg])
@@ -163,7 +166,7 @@ export default function OrderPage() {
   useEffect(() => {
     if (step === 2 && stepIndicatorRef.current) {
       stepIndicatorRef.current.focus({ preventScroll: true })
-      stepIndicatorRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      stepIndicatorRef.current.scrollIntoView({ behavior: motionSafeScrollBehavior(), block: 'start' })
     }
   }, [step])
 
@@ -334,19 +337,6 @@ export default function OrderPage() {
     <>
       <div className="hero">
         <h1>{t('hero_title_for', game.name)}</h1>
-        <div className="flow-track">
-          <span className="flow-flag" aria-hidden="true">🚩</span>
-          <span className="flow-line"></span>
-          <span className={`flow-step${flowStage === 1 ? ' active' : ''}`}>{t('step1')}</span>
-          <span className="flow-line"></span>
-          <span className={`flow-step${flowStage === 2 ? ' active' : ''}`}>{t('step2')}</span>
-          <span className="flow-line"></span>
-          <span className={`flow-step${flowStage === 3 ? ' active' : ''}`}>{t('step3')}</span>
-          <span className="flow-line"></span>
-          <span className={`flow-step${flowStage === 4 ? ' active' : ''}`}>{t('step4')}</span>
-          <span className="flow-line"></span>
-          <span className="flow-flag" aria-hidden="true">🏁</span>
-        </div>
         <p>{game.key === 'roblox' ? t('hero_desc_roblox') : t('hero_desc')}</p>
         {storeStatus && !storeStatus.isOpen && (
           <div className="store-closed-banner">
@@ -355,10 +345,16 @@ export default function OrderPage() {
         )}
       </div>
 
-      <div className="step-indicator" ref={stepIndicatorRef} tabIndex={-1} style={{ outline: 'none' }}>
-        <div className={`step ${step === 1 ? 'active' : 'done'}`}><span className="num">{step > 1 ? '✓' : '1'}</span> {t('step_indicator_pick')}</div>
-        <div className="sep"></div>
-        <div className={`step ${step === 2 ? 'active' : ''}`}><span className="num">2</span> {t('step_indicator_pay')}</div>
+      <div className="order-flow-progress" ref={stepIndicatorRef} tabIndex={-1} style={{ outline: 'none' }} aria-label={`${t('step1')}, ${t('step2')}, ${t('step3')}, ${t('step4')}`}>
+        {[1, 2, 3, 4].map((n) => (
+          <div
+            key={n}
+            className={`order-flow-step${flowStage > n ? ' done' : ''}${flowStage === n ? ' active' : ''}${flowStage >= n ? ' line-filled' : ''}`}
+          >
+            <div className="order-flow-num" aria-hidden="true">{flowStage > n ? '✓' : n}</div>
+            <div className="order-flow-label">{t(`step${n}`)}</div>
+          </div>
+        ))}
       </div>
 
       {step === 1 && (
@@ -367,7 +363,7 @@ export default function OrderPage() {
             <div className="shop-header">
               <div className="badge-icon" style={{ background: game.accentColor }}>{game.currencyLabel === 'UC' ? 'UC' : '◆'}</div>
               <div>
-                <h1>{t('shop_title_for', game.name)}</h1>
+                <h2>{t('shop_title_for', game.name)}</h2>
                 <div className="avail"><i>✓</i> {t('shop_avail')}</div>
               </div>
             </div>
@@ -376,33 +372,51 @@ export default function OrderPage() {
 
             {game.tiers.map((group) => (
               <div className="tier-block" key={group.tierKey}>
-                <div className="tier-head tier-head-toggle" onClick={() => toggleTier(group.tierKey)}>
+                <div
+                  className="tier-head tier-head-toggle"
+                  role="button"
+                  tabIndex={0}
+                  aria-expanded={Boolean(openTiers[group.tierKey])}
+                  aria-controls={`pkg-grid-${group.tierKey}`}
+                  onClick={() => toggleTier(group.tierKey)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      toggleTier(group.tierKey)
+                    }
+                  }}
+                >
                   <h3>
                     {t(`tier_${group.tierKey}`)}
                     {group.tierKey === 'boot' && <span className="tier-note"> {t('tier_boot_note')}</span>}
                   </h3>
                   <span className="count">{group.items.length} {t('pkg_count_suffix')}</span>
-                  <span className={`tier-chevron${openTiers[group.tierKey] ? ' open' : ''}`}>▾</span>
+                  <span className={`tier-chevron${openTiers[group.tierKey] ? ' open' : ''}`} aria-hidden="true">▾</span>
                 </div>
                 {openTiers[group.tierKey] && (
-                  <div className="pkg-grid">
+                  <div className="pkg-grid" id={`pkg-grid-${group.tierKey}`}>
                     {group.items.map((item) => {
                       const outOfStock = disabledAmounts.has(item.amount)
                       const price = effectivePrice(item)
                       const displayAmount = effectiveAmount(item)
                       return (
-                        <div
+                        <InteractiveCard
                           key={item.amount}
                           className={`pkg-card${selectedPkg?.originalAmount === item.amount ? ' selected' : ''}${outOfStock ? ' out-of-stock' : ''}`}
-                          onClick={() => !outOfStock && setSelectedPkg({ ...item, price, amount: displayAmount, originalAmount: item.amount })}
+                          onClick={() => setSelectedPkg({ ...item, price, amount: displayAmount, originalAmount: item.amount })}
+                          disabled={outOfStock}
+                          ariaLabel={`${displayAmount.toLocaleString()} ${game.currencyLabel} — $${price.toFixed(2)}${outOfStock ? ` (${t('out_of_stock_label')})` : ''}`}
                         >
                           {outOfStock && <span className="stock-badge">{t('out_of_stock_label')}</span>}
+                          {!outOfStock && selectedPkg?.originalAmount === item.amount && (
+                            <span className="pkg-selected-badge" aria-hidden="true">✓</span>
+                          )}
                           <div className="pkg-card-top">
                             <DenomIcon game={game} size={28} />
                             <div className="pkg-uc-big">{displayAmount.toLocaleString()}<span className="pkg-uc-label">{game.currencyLabel}</span></div>
                           </div>
                           <div className="price">${price.toFixed(2)}</div>
-                        </div>
+                        </InteractiveCard>
                       )
                     })}
                   </div>
@@ -487,9 +501,9 @@ export default function OrderPage() {
               <div className="field" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <label style={{ margin: 0 }}>{t('quantity_label')}</label>
                 <div className="qty-stepper">
-                  <button type="button" onClick={() => setQty((q) => Math.max(1, q - 1))} disabled={qty <= 1}>−</button>
-                  <span className="qty-val">{qty}</span>
-                  <button type="button" onClick={() => setQty((q) => Math.min(99, q + 1))}>+</button>
+                  <button type="button" onClick={() => setQty((q) => Math.max(1, q - 1))} disabled={qty <= 1} aria-label={t('qty_decrease_label')}>−</button>
+                  <span className="qty-val" aria-live="polite">{qty}</span>
+                  <button type="button" onClick={() => setQty((q) => Math.min(99, q + 1))} aria-label={t('qty_increase_label')}>+</button>
                 </div>
               </div>
             )}
@@ -532,6 +546,11 @@ export default function OrderPage() {
                 {checkingEligibility ? '...' : t('buy_btn')}
               </button>
             </div>
+            {!step1Valid && !checkingEligibility && (
+              <div className="cta-hint">
+                {!selectedPkg ? t('buy_hint_select_pkg') : t('buy_hint_fill_info')}
+              </div>
+            )}
             {securityMsg && <div className="msg error show">{securityMsg}</div>}
           </div>
         </div>
@@ -544,36 +563,45 @@ export default function OrderPage() {
             <div className="field">
               <div className="pay-grid">
                 {PAYMENT_METHODS.map((pm) => (
-                  <div
+                  <InteractiveCard
                     key={pm.id}
                     className={`pay-card${selectedPayment?.id === pm.id ? ' selected' : ''}`}
+                    ariaLabel={`${t(pm.typeKey)} — ${pm.brand}`}
                     onClick={() => {
                       setSelectedPayment(pm)
                       setFlowStage((s) => Math.max(s, 3))
                     }}
                   >
+                    {selectedPayment?.id === pm.id && (
+                      <span className="pay-selected-badge" aria-hidden="true">✓</span>
+                    )}
                     <div className="pay-card-head">
                       <span className="pay-name">{t(pm.typeKey)} — {pm.brand}</span>
                     </div>
-                    <div className="pay-detail">
-                      <span className="pay-num mono">{pm.number}</span>
-                      <button
-                        type="button"
-                        className={`pay-copy-btn${copiedPayId === pm.id ? ' copied' : ''}`}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          navigator.clipboard.writeText(pm.number)
-                          setCopiedPayId(pm.id)
-                          setTimeout(() => setCopiedPayId((cur) => (cur === pm.id ? null : cur)), 1800)
-                        }}
-                      >
-                        {copiedPayId === pm.id ? `✓ ${t('copied_btn')}` : `⧉ ${t('copy_btn')}`}
-                      </button>
-                      <span className="pay-holder">{pm.holder}</span>
-                    </div>
-                  </div>
+                  </InteractiveCard>
                 ))}
               </div>
+
+              {selectedPayment && (
+                <div className="pay-details-panel">
+                  <div className="pay-details-label">{t('payment_details_title')}</div>
+                  <div className="pay-detail">
+                    <span className="pay-num mono">{selectedPayment.number}</span>
+                    <button
+                      type="button"
+                      className={`pay-copy-btn${copiedPayId === selectedPayment.id ? ' copied' : ''}`}
+                      onClick={() => {
+                        navigator.clipboard.writeText(selectedPayment.number)
+                        setCopiedPayId(selectedPayment.id)
+                        setTimeout(() => setCopiedPayId((cur) => (cur === selectedPayment.id ? null : cur)), 1800)
+                      }}
+                    >
+                      {copiedPayId === selectedPayment.id ? `✓ ${t('copied_btn')}` : `⧉ ${t('copy_btn')}`}
+                    </button>
+                    <span className="pay-holder">{selectedPayment.holder}</span>
+                  </div>
+                </div>
+              )}
             </div>
 
             <h3 style={{ marginTop: 22 }}>{t('upload_title')}</h3>
@@ -650,41 +678,50 @@ export default function OrderPage() {
             >
               {submitting ? t('submitting_label') : t('submit_btn')}
             </button>
+            {!step2Valid && !submitting && (
+              <div className="cta-hint">
+                {!selectedPayment ? t('submit_hint_select_payment') : t('submit_hint_upload_proof')}
+              </div>
+            )}
 
             {msg?.type === 'error' && <div className="msg error show">{msg.text}</div>}
           </div>
         </div>
       )}
 
-      <div className={`modal-overlay${showSuccessModal ? ' show' : ''}`} onClick={(e) => e.target.classList.contains('modal-overlay') && setShowSuccessModal(false)}>
-        <div className="modal success-modal">
-          <div className="icon-circle">✓</div>
-          <h3>{t('success_title')}</h3>
-          <p>{game.key === 'roblox' ? t('success_desc_roblox', WHATSAPP_NUMBER) : t('success_desc', game.currencyLabel, WHATSAPP_NUMBER)}</p>
-          <div className="oid-copy-row">
-            <span className="oid-text mono">{lastOrderId}</span>
-            <button
-              className={`copy-btn${copied ? ' copied' : ''}`}
-              onClick={() => {
-                navigator.clipboard.writeText(lastOrderId || '')
-                setCopied(true)
-                setTimeout(() => setCopied(false), 2000)
-              }}
-            >
-              {copied ? `✓ ${t('copied_btn')}` : `⧉ ${t('copy_btn')}`}
-            </button>
-          </div>
-          <button className="btn btn-primary" onClick={() => navigate(`/${game.key}/track`)}>{t('nav_track')}</button>
+      <Modal
+        open={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        bodyClassName="success-modal"
+        ariaLabel={t('success_title')}
+      >
+        <div className="icon-circle">✓</div>
+        <h3>{t('success_title')}</h3>
+        <p>{game.key === 'roblox' ? t('success_desc_roblox', WHATSAPP_NUMBER) : t('success_desc', game.currencyLabel, WHATSAPP_NUMBER)}</p>
+        <div className="oid-copy-row">
+          <span className="oid-text mono">{lastOrderId}</span>
+          <button
+            className={`copy-btn${copied ? ' copied' : ''}`}
+            onClick={() => {
+              navigator.clipboard.writeText(lastOrderId || '')
+              setCopied(true)
+              setTimeout(() => setCopied(false), 2000)
+            }}
+          >
+            {copied ? `✓ ${t('copied_btn')}` : `⧉ ${t('copy_btn')}`}
+          </button>
         </div>
-      </div>
+        <button className="btn btn-primary" onClick={() => navigate(`/${game.key}/track`)}>{t('nav_track')}</button>
+      </Modal>
 
       {game.key === 'roblox' && (
-        <div className={`modal-overlay${showRedeemHelp ? ' show' : ''}`} onClick={(e) => e.target.classList.contains('modal-overlay') && setShowRedeemHelp(false)}>
-          <div className="modal" style={{ maxWidth: 440 }}>
-            <div className="modal-head">
-              <h3>{t('redeem_howto_title')}</h3>
-              <button onClick={() => setShowRedeemHelp(false)} aria-label={t('ok_btn')}>✕</button>
-            </div>
+        <Modal
+          open={showRedeemHelp}
+          onClose={() => setShowRedeemHelp(false)}
+          title={t('redeem_howto_title')}
+          maxWidth={440}
+          closeLabel={t('ok_btn')}
+        >
             <ol className="redeem-howto-steps">
               <li>{t('redeem_step1')}</li>
               <li>{t('redeem_step2')}</li>
@@ -693,8 +730,7 @@ export default function OrderPage() {
               <li>{t('redeem_step5')}</li>
               <li>{t('redeem_step6')}</li>
             </ol>
-          </div>
-        </div>
+        </Modal>
       )}
     </>
   )

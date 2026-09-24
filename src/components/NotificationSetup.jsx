@@ -76,7 +76,7 @@ export default function NotificationSetup() {
 
   return (
     <div className="notif-setup-card">
-      <div className="notif-setup-icon">🔔</div>
+      <div className="notif-setup-icon" aria-hidden="true">🔔</div>
       <div className="notif-setup-text">
         <div className="notif-setup-title">
           {status === 'on' ? 'Notifikasaun ativu' : 'Ativa notifikasaun pedidu foun'}

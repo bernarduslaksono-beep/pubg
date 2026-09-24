@@ -7,8 +7,10 @@ import {
   subscribeHistoryChanges,
 } from '../lib/orderHistory.js'
 import { GAMES } from '../data/games.js'
+import { useLanguage } from '../i18n/LanguageContext.jsx'
 
 export default function PortalNotificationBell() {
+  const { t } = useLanguage()
   const [unreadGames, setUnreadGames] = useState([])
   const [open, setOpen] = useState(false)
   const navigate = useNavigate()
@@ -31,8 +33,15 @@ export default function PortalNotificationBell() {
     function handleOutside(e) {
       if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false)
     }
+    function handleEscape(e) {
+      if (e.key === 'Escape') setOpen(false)
+    }
     document.addEventListener('mousedown', handleOutside)
-    return () => document.removeEventListener('mousedown', handleOutside)
+    document.addEventListener('keydown', handleEscape)
+    return () => {
+      document.removeEventListener('mousedown', handleOutside)
+      document.removeEventListener('keydown', handleEscape)
+    }
   }, [])
 
   const hasUnread = unreadGames.length > 0
@@ -48,15 +57,21 @@ export default function PortalNotificationBell() {
 
   return (
     <div className="portal-bell-wrap" ref={wrapRef}>
-      <button className="portal-bell-btn" onClick={handleClick} aria-label="Notifikasaun">
-        🔔
-        {hasUnread && <span className="portal-bell-dot"></span>}
+      <button
+        className="portal-bell-btn"
+        onClick={handleClick}
+        aria-label={hasUnread ? t('notification_bell_label_unread') : t('notification_bell_label')}
+        aria-haspopup={unreadGames.length > 1 ? 'true' : undefined}
+        aria-expanded={unreadGames.length > 1 ? open : undefined}
+      >
+        <span aria-hidden="true">🔔</span>
+        {hasUnread && <span className="portal-bell-dot" aria-hidden="true"></span>}
       </button>
       {open && unreadGames.length > 1 && (
-        <div className="portal-bell-dropdown">
-          <div className="portal-bell-dropdown-title">Iha atualizasaun:</div>
+        <div className="portal-bell-dropdown" role="menu">
+          <div className="portal-bell-dropdown-title">{t('notification_bell_dropdown_title')}</div>
           {unreadGames.map((gameKey) => (
-            <button key={gameKey} onClick={() => navigate(`/${gameKey}/track`)}>
+            <button key={gameKey} role="menuitem" onClick={() => navigate(`/${gameKey}/track`)}>
               {GAMES[gameKey]?.name || gameKey}
             </button>
           ))}

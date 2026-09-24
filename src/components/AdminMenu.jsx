@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { supabase } from '../supabase.js'
 import { isNotificationActive } from '../lib/notificationStatus.js'
+import Modal from './Modal.jsx'
 import StoreHoursControl from './StoreHoursControl.jsx'
 import PriceStockControl from './PriceStockControl.jsx'
 import NotificationSetup from './NotificationSetup.jsx'
@@ -12,6 +13,7 @@ export default function AdminMenu({ onOpenOrder }) {
   const [activeModal, setActiveModal] = useState(null) // 'hours' | 'stock' | 'notif' | 'ratings' | null
   const [notifActive, setNotifActive] = useState(true) // default true = la hatudu dot to'o verifika
   const wrapRef = useRef(null)
+  const triggerRef = useRef(null)
 
   useEffect(() => {
     isNotificationActive().then(setNotifActive)
@@ -21,8 +23,18 @@ export default function AdminMenu({ onOpenOrder }) {
     function handleOutside(e) {
       if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false)
     }
+    function handleEscape(e) {
+      if (e.key === 'Escape') {
+        setOpen(false)
+        triggerRef.current?.focus()
+      }
+    }
     document.addEventListener('mousedown', handleOutside)
-    return () => document.removeEventListener('mousedown', handleOutside)
+    document.addEventListener('keydown', handleEscape)
+    return () => {
+      document.removeEventListener('mousedown', handleOutside)
+      document.removeEventListener('keydown', handleEscape)
+    }
   }, [])
 
   const openModal = (key) => {
@@ -42,84 +54,59 @@ export default function AdminMenu({ onOpenOrder }) {
   return (
     <>
       <div className="admin-menu-wrap" ref={wrapRef}>
-        <button className="admin-hamburger-btn" onClick={() => setOpen((o) => !o)} aria-label="Menu">
+        <button
+          ref={triggerRef}
+          className="admin-hamburger-btn"
+          onClick={() => setOpen((o) => !o)}
+          aria-label="Menu Admin"
+          aria-haspopup="true"
+          aria-expanded={open}
+        >
           ☰
-          {!notifActive && <span className="admin-menu-dot"></span>}
+          {!notifActive && (
+            <span className="admin-menu-dot">
+              <span className="sr-only">Notifikasaun la ativu</span>
+            </span>
+          )}
         </button>
         {open && (
-          <div className="admin-menu-dropdown">
-            <button onClick={() => openModal('hours')}>Oras Operasaun Loja</button>
-            <button onClick={() => openModal('price')}>Kontrola Presu & Stok</button>
-            <button onClick={() => openModal('visual')}>Kontrola Konteúdu Visual</button>
-            <button onClick={() => openModal('ratings')}>Haree Avaliasaun</button>
-            <button onClick={() => openModal('notif')}>
+          <div className="admin-menu-dropdown" role="menu">
+            <button role="menuitem" onClick={() => openModal('hours')}>Oras Operasaun Loja</button>
+            <button role="menuitem" onClick={() => openModal('price')}>Kontrola Presu & Stok</button>
+            <button role="menuitem" onClick={() => openModal('visual')}>Kontrola Konteúdu Visual</button>
+            <button role="menuitem" onClick={() => openModal('ratings')}>Haree Avaliasaun</button>
+            <button role="menuitem" onClick={() => openModal('notif')}>
               Notifikasaun Ativu
-              {!notifActive && <span className="admin-menu-dot inline"></span>}
+              {!notifActive && (
+                <span className="admin-menu-dot inline">
+                  <span className="sr-only">— la ativu</span>
+                </span>
+              )}
             </button>
-            <button className="danger" onClick={() => supabase.auth.signOut()}>Sai</button>
+            <button role="menuitem" className="danger" onClick={() => supabase.auth.signOut()}>Sai</button>
           </div>
         )}
       </div>
 
-      <div className={`modal-overlay${activeModal === 'hours' ? ' show' : ''}`} onClick={(e) => e.target.classList.contains('modal-overlay') && setActiveModal(null)}>
-        {activeModal === 'hours' && (
-          <div className="modal">
-            <div className="modal-head">
-              <h3>Oras Operasaun Loja</h3>
-              <button onClick={() => setActiveModal(null)}>✕</button>
-            </div>
-            <StoreHoursControl />
-          </div>
-        )}
-      </div>
+      <Modal open={activeModal === 'hours'} onClose={() => setActiveModal(null)} title="Oras Operasaun Loja">
+        <StoreHoursControl />
+      </Modal>
 
-      <div className={`modal-overlay${activeModal === 'price' ? ' show' : ''}`} onClick={(e) => e.target.classList.contains('modal-overlay') && setActiveModal(null)}>
-        {activeModal === 'price' && (
-          <div className="modal" style={{ maxWidth: 520 }}>
-            <div className="modal-head">
-              <h3>Kontrola Presu & Stok</h3>
-              <button onClick={() => setActiveModal(null)}>✕</button>
-            </div>
-            <PriceStockControl />
-          </div>
-        )}
-      </div>
+      <Modal open={activeModal === 'price'} onClose={() => setActiveModal(null)} title="Kontrola Presu & Stok" maxWidth={520}>
+        <PriceStockControl />
+      </Modal>
 
-      <div className={`modal-overlay${activeModal === 'visual' ? ' show' : ''}`} onClick={(e) => e.target.classList.contains('modal-overlay') && setActiveModal(null)}>
-        {activeModal === 'visual' && (
-          <div className="modal" style={{ maxWidth: 480 }}>
-            <div className="modal-head">
-              <h3>Kontrola Konteúdu Visual</h3>
-              <button onClick={() => setActiveModal(null)}>✕</button>
-            </div>
-            <VisualContentControl />
-          </div>
-        )}
-      </div>
+      <Modal open={activeModal === 'visual'} onClose={() => setActiveModal(null)} title="Kontrola Konteúdu Visual" maxWidth={480}>
+        <VisualContentControl />
+      </Modal>
 
-      <div className={`modal-overlay${activeModal === 'ratings' ? ' show' : ''}`} onClick={(e) => e.target.classList.contains('modal-overlay') && setActiveModal(null)}>
-        {activeModal === 'ratings' && (
-          <div className="modal" style={{ maxWidth: 520 }}>
-            <div className="modal-head">
-              <h3>Haree Avaliasaun</h3>
-              <button onClick={() => setActiveModal(null)}>✕</button>
-            </div>
-            <RatingsReview onOpenOrder={handleOpenOrderFromRatings} />
-          </div>
-        )}
-      </div>
+      <Modal open={activeModal === 'ratings'} onClose={() => setActiveModal(null)} title="Haree Avaliasaun" maxWidth={520}>
+        <RatingsReview onOpenOrder={handleOpenOrderFromRatings} />
+      </Modal>
 
-      <div className={`modal-overlay${activeModal === 'notif' ? ' show' : ''}`} onClick={(e) => e.target.classList.contains('modal-overlay') && setActiveModal(null)}>
-        {activeModal === 'notif' && (
-          <div className="modal">
-            <div className="modal-head">
-              <h3>Notifikasaun Ativu</h3>
-              <button onClick={() => setActiveModal(null)}>✕</button>
-            </div>
-            <NotificationSetup />
-          </div>
-        )}
-      </div>
+      <Modal open={activeModal === 'notif'} onClose={() => setActiveModal(null)} title="Notifikasaun Ativu">
+        <NotificationSetup />
+      </Modal>
     </>
   )
 }

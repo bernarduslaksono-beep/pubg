@@ -38,9 +38,10 @@ export default function BannerCarousel() {
   return (
     <div className="banner-carousel">
       <div className="banner-carousel-track" style={{ transform: `translateX(-${index * 100}%)` }}>
-        {activeBanners.map((b) => (
+        {activeBanners.map((b, i) => (
           <div className="banner-slide" key={b.slot}>
-            <img src={b.image_url} alt="" />
+            {/* Slide 0 is above-the-fold (LCP candidate) — never lazy-load it. */}
+            <img src={b.image_url} alt="" loading={i === 0 ? 'eager' : 'lazy'} />
           </div>
         ))}
       </div>
@@ -49,12 +50,16 @@ export default function BannerCarousel() {
         <>
           <button className="banner-nav-btn prev" onClick={goPrev} aria-label="Prev">‹</button>
           <button className="banner-nav-btn next" onClick={goNext} aria-label="Next">›</button>
-          <div className="banner-dots">
+          <div className="banner-dots" role="tablist" aria-label="Banner slides">
             {activeBanners.map((b, i) => (
-              <span
+              <button
                 key={b.slot}
+                type="button"
                 className={`banner-dot${i === index ? ' active' : ''}`}
                 onClick={() => setIndex(i)}
+                role="tab"
+                aria-selected={i === index}
+                aria-label={`Banner ${i + 1} husi ${activeBanners.length}`}
               />
             ))}
           </div>

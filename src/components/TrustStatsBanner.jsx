@@ -30,12 +30,12 @@ export default function TrustStatsBanner() {
   return (
     <div className="trust-stats-banner">
       <div className="trust-stat-item">
-        <span className="trust-stat-icon">✅</span>
+        <span className="trust-stat-icon" aria-hidden="true">✅</span>
         <span className="trust-stat-num">{Number(stats.completed_orders).toLocaleString()}</span>
         <span className="trust-stat-label">{t('trust_completed_label')}</span>
       </div>
       <div className="trust-stat-item">
-        <span className="trust-stat-icon">😊</span>
+        <span className="trust-stat-icon" aria-hidden="true">😊</span>
         <span className="trust-stat-num">{stats.satisfaction_percent}%</span>
         <span className="trust-stat-label">{t('trust_satisfaction_label')}</span>
       </div>

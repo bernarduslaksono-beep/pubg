@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useLanguage } from '../i18n/LanguageContext.jsx'
 
 function isIos() {
   return /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase())
@@ -12,6 +13,7 @@ function isStandalone() {
 }
 
 export default function InstallPrompt() {
+  const { t } = useLanguage()
   const [deferredPrompt, setDeferredPrompt] = useState(null)
   const [showBanner, setShowBanner] = useState(false)
   const [showIosHint, setShowIosHint] = useState(false)
@@ -53,24 +55,24 @@ export default function InstallPrompt() {
 
   return (
     <div className="install-banner">
-      <div className="install-banner-icon">📲</div>
+      <div className="install-banner-icon" aria-hidden="true">📲</div>
       <div className="install-banner-text">
         {showIosHint ? (
           <>
-            <div className="install-banner-title">Hatama Loja-Game ba Ecrã Inísiu</div>
-            <div className="install-banner-sub">Tap ikon Share ⬆️ iha Safari, hafoin hili "Add to Home Screen"</div>
+            <div className="install-banner-title">{t('install_ios_title')}</div>
+            <div className="install-banner-sub">{t('install_ios_sub')}</div>
           </>
         ) : (
           <>
-            <div className="install-banner-title">Install Loja-Game</div>
-            <div className="install-banner-sub">Hatama app ne'e ba ecrã inísiu ita boot nian</div>
+            <div className="install-banner-title">{t('install_title')}</div>
+            <div className="install-banner-sub">{t('install_sub')}</div>
           </>
         )}
       </div>
       {!showIosHint && (
-        <button className="install-banner-btn" onClick={handleInstall}>Install</button>
+        <button className="install-banner-btn" onClick={handleInstall}>{t('install_btn')}</button>
       )}
-      <button className="install-banner-close" onClick={dismiss} aria-label="Taka">✕</button>
+      <button className="install-banner-close" onClick={dismiss} aria-label={t('close_btn')}>✕</button>
     </div>
   )
 }

@@ -57,7 +57,8 @@ export default function RatingsReview({ onOpenOrder }) {
             return (
               <div className={`rating-review-row ${meta.cls}`} key={r.order_id}>
                 <div className="rating-review-top">
-                  <span className="rating-review-icon">{meta.icon}</span>
+                  <span className="rating-review-icon" aria-hidden="true">{meta.icon}</span>
+                  <span className="sr-only">{meta.label}</span>
                   <button className="link-btn" onClick={() => onOpenOrder?.(r.order_id)}>{r.order_id}</button>
                   <span className="game-tag" style={{ '--tag-color': GAMES[r.orders?.game]?.accentColor || '#6E7787' }}>{gameName}</span>
                   <span className="rating-review-date">{formatDate(r.created_at)}</span>

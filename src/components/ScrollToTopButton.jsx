@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
+import { useLanguage } from '../i18n/LanguageContext.jsx'
+import { motionSafeScrollBehavior } from '../lib/motion.js'
 
 export default function ScrollToTopButton() {
+  const { t } = useLanguage()
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
@@ -16,14 +19,18 @@ export default function ScrollToTopButton() {
 
   if (!visible) return null
 
+  const handleClick = () => {
+    window.scrollTo({ top: 0, behavior: motionSafeScrollBehavior() })
+  }
+
   return (
     <button
       className="scroll-top-btn"
-      onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-      aria-label="Scroll to top"
-      title="Scroll to top"
+      onClick={handleClick}
+      aria-label={t('scroll_to_top_label')}
+      title={t('scroll_to_top_label')}
     >
-      ↑
+      <span aria-hidden="true">↑</span>
     </button>
   )
 }

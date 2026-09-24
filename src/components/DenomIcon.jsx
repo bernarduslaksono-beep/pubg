@@ -4,7 +4,7 @@
 export default function DenomIcon({ game, size = 34 }) {
   if (game.currencyLabel === 'UC') {
     return (
-      <svg width={size} height={size} viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg width={size} height={size} viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <defs>
           <linearGradient id="coinGrad" x1="0" y1="0" x2="34" y2="34" gradientUnits="userSpaceOnUse">
             <stop stopColor="#FFF3C4" />
@@ -22,7 +22,7 @@ export default function DenomIcon({ game, size = 34 }) {
 
   if (game.currencyLabel === 'Robux') {
     return (
-      <svg width={size} height={size} viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg width={size} height={size} viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <defs>
           <linearGradient id="robuxGrad" x1="0" y1="0" x2="34" y2="34" gradientUnits="userSpaceOnUse">
             <stop stopColor="#4ADE80" />
@@ -41,7 +41,7 @@ export default function DenomIcon({ game, size = 34 }) {
   // Diamond (Mobile Legends / Free Fire) — kor tuir accentColor jogu nian
   const c = game.accentColor
   return (
-    <svg width={size} height={size} viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width={size} height={size} viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <defs>
         <linearGradient id={`gemGrad-${c.replace('#', '')}`} x1="6" y1="3" x2="28" y2="31" gradientUnits="userSpaceOnUse">
           <stop stopColor="#fff" stopOpacity="0.95" />

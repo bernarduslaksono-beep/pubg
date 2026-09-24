@@ -4,10 +4,12 @@ import { supabase } from '../supabase.js'
 import { useLanguage } from '../i18n/LanguageContext.jsx'
 import BannerCarousel from '../components/BannerCarousel.jsx'
 import TrustStatsBanner from '../components/TrustStatsBanner.jsx'
+import InteractiveCard from '../components/InteractiveCard.jsx'
+import { PAYMENT_METHODS } from '../data/packages.js'
 
 function HelmetIcon() {
   return (
-    <svg width="32" height="32" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="32" height="32" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <defs>
         <linearGradient id="helmetGrad" x1="8" y1="10" x2="40" y2="38" gradientUnits="userSpaceOnUse">
           <stop stopColor="#FFFFFF" stopOpacity="0.98" />
@@ -28,7 +30,7 @@ function HelmetIcon() {
 
 function DiamondIcon() {
   return (
-    <svg width="32" height="32" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="32" height="32" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <defs>
         <linearGradient id="diamondGrad" x1="10" y1="6" x2="38" y2="42" gradientUnits="userSpaceOnUse">
           <stop stopColor="#FFFFFF" />
@@ -45,7 +47,7 @@ function DiamondIcon() {
 
 function FlameIcon() {
   return (
-    <svg width="32" height="32" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="32" height="32" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <path d="M24 4c2 6-4 8-4 14 0 3 2 5 4 5s4-2 4-5c3 2 5 6 5 10 0 8-6 14-14 14S5 36 5 28c0-9 6-13 9-19 1 5 3 6 5 5-1-4 1-7 5-10z"
             fill="#fff" opacity="0.95" />
       <path d="M24 16c1 3-2 4-2 7 0 1.5 1 2.5 2 2.5s2-1 2-2.5c1.5 1 2.5 3 2.5 5 0 4-3 7-7 7s-7-3-7-7c0-4.5 3-6.5 4.5-9.5 0.5 2 1.5 3 2.5 2.5-0.5-2 0.5-3.5 2.5-5z"
@@ -56,7 +58,7 @@ function FlameIcon() {
 
 function RobuxIcon() {
   return (
-    <svg width="32" height="32" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="32" height="32" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <defs>
         <linearGradient id="robuxPortalGrad" x1="6" y1="6" x2="42" y2="42" gradientUnits="userSpaceOnUse">
           <stop stopColor="#FFFFFF" />
@@ -73,7 +75,7 @@ function RobuxIcon() {
 
 function LiveStreamIcon() {
   return (
-    <svg width="32" height="32" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="32" height="32" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <rect x="6" y="13" width="27" height="22" rx="5" fill="#fff" opacity="0.95" />
       <path d="M33 20l9-6v20l-9-6z" fill="#fff" opacity="0.95" />
       <circle cx="14" cy="10" r="3.4" fill="none" stroke="#fff" strokeWidth="1.6" opacity="0.8" />
@@ -169,36 +171,98 @@ export default function PortalPage() {
     navigate(game.path)
   }
 
+  // Metode pagamentu — de'it hatudu tipu/brand ba konfiansa, la'os númeru konta
+  // (númeru konta sensitivu hela ba Order page de'it, hafoin cliente hili game).
+  const paymentBrands = Array.from(new Map(PAYMENT_METHODS.map((pm) => [pm.brand, pm])).values())
+
   return (
     <>
-      <BannerCarousel />
-
-      <TrustStatsBanner />
-
-      <div className="portal-heading-row">
-        <h2 className="portal-heading">TOP UP GAME & VOUCHER</h2>
-        <span className="portal-heading-line"></span>
+      {/* HERO — value proposition badak + CTA primariu ne'ebe scroll ba seleksaun game */}
+      <div className="hero portal-hero">
+        <h1>{t('portal_hero_title')}</h1>
+        <p>{t('portal_desc')}</p>
+        <div className="portal-hero-cta-row">
+          <a href="#pilih-game" className="btn btn-primary portal-hero-cta">{t('portal_topup_btn')}</a>
+        </div>
       </div>
 
-      <div className="game-grid">
-        {GAMES.map((game) => (
-          <div
-            key={game.id}
-            className={`game-card${!game.available ? ' disabled' : ''}`}
-            onClick={() => handleSelect(game)}
-            style={{ '--game-color': game.color, '--game-color-dim': game.colorDim }}
-          >
-            {!game.available && <span className="game-soon-badge">{t('coming_soon')}</span>}
-            <div className="game-card-image">
-              {gameImages[game.id] ? (
-                <img src={gameImages[game.id]} alt={game.name} />
-              ) : (
-                <div className="game-badge-icon"><game.Icon /></div>
-              )}
-            </div>
-            <div className="game-card-label">{game.cardLabel}</div>
-          </div>
-        ))}
+      {/* GAME SELECTION — CTA primariu 2, sequência mai lalais liu husi hero */}
+      <div id="pilih-game" className="portal-section">
+        <div className="portal-heading-row">
+          <h2 className="portal-heading">{t('portal_title')}</h2>
+          <span className="portal-heading-line"></span>
+        </div>
+
+        <div className="game-grid">
+          {GAMES.map((game) => (
+            <InteractiveCard
+              key={game.id}
+              className={`game-card${!game.available ? ' disabled' : ''}`}
+              onClick={() => handleSelect(game)}
+              disabled={!game.available}
+              ariaLabel={game.cardLabel}
+              style={{ '--game-color': game.color, '--game-color-dim': game.colorDim }}
+            >
+              {!game.available && <span className="game-soon-badge">{t('coming_soon')}</span>}
+              <div className="game-card-image">
+                {gameImages[game.id] ? (
+                  <img src={gameImages[game.id]} alt={game.name} loading="lazy" />
+                ) : (
+                  <div className="game-badge-icon"><game.Icon /></div>
+                )}
+              </div>
+              <div className="game-card-label">{game.cardLabel}</div>
+            </InteractiveCard>
+          ))}
+        </div>
+      </div>
+
+      {/* PROMOTIONAL — konteúdu suporte, la'os substitui CTA primariu iha leten.
+          La uza wrapper .portal-section explisitu tanba BannerCarousel bele
+          retorna null (bainhira seidauk iha banner) — se ho wrapper, sei husik
+          fatin mamuk ho margin. Spacing kaer diretamente iha .banner-carousel. */}
+      <BannerCarousel />
+
+      {/* TRUST / SOCIAL PROOF — badge estátiku (semper hatudu) + estatística real
+          (TrustStatsBanner de'it hatudu bainhira dadus loloos existe/válidu) */}
+      <div className="portal-section">
+        <div className="portal-heading-row">
+          <h2 className="portal-heading">{t('trust_section_title')}</h2>
+          <span className="portal-heading-line"></span>
+        </div>
+        <div className="trust-badges">
+          <span className="trust-badge">⚡ {t('trust_delivery')}</span>
+          <span className="trust-badge">🔒 {t('trust_secure')}</span>
+          <span className="trust-badge">💬 {t('trust_support')}</span>
+        </div>
+        <TrustStatsBanner />
+      </div>
+
+      {/* HOW IT WORKS — reuza termu ne'ebe ona iha Order page (step1-4), la kria prosesu foun */}
+      <div className="portal-section">
+        <div className="portal-heading-row">
+          <h2 className="portal-heading">{t('how_it_works_title')}</h2>
+          <span className="portal-heading-line"></span>
+        </div>
+        <ol className="how-it-works">
+          <li className="how-step"><span className="how-step-num">01</span><span className="how-step-label">{t('step1')}</span></li>
+          <li className="how-step"><span className="how-step-num">02</span><span className="how-step-label">{t('step2')}</span></li>
+          <li className="how-step"><span className="how-step-num">03</span><span className="how-step-label">{t('step3')}</span></li>
+          <li className="how-step"><span className="how-step-num">04</span><span className="how-step-label">{t('step4')}</span></li>
+        </ol>
+      </div>
+
+      {/* PAYMENT TRUST INFO — de'it tipu/brand pagamentu ne'ebe loloos existe, la iha númeru konta */}
+      <div className="portal-section">
+        <div className="portal-heading-row">
+          <h2 className="portal-heading">{t('payment_method_title')}</h2>
+          <span className="portal-heading-line"></span>
+        </div>
+        <div className="trust-badges">
+          {paymentBrands.map((pm) => (
+            <span className="trust-badge" key={pm.id}>{pm.typeKey === 'type_ewallet' ? '📱' : '🏦'} {pm.brand}</span>
+          ))}
+        </div>
       </div>
     </>
   )

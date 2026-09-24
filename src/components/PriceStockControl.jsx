@@ -216,6 +216,7 @@ export default function PriceStockControl() {
                         placeholder={String(item.amount)}
                         value={amountDraftValue}
                         onChange={(e) => handleAmountDraftChange(item.amount, e.target.value)}
+                        aria-label={`Denominasaun foun ba pakote ${item.amount.toLocaleString()}`}
                       />
                       <button
                         className="btn btn-ghost btn-small"
@@ -240,6 +241,7 @@ export default function PriceStockControl() {
                         placeholder={item.price.toFixed(2)}
                         value={draftValue}
                         onChange={(e) => handleDraftChange(item.amount, e.target.value)}
+                        aria-label={`Presu foun ba pakote ${item.amount.toLocaleString()}`}
                       />
                       <button
                         className="btn btn-ghost btn-small"

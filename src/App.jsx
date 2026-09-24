@@ -48,7 +48,7 @@ function TopBar({ gameKey, showAdminTheme, linkBrand = true }) {
   )
 
   return (
-    <div className="topbar">
+    <header className="topbar">
       {linkBrand ? (
         <Link to="/" className="topbar-brand-row">{brandContent}</Link>
       ) : (
@@ -56,12 +56,13 @@ function TopBar({ gameKey, showAdminTheme, linkBrand = true }) {
       )}
       {gameKey && (
         <nav className="topbar-nav-right">
-          <Link to={`/${gameKey}`}><button className={isActive(`/${gameKey}`) ? 'active' : ''}>{t('nav_order')}</button></Link>
-          <Link to={`/${gameKey}/track`}>
-            <button className={`nav-btn-with-dot${isActive(`/${gameKey}/track`) ? ' active' : ''}`}>
-              {t('nav_track')}
-              {unread && <span className="nav-unread-dot"></span>}
-            </button>
+          <Link to={`/${gameKey}`} className={isActive(`/${gameKey}`) ? 'active' : ''}>{t('nav_order')}</Link>
+          <Link
+            to={`/${gameKey}/track`}
+            className={`nav-btn-with-dot${isActive(`/${gameKey}/track`) ? ' active' : ''}`}
+          >
+            {t('nav_track')}
+            {unread && <span className="nav-unread-dot" aria-label={t('unread_badge_label')}></span>}
           </Link>
         </nav>
       )}
@@ -75,7 +76,7 @@ function TopBar({ gameKey, showAdminTheme, linkBrand = true }) {
           <PortalNotificationBell />
         </div>
       )}
-    </div>
+    </header>
   )
 }
 

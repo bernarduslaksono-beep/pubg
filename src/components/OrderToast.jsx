@@ -49,7 +49,7 @@ export default function OrderToast({ order, onDismiss }) {
         <div className="order-toast-title">Pedidu {gameName} Foun!</div>
         <div className="order-toast-sub">User ID: {order.game_id} — {order.pkg_uc.toLocaleString()} {currency} (${Number(order.pkg_price).toFixed(2)})</div>
       </div>
-      <button className="order-toast-close" onClick={onDismiss}>✕</button>
+      <button className="order-toast-close" onClick={onDismiss} aria-label="Taka">✕</button>
     </div>
   )
 }

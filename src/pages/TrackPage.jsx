@@ -6,6 +6,40 @@ import { useLanguage } from '../i18n/LanguageContext.jsx'
 import { refreshHistoryStatuses, markAsRead } from '../lib/orderHistory.js'
 import OrderRating from '../components/OrderRating.jsx'
 
+const PROGRESS_STEPS = ['menunggu_verifikasi', 'terverifikasi', 'terkirim']
+
+function OrderProgressTrack({ status, statusLabel }) {
+  if (status === 'dibatalkan') {
+    return (
+      <div className="order-progress-track cancelled">
+        <span className="opt-cancelled-icon">✕</span>
+        <span className="opt-cancelled-text">{statusLabel('dibatalkan')}</span>
+      </div>
+    )
+  }
+
+  const currentIndex = PROGRESS_STEPS.indexOf(status)
+
+  return (
+    <div className="order-progress-track">
+      {PROGRESS_STEPS.map((key, i) => {
+        const done = i < currentIndex
+        const active = i === currentIndex
+        const lineFilled = i > 0 && i <= currentIndex
+        return (
+          <div
+            key={key}
+            className={`opt-step${done ? ' done' : ''}${active ? ' active' : ''}${lineFilled ? ' line-filled' : ''}`}
+          >
+            <span className="opt-circle">{done ? '✓' : i + 1}</span>
+            <span className="opt-label">{statusLabel(key)}</span>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 export default function TrackPage() {
   const { gameKey } = useParams()
   const game = getGame(gameKey)
@@ -160,6 +194,8 @@ export default function TrackPage() {
                 ↻
               </button>
             </div>
+
+            <OrderProgressTrack status={selectedOrder.status} statusLabel={statusLabel} />
 
             <div className="result-row">
               <span className="k">{t('pkg_row_label')}</span>

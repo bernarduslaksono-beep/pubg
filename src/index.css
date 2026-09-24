@@ -447,6 +447,36 @@ main{max-width:1100px; margin:0 auto; padding:36px 24px 80px;}
 .status-dibatalkan{background:rgba(220,38,38,0.1); color:var(--danger);}
 .status-dibatalkan .dot{background:var(--danger); box-shadow:0 0 6px var(--danger);}
 
+.order-progress-track{display:flex; margin:2px 0 20px;}
+.order-progress-track .opt-step{flex:1; text-align:center; position:relative; display:flex; flex-direction:column; align-items:center;}
+.order-progress-track .opt-step:not(:first-child)::before{
+  content:''; position:absolute; top:13px; left:-50%; width:100%; height:2px; background:var(--border); z-index:0;
+}
+.order-progress-track .opt-step.line-filled::before{background:var(--success);}
+.order-progress-track .opt-circle{
+  width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  background:var(--surface-2); border:2px solid var(--border); color:var(--muted); font-size:13px; font-weight:700;
+  flex-shrink:0; position:relative; z-index:1; transition:all .2s ease; font-family:'Rajdhani',sans-serif;
+}
+.order-progress-track .opt-step.done .opt-circle{background:var(--success); border-color:var(--success); color:#fff;}
+.order-progress-track .opt-step.active .opt-circle{background:var(--red); border-color:var(--red); color:#fff; box-shadow:0 0 0 4px rgba(220,38,38,0.15);}
+.order-progress-track .opt-label{margin-top:7px; font-size:10.5px; font-weight:600; color:var(--muted); line-height:1.3; padding:0 2px;}
+.order-progress-track .opt-step.done .opt-label, .order-progress-track .opt-step.active .opt-label{color:var(--text);}
+
+.order-progress-track.cancelled{
+  align-items:center; justify-content:center; gap:9px; background:rgba(220,38,38,0.08);
+  border:1px solid rgba(220,38,38,0.25); border-radius:10px; padding:12px 16px;
+}
+.order-progress-track .opt-cancelled-icon{
+  width:26px; height:26px; border-radius:50%; background:var(--danger); color:#fff;
+  display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; flex-shrink:0;
+}
+.order-progress-track .opt-cancelled-text{font-size:13.5px; font-weight:700; color:var(--danger); font-family:'Rajdhani',sans-serif;}
+
+@media (prefers-reduced-motion: reduce){
+  .order-progress-track .opt-circle{transition:none;}
+}
+
 .result-row{display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--border); font-size:13.5px;}
 .result-row:last-child{border-bottom:none;}
 .result-row .k{color:var(--muted);}

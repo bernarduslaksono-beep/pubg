@@ -175,6 +175,15 @@ export default function PortalPage() {
   // (númeru konta sensitivu hela ba Order page de'it, hafoin cliente hili game).
   const paymentBrands = Array.from(new Map(PAYMENT_METHODS.map((pm) => [pm.brand, pm])).values())
 
+  // Naran badge kurtu — de'it ba smartphone (haree .payment-label-short iha
+  // index.css), atu badge sira kaben iha ekran ki'ik liu. Desktop uza naran
+  // kompletu (pm.brand) hanesan sempre.
+  const PAYMENT_SHORT_LABELS = {
+    bank_bnctl: 'BNCTL',
+    bank_mandiri_tl: 'Mandiri-TL',
+    ewallet_mosan: 'Mosan',
+  }
+
   return (
     <>
       {/* HERO — value proposition badak + CTA primariu ne'ebe scroll ba seleksaun game */}
@@ -260,7 +269,11 @@ export default function PortalPage() {
         </div>
         <div className="trust-badges">
           {paymentBrands.map((pm) => (
-            <span className="trust-badge" key={pm.id}>{pm.typeKey === 'type_ewallet' ? '📱' : '🏦'} {pm.brand}</span>
+            <span className="trust-badge" key={pm.id}>
+              <span aria-hidden="true">{pm.typeKey === 'type_ewallet' ? '📱' : '🏦'}</span>{' '}
+              <span className="payment-label-full">{pm.brand}</span>
+              <span className="payment-label-short">{PAYMENT_SHORT_LABELS[pm.id] || pm.brand}</span>
+            </span>
           ))}
         </div>
       </div>

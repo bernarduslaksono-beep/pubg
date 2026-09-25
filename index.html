@@ -9,9 +9,15 @@
     <meta name="theme-color" content="#E7343F" />
     <script>
       (function () {
+        // Default sai Dark. De'it hakerek 'light' explisitamente iha
+        // <html> bainhira user ona hili Light tuir sira nia an (haree
+        // ThemeToggle.jsx) — atu la iha flash ba tema sala bainhira
+        // pájina karega uluk liu duke React hydrate.
         var userSet = localStorage.getItem('theme_user_set') === '1';
         var saved = localStorage.getItem('theme');
-        if (userSet && saved === 'dark') {
+        if (userSet && saved === 'light') {
+          document.documentElement.setAttribute('data-theme', 'light');
+        } else {
           document.documentElement.setAttribute('data-theme', 'dark');
         }
       })();

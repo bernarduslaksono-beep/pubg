@@ -3,12 +3,12 @@ import { useLanguage } from '../i18n/LanguageContext.jsx'
 
 // Nota: la konfia de'it iha localStorage['theme'] — ida ne'e de'it guarda
 // bainhira user beibeik klik tombu (haree flag 'theme_user_set'). Se la iha
-// eskolla konsiente, default sai Light.
+// eskolla konsiente, default sai Dark.
 function getInitialTheme() {
   const userSet = localStorage.getItem('theme_user_set') === '1'
   const saved = localStorage.getItem('theme')
   if (userSet && (saved === 'light' || saved === 'dark')) return saved
-  return 'light'
+  return 'dark'
 }
 
 export default function ThemeToggle() {
